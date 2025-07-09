@@ -1,3 +1,9 @@
+---
+id: TECHNICAL_SPEC
+title: ScoreMyClays Technical Specification
+sidebar_label: ScoreMyClays Technical Specification
+---
+
 # ScoreMyClays Technical Specification
 
 ## 1. Technology Stack Overview

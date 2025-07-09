@@ -1,3 +1,9 @@
+---
+id: scoremyclays_ux_design_guide
+title: ScoreMyClays UX Design Guide
+sidebar_label: ScoreMyClays UX Design Guide
+---
+
 # ScoreMyClays UX Design Guide
 
 *Comprehensive user experience design framework adapted from GolfGameBook analysis*

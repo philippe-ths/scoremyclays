@@ -1,14 +1,8 @@
 {
-  "framework": "nextjs",
   "buildCommand": "npm run build",
-  "devCommand": "npm run start",
-  "installCommand": "npm install",
   "outputDirectory": "build",
-  "functions": {
-    "build/**": {
-      "runtime": "nodejs18.x"
-    }
-  },
+  "installCommand": "npm install",
+  "framework": null,
   "headers": [
     {
       "source": "/(.*)",
@@ -26,12 +20,6 @@
           "value": "1; mode=block"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
     }
   ]
 }
