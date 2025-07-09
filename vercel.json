@@ -1,17 +1,7 @@
 {
-  "buildCommand": "cd website && npm run build",
-  "outputDirectory": "website/build",
+  "buildCommand": "cd website && npm run build && cd .. && mkdir -p dist && cp -r website/build/* dist/ && cp index.html dist/index.html && cp robots.txt sitemap.xml dist/",
+  "outputDirectory": "dist",
   "installCommand": "cd website && npm install",
-  "rewrites": [
-    {
-      "source": "/docs",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/docs/(.*)",
-      "destination": "/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/(.*)",
