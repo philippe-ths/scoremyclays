@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="robots" content="noindex, nofollow">
-    <title>ScoreMyClays - Coming Soon</title>
+    <title>ScoreMyClays - Design System Documentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -13,160 +13,440 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #0f172a;
-            color: #e2e8f0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #2C3E50;
+            background: linear-gradient(135deg, #F8F9FA 0%, #E9ECEF 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
         }
         
         .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .hero {
+            background: linear-gradient(135deg, #2C3E50 0%, #D2691E 100%);
+            color: white;
+            padding: 80px 0;
             text-align: center;
-            max-width: 600px;
-            width: 100%;
         }
         
-        .logo {
-            width: 80px;
-            height: 80px;
-            background: #ef4444;
-            border-radius: 50%;
-            margin: 0 auto 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 40px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
+        .hero h1 {
+            font-size: 48px;
             font-weight: 700;
-            margin-bottom: 10px;
-            background: linear-gradient(to right, #ef4444, #f59e0b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            margin-bottom: 16px;
         }
         
-        .tagline {
-            font-size: 1.25rem;
-            color: #94a3b8;
-            margin-bottom: 40px;
+        .hero p {
+            font-size: 20px;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
         }
         
-        .status {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #334155;
+        /* Navigation Cards */
+        .showcase-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+            margin: -40px auto 60px;
+            position: relative;
+            z-index: 10;
         }
         
-        .status-badge {
-            display: inline-block;
-            background: #22c55e;
-            color: #052e16;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 15px;
-        }
-        
-        .status-text {
-            color: #cbd5e1;
-            line-height: 1.6;
-        }
-        
-        .links {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 30px;
-        }
-        
-        .link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 24px;
-            background: #334155;
-            color: #e2e8f0;
+        .showcase-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
             text-decoration: none;
+            color: inherit;
+        }
+        
+        .showcase-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+        }
+        
+        .showcase-card h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #D2691E;
+            margin-bottom: 12px;
+        }
+        
+        .showcase-card p {
+            color: #6C757D;
+            margin-bottom: 20px;
+        }
+        
+        .showcase-features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .showcase-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid #F1F3F4;
+            color: #2C3E50;
+            font-size: 14px;
+        }
+        
+        .showcase-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .showcase-features li::before {
+            content: "✓";
+            color: #228B22;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: #D2691E;
+            color: white;
+            padding: 12px 24px;
             border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.2s;
-            border: 1px solid #475569;
+            text-decoration: none;
+            font-weight: 600;
+            margin-top: 16px;
+            transition: background-color 0.2s ease;
         }
         
-        .link:hover {
-            background: #475569;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        .cta-button:hover {
+            background-color: #B8571A;
         }
         
-        .link.primary {
-            background: #ef4444;
-            border-color: #ef4444;
+        /* Design Guide Overview */
+        .design-overview {
+            background: white;
+            padding: 60px 0;
+            margin: 40px 0;
         }
         
-        .link.primary:hover {
-            background: #dc2626;
-            border-color: #dc2626;
+        .design-overview h2 {
+            font-size: 32px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+            color: #2C3E50;
         }
         
+        .design-overview p {
+            text-align: center;
+            color: #6C757D;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            font-size: 18px;
+        }
+        
+        .guide-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 40px 0;
+        }
+        
+        .guide-card {
+            background: #F8F9FA;
+            border: 1px solid #E9ECEF;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+        }
+        
+        .guide-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #D2691E, #FFB000);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .guide-card h3 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 12px;
+        }
+        
+        .guide-card p {
+            color: #6C757D;
+            margin-bottom: 16px;
+        }
+        
+        /* Key Features */
+        .key-features {
+            background: linear-gradient(135deg, #E8F5E8 0%, #F0F8F0 100%);
+            padding: 60px 0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+        }
+        
+        .feature-item {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid #E9ECEF;
+        }
+        
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+        
+        .feature-item h4 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+        
+        .feature-item p {
+            color: #6C757D;
+            font-size: 14px;
+        }
+        
+        /* Footer */
         .footer {
-            margin-top: 60px;
-            color: #64748b;
-            font-size: 0.875rem;
+            background: #2C3E50;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
         }
         
-        @media (max-width: 640px) {
-            h1 {
-                font-size: 2rem;
+        .footer a {
+            color: #D2691E;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
             }
             
-            .links {
-                flex-direction: column;
+            .hero p {
+                font-size: 16px;
             }
             
-            .link {
-                width: 100%;
-                justify-content: center;
+            .showcase-grid {
+                grid-template-columns: 1fr;
+                margin-top: -20px;
+            }
+            
+            .showcase-card {
+                padding: 24px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="logo">🎯</div>
-        <h1>ScoreMyClays</h1>
-        <p class="tagline">Digital Scoring for Clay Pigeon Shooting</p>
-        
-        <div class="status">
-            <span class="status-badge">IN DEVELOPMENT</span>
-            <p class="status-text">
-                We're building the ultimate scoring companion for clay pigeon shooters. 
-                Track your performance, analyze your shots, and improve your game.
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>ScoreMyClays Design System</h1>
+            <p>Comprehensive design documentation and component showcase for the UK's premier clay shooting application</p>
+        </div>
+    </section>
+
+    <!-- Showcase Navigation -->
+    <section style="padding: 0 0 60px;">
+        <div class="container">
+            <div class="showcase-grid">
+                <a href="design-system-showcase.html" class="showcase-card">
+                    <h2>🎨 Design System Components</h2>
+                    <p>Complete component library with interactive examples, color palette, typography, and design tokens.</p>
+                    <ul class="showcase-features">
+                        <li>Color System & Typography</li>
+                        <li>Score Entry Components</li>
+                        <li>Navigation & Cards</li>
+                        <li>Form & Feedback Components</li>
+                        <li>Accessibility Features</li>
+                        <li>Responsive Utilities</li>
+                    </ul>
+                    <span class="cta-button">Explore Components</span>
+                </a>
+
+                <a href="clay-shooting-showcase.html" class="showcase-card">
+                    <h2>🎯 Clay Shooting Interface</h2>
+                    <p>Interactive mobile mockups demonstrating user flows, discipline-specific scoring, and social features.</p>
+                    <ul class="showcase-features">
+                        <li>Round Setup Flow</li>
+                        <li>ESP, DTL, Skeet Scoring</li>
+                        <li>Real-time Score Entry</li>
+                        <li>Round Completion</li>
+                        <li>Social Sharing</li>
+                        <li>Performance Analytics</li>
+                    </ul>
+                    <span class="cta-button">View Interface</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Design Guide Overview -->
+    <section class="design-overview">
+        <div class="container">
+            <h2>Design Guide Documentation</h2>
+            <p>Three comprehensive guides covering every aspect of the ScoreMyClays design system, from user experience principles to component implementation.</p>
+            
+            <div class="guide-grid">
+                <div class="guide-card">
+                    <div class="guide-icon">🧠</div>
+                    <h3>UX Design Guide</h3>
+                    <p>User experience principles, journey mapping, emotional design, and accessibility for clay shooting contexts.</p>
+                    <a href="docs/DESIGN_GUIDES/scoremyclays_ux_design_guide.md" style="color: #D2691E; text-decoration: none; font-weight: 500;">Read UX Guide →</a>
+                </div>
+                
+                <div class="guide-card">
+                    <div class="guide-icon">🎨</div>
+                    <h3>UI Design Guide</h3>
+                    <p>Visual design system including colors, typography, iconography, and platform-specific adaptations.</p>
+                    <a href="docs/DESIGN_GUIDES/scoremyclays_ui_design_guide.md" style="color: #D2691E; text-decoration: none; font-weight: 500;">Read UI Guide →</a>
+                </div>
+                
+                <div class="guide-card">
+                    <div class="guide-icon">⚙️</div>
+                    <h3>Component System</h3>
+                    <p>Detailed component specifications, CSS implementations, and responsive utilities for development.</p>
+                    <a href="docs/DESIGN_GUIDES/design_system_components.md" style="color: #D2691E; text-decoration: none; font-weight: 500;">Read Components →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Features -->
+    <section class="key-features">
+        <div class="container">
+            <h2 style="font-size: 32px; font-weight: 700; text-align: center; margin-bottom: 16px; color: #2C3E50;">Design Principles</h2>
+            <p style="text-align: center; color: #6C757D; max-width: 800px; margin: 0 auto 40px; font-size: 18px;">
+                Built specifically for outdoor clay shooting with a focus on usability, tradition, and community.
+            </p>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🌞</div>
+                    <h4>Outdoor Optimized</h4>
+                    <p>High contrast design for bright outdoor conditions with large touch targets for gloved hands.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h4>Clay Shooting Heritage</h4>
+                    <p>Respects traditional terminology and formal presentation suitable for official club records.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Performance First</h4>
+                    <p>Offline-first architecture with instant score recording and no loading delays for core actions.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">👥</div>
+                    <h4>Social Integration</h4>
+                    <p>Squad scoring, competition features, and ground discovery to build shooting community.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">♿</div>
+                    <h4>Accessible Design</h4>
+                    <p>WCAG compliant with support for screen readers, voice input, and motor accessibility.</p>
+                </div>
+                
+                <div class="feature-item">
+                    <div class="feature-icon">📱</div>
+                    <h4>Mobile First</h4>
+                    <p>Responsive design optimized for iOS and Android with progressive web app capabilities.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Specifications -->
+    <section style="background: white; padding: 60px 0;">
+        <div class="container">
+            <h2 style="font-size: 32px; font-weight: 700; text-align: center; margin-bottom: 40px; color: #2C3E50;">Technical Specifications</h2>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px;">
+                <div style="background: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h4 style="color: #D2691E; margin-bottom: 16px; font-size: 18px;">🎨 Design Tokens</h4>
+                    <ul style="list-style: none; padding: 0; color: #6C757D; line-height: 1.8;">
+                        <li>• Clay Orange: #D2691E</li>
+                        <li>• Gun Metal: #2C3E50</li>
+                        <li>• Field Green: #228B22</li>
+                        <li>• Inter + Roboto Mono fonts</li>
+                        <li>• 8px base spacing unit</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h4 style="color: #D2691E; margin-bottom: 16px; font-size: 18px;">📏 Measurements</h4>
+                    <ul style="list-style: none; padding: 0; color: #6C757D; line-height: 1.8;">
+                        <li>• Touch targets: 44px minimum</li>
+                        <li>• Score buttons: 120×80px</li>
+                        <li>• Form inputs: 48px height</li>
+                        <li>• Navigation: 84px height</li>
+                        <li>• Border radius: 8-12px</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h4 style="color: #D2691E; margin-bottom: 16px; font-size: 18px;">⚡ Performance</h4>
+                    <ul style="list-style: none; padding: 0; color: #6C757D; line-height: 1.8;">
+                        <li>• Loading: &lt;2 seconds</li>
+                        <li>• Touch response: &lt;100ms</li>
+                        <li>• Animations: 60fps</li>
+                        <li>• Offline: 100% core features</li>
+                        <li>• Battery optimized</li>
+                    </ul>
+                </div>
+                
+                <div style="background: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h4 style="color: #D2691E; margin-bottom: 16px; font-size: 18px;">♿ Accessibility</h4>
+                    <ul style="list-style: none; padding: 0; color: #6C757D; line-height: 1.8;">
+                        <li>• WCAG 2.1 AA compliant</li>
+                        <li>• 4.5:1 contrast minimum</li>
+                        <li>• Screen reader support</li>
+                        <li>• Keyboard navigation</li>
+                        <li>• Voice input ready</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 ScoreMyClays Design System</p>
+            <p style="margin-top: 8px; opacity: 0.8;">
+                Built for the UK clay shooting community • 
+                <a href="docs/DOCUMENT_INDEX.md">Documentation</a> • 
+                <a href="docs/TECHNICAL_SPEC.md">Technical Specs</a>
             </p>
         </div>
-        
-        <div class="links">
-            <a href="/docs" class="link">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M9 4.804A4.25 4.25 0 005.75 9v6A2.75 2.75 0 018.5 17.75h3A2.75 2.75 0 0014.25 15V9A4.25 4.25 0 0011 4.804V3a1 1 0 10-2 0v1.804zM11 9v6a.75.75 0 01-.75.75h-3A.75.75 0 016.5 15V9a2.5 2.5 0 015 0z" fill="currentColor"/>
-                </svg>
-                Developer Docs
-            </a>
-        </div>
-        
-        <div class="footer">
-            <p>© 2025 ScoreMyClays. All rights reserved.</p>
-        </div>
-    </div>
+    </footer>
 </body>
 </html>

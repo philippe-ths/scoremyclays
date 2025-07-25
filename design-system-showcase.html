@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreMyClays Design System Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            color: #2C3E50;
+            background-color: #FFFFFF;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Typography Scale */
+        .display {
+            font-size: 32px;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 16px;
+        }
+        
+        .heading-large {
+            font-size: 24px;
+            font-weight: 600;
+            line-height: 1.3;
+            margin-bottom: 12px;
+        }
+        
+        .heading-medium {
+            font-size: 20px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 12px;
+        }
+        
+        .body-large {
+            font-size: 18px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+        
+        .body {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+        
+        .caption {
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.4;
+            color: #6C757D;
+        }
+        
+        .small {
+            font-size: 12px;
+            font-weight: 400;
+            line-height: 1.3;
+            color: #6C757D;
+        }
+        
+        /* Color Palette */
+        .color-swatch {
+            display: inline-block;
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            margin: 8px;
+            position: relative;
+            border: 1px solid #E9ECEF;
+        }
+        
+        .color-swatch::after {
+            content: attr(data-color);
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: #6C757D;
+            white-space: nowrap;
+        }
+        
+        .clay-orange { background-color: #D2691E; }
+        .gun-metal { background-color: #2C3E50; }
+        .field-green { background-color: #228B22; }
+        .sky-blue { background-color: #87CEEB; }
+        .warning-amber { background-color: #FFB000; }
+        .error-red { background-color: #DC143C; }
+        
+        /* Button Components */
+        .btn {
+            display: inline-block;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 18px;
+            font-weight: 500;
+            text-decoration: none;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 48px;
+            min-width: 44px;
+        }
+        
+        .btn-primary {
+            background-color: #D2691E;
+            color: #FFFFFF;
+        }
+        
+        .btn-primary:hover {
+            background-color: #B8571A;
+        }
+        
+        .btn-secondary {
+            background-color: transparent;
+            border: 2px solid #D2691E;
+            color: #D2691E;
+            padding: 14px 22px;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #D2691E;
+            color: #FFFFFF;
+        }
+        
+        .btn-tertiary {
+            background-color: transparent;
+            color: #2C3E50;
+            padding: 12px 16px;
+        }
+        
+        .btn-tertiary:hover {
+            background-color: #F8F9FA;
+        }
+        
+        /* Score Entry Components */
+        .score-button {
+            width: 120px;
+            height: 80px;
+            border-radius: 12px;
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.1s ease;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin: 8px;
+        }
+        
+        .score-button--hit {
+            background-color: #228B22;
+            color: #FFFFFF;
+        }
+        
+        .score-button--hit:active {
+            background-color: #1E7B1E;
+            transform: scale(0.95);
+        }
+        
+        .score-button--miss {
+            background-color: #DC143C;
+            color: #FFFFFF;
+        }
+        
+        .score-button--miss:active {
+            background-color: #C4122F;
+            transform: scale(0.95);
+        }
+        
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            max-width: 280px;
+            margin: 16px auto;
+        }
+        
+        .number-button {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            border: 2px solid #E9ECEF;
+            background-color: #F8F9FA;
+            color: #2C3E50;
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+        
+        .number-button:hover {
+            border-color: #D2691E;
+        }
+        
+        .number-button:active {
+            background-color: #D2691E;
+            color: #FFFFFF;
+            transform: scale(0.95);
+        }
+        
+        .score-display {
+            background-color: #F8F9FA;
+            border: 2px solid #E9ECEF;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            margin: 16px 0;
+            max-width: 300px;
+        }
+        
+        .score-display__current {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 36px;
+            font-weight: 700;
+            color: #2C3E50;
+            line-height: 1.2;
+        }
+        
+        .score-display__total {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 18px;
+            font-weight: 500;
+            color: #6C757D;
+            margin-top: 4px;
+        }
+        
+        .score-display__percentage {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            color: #D2691E;
+            margin-top: 8px;
+        }
+        
+        /* Navigation Components */
+        .bottom-nav {
+            position: relative;
+            background-color: #FFFFFF;
+            border-top: 1px solid #E9ECEF;
+            height: 84px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+            margin: 24px 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            min-width: 44px;
+            min-height: 44px;
+            text-decoration: none;
+            color: #6C757D;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item--active {
+            color: #D2691E;
+        }
+        
+        .nav-item__icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+            background-color: currentColor;
+            border-radius: 2px;
+        }
+        
+        .nav-item__label {
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+        
+        .nav-item--primary {
+            background-color: #D2691E;
+            color: #FFFFFF;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            margin-top: -20px;
+            box-shadow: 0 4px 12px rgba(210,105,30,0.3);
+        }
+        
+        .nav-item--primary .nav-item__icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 0;
+        }
+        
+        /* Card Components */
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E9ECEF;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .card--featured {
+            border: 2px solid #D2691E;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .round-card__header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .round-card__discipline {
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-right: 12px;
+        }
+        
+        .round-card__date {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: #6C757D;
+            margin-left: auto;
+        }
+        
+        .round-card__score {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: #2C3E50;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        /* Form Components */
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #E9ECEF;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 400;
+            color: #2C3E50;
+            background-color: #FFFFFF;
+            transition: border-color 0.2s ease;
+            min-height: 48px;
+            margin: 8px 0;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #D2691E;
+            box-shadow: 0 0 0 3px rgba(210,105,30,0.1);
+        }
+        
+        .form-input::placeholder {
+            color: #6C757D;
+        }
+        
+        /* Alert Components */
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        
+        .alert--success {
+            background-color: #E8F5E8;
+            color: #1E7B1E;
+            border: 1px solid #C3E6C3;
+        }
+        
+        .alert--error {
+            background-color: #FFEAEA;
+            color: #A91B1B;
+            border: 1px solid #F5C6CB;
+        }
+        
+        .alert--warning {
+            background-color: #FFF8E1;
+            color: #8B6914;
+            border: 1px solid #FFE082;
+        }
+        
+        .alert--info {
+            background-color: #E3F2FD;
+            color: #1565C0;
+            border: 1px solid #BBDEFB;
+        }
+        
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #E9ECEF;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-bar__fill {
+            height: 100%;
+            background-color: #D2691E;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .progress-bar--success .progress-bar__fill {
+            background-color: #228B22;
+        }
+        
+        /* Showcase Layout */
+        .showcase-section {
+            margin: 40px 0;
+            padding: 32px 0;
+            border-bottom: 1px solid #E9ECEF;
+        }
+        
+        .showcase-section:last-child {
+            border-bottom: none;
+        }
+        
+        .component-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin: 24px 0;
+        }
+        
+        .component-demo {
+            padding: 24px;
+            background-color: #F8F9FA;
+            border-radius: 8px;
+            border: 1px solid #E9ECEF;
+        }
+        
+        .component-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 16px;
+        }
+        
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin: 24px 0;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 16px;
+            }
+            
+            .component-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .number-pad {
+                max-width: 240px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="text-align: center; padding: 40px 0; border-bottom: 1px solid #E9ECEF; margin-bottom: 40px;">
+            <h1 class="display" style="color: #D2691E;">ScoreMyClays Design System</h1>
+            <p class="body-large" style="color: #6C757D;">Comprehensive component showcase for clay shooting app design</p>
+        </header>
+
+        <!-- Color Palette -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Color Palette</h2>
+            <p class="body">Primary colors optimized for outdoor visibility and clay shooting context.</p>
+            
+            <div class="color-palette">
+                <div class="color-swatch clay-orange" data-color="#D2691E"></div>
+                <div class="color-swatch gun-metal" data-color="#2C3E50"></div>
+                <div class="color-swatch field-green" data-color="#228B22"></div>
+                <div class="color-swatch sky-blue" data-color="#87CEEB"></div>
+                <div class="color-swatch warning-amber" data-color="#FFB000"></div>
+                <div class="color-swatch error-red" data-color="#DC143C"></div>
+            </div>
+        </section>
+
+        <!-- Typography -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Typography Scale</h2>
+            <p class="body">Inter primary font with Roboto Mono for data display, optimized for outdoor readability.</p>
+            
+            <div style="margin: 24px 0;">
+                <div class="display">Display (32px) - Page Titles</div>
+                <div class="heading-large">Heading Large (24px) - Section Titles</div>
+                <div class="heading-medium">Heading Medium (20px) - Subsections</div>
+                <div class="body-large">Body Large (18px) - Important Text</div>
+                <div class="body">Body (16px) - Standard Text</div>
+                <div class="caption">Caption (14px) - Secondary Information</div>
+                <div class="small">Small (12px) - Fine Print</div>
+            </div>
+        </section>
+
+        <!-- Score Entry Components -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Score Entry Components</h2>
+            <p class="body">Large, touch-friendly buttons optimized for outdoor use and gloved hands.</p>
+            
+            <div class="component-grid">
+                <div class="component-demo">
+                    <div class="component-title">Hit/Miss Buttons</div>
+                    <div style="text-align: center;">
+                        <button class="score-button score-button--hit">HIT</button>
+                        <button class="score-button score-button--miss">MISS</button>
+                    </div>
+                </div>
+                
+                <div class="component-demo">
+                    <div class="component-title">Score Display</div>
+                    <div class="score-display">
+                        <div class="score-display__current">23/25</div>
+                        <div class="score-display__total">Total: 87/100</div>
+                        <div class="score-display__percentage">87% Average</div>
+                    </div>
+                </div>
+                
+                <div class="component-demo">
+                    <div class="component-title">Number Pad</div>
+                    <div class="number-pad">
+                        <button class="number-button">1</button>
+                        <button class="number-button">2</button>
+                        <button class="number-button">3</button>
+                        <button class="number-button">4</button>
+                        <button class="number-button">5</button>
+                        <button class="number-button">6</button>
+                        <button class="number-button">7</button>
+                        <button class="number-button">8</button>
+                        <button class="number-button">9</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Button Components -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Button Components</h2>
+            <p class="body">Consistent button hierarchy with minimum 44px touch targets.</p>
+            
+            <div class="component-grid">
+                <div class="component-demo">
+                    <div class="component-title">Button Types</div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <button class="btn btn-primary">Primary Button</button>
+                        <button class="btn btn-secondary">Secondary Button</button>
+                        <button class="btn btn-tertiary">Tertiary Button</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Navigation Components -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Navigation Components</h2>
+            <p class="body">Bottom navigation with prominent primary action for score entry.</p>
+            
+            <div class="component-demo">
+                <div class="component-title">Bottom Navigation</div>
+                <nav class="bottom-nav">
+                    <a href="#" class="nav-item">
+                        <div class="nav-item__icon"></div>
+                        <div class="nav-item__label">Home</div>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <div class="nav-item__icon"></div>
+                        <div class="nav-item__label">Scores</div>
+                    </a>
+                    <a href="#" class="nav-item nav-item--primary">
+                        <div class="nav-item__icon"></div>
+                    </a>
+                    <a href="#" class="nav-item">
+                        <div class="nav-item__icon"></div>
+                        <div class="nav-item__label">Compete</div>
+                    </a>
+                    <a href="#" class="nav-item nav-item--active">
+                        <div class="nav-item__icon"></div>
+                        <div class="nav-item__label">Profile</div>
+                    </a>
+                </nav>
+            </div>
+        </section>
+
+        <!-- Card Components -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Card Components</h2>
+            <p class="body">Clean cards for displaying round information and statistics.</p>
+            
+            <div class="component-grid">
+                <div class="component-demo">
+                    <div class="component-title">Round Summary Card</div>
+                    <div class="card card--featured">
+                        <div class="round-card__header">
+                            <div class="round-card__discipline">ESP Round 1</div>
+                            <div class="round-card__date">Today</div>
+                        </div>
+                        <div class="round-card__score">87/100</div>
+                        <div style="display: flex; justify-content: space-between; margin-top: 16px; padding-top: 16px; border-top: 1px solid #E9ECEF;">
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 600; color: #2C3E50;">87%</div>
+                                <div style="font-size: 12px; color: #6C757D;">PERCENTAGE</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 600; color: #2C3E50;">8</div>
+                                <div style="font-size: 12px; color: #6C757D;">STANDS</div>
+                            </div>
+                            <div style="text-align: center;">
+                                <div style="font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 600; color: #2C3E50;">25:43</div>
+                                <div style="font-size: 12px; color: #6C757D;">DURATION</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Form Components -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Form Components</h2>
+            <p class="body">Input fields and form elements with clear focus states.</p>
+            
+            <div class="component-grid">
+                <div class="component-demo">
+                    <div class="component-title">Input Fields</div>
+                    <input type="text" class="form-input" placeholder="Enter shooting ground name">
+                    <input type="email" class="form-input" placeholder="Enter email address">
+                    <input type="tel" class="form-input" placeholder="Enter phone number">
+                </div>
+            </div>
+        </section>
+
+        <!-- Feedback Components -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Feedback Components</h2>
+            <p class="body">Alert messages and progress indicators for user feedback.</p>
+            
+            <div class="component-grid">
+                <div class="component-demo">
+                    <div class="component-title">Alert Messages</div>
+                    <div class="alert alert--success">
+                        <div>✓</div>
+                        <div>Round successfully saved and uploaded to cloud.</div>
+                    </div>
+                    <div class="alert alert--error">
+                        <div>✗</div>
+                        <div>Unable to save round. Please check your connection.</div>
+                    </div>
+                    <div class="alert alert--warning">
+                        <div>⚠</div>
+                        <div>Round will be saved locally until connection is restored.</div>
+                    </div>
+                    <div class="alert alert--info">
+                        <div>ℹ</div>
+                        <div>Your personal best for ESP is 94/100.</div>
+                    </div>
+                </div>
+                
+                <div class="component-demo">
+                    <div class="component-title">Progress Bars</div>
+                    <div>
+                        <div style="margin-bottom: 8px;">Round Progress</div>
+                        <div class="progress-bar">
+                            <div class="progress-bar__fill" style="width: 75%;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="margin-bottom: 8px;">Classification Progress</div>
+                        <div class="progress-bar progress-bar--success">
+                            <div class="progress-bar__fill" style="width: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Design Specifications -->
+        <section class="showcase-section">
+            <h2 class="heading-large">Design Specifications</h2>
+            <p class="body">Key measurements and accessibility requirements.</p>
+            
+            <div class="component-grid">
+                <div class="component-demo">
+                    <div class="component-title">Touch Targets</div>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                        <li>• Minimum: 44×44px</li>
+                        <li>• Score Entry: 120×80px</li>
+                        <li>• Primary Action: 64×64px</li>
+                        <li>• Form Inputs: 48px height</li>
+                    </ul>
+                </div>
+                
+                <div class="component-demo">
+                    <div class="component-title">Accessibility</div>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                        <li>• Contrast: 4.5:1 minimum</li>
+                        <li>• Large text: 3:1 minimum</li>
+                        <li>• Focus indicators visible</li>
+                        <li>• Screen reader support</li>
+                    </ul>
+                </div>
+                
+                <div class="component-demo">
+                    <div class="component-title">Performance</div>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8;">
+                        <li>• Loading: &lt;2 seconds</li>
+                        <li>• Animations: 60fps</li>
+                        <li>• Touch response: &lt;100ms</li>
+                        <li>• Offline capability: 100%</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 40px 0; border-top: 1px solid #E9ECEF; margin-top: 40px; color: #6C757D;">
+            <p>ScoreMyClays Design System v1.0</p>
+            <p class="small">Optimized for clay shooting and outdoor sports</p>
+        </footer>
+    </div>
+
+    <script>
+        // Add interactive demos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Score button interactions
+            const scoreButtons = document.querySelectorAll('.score-button');
+            scoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                });
+            });
+            
+            // Number button interactions
+            const numberButtons = document.querySelectorAll('.number-button');
+            numberButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove selected class from all buttons
+                    numberButtons.forEach(btn => btn.classList.remove('number-button--selected'));
+                    // Add selected class to clicked button
+                    this.classList.add('number-button--selected');
+                });
+            });
+            
+            // Add selected state style
+            const style = document.createElement('style');
+            style.textContent = `
+                .number-button--selected {
+                    background-color: #D2691E !important;
+                    color: #FFFFFF !important;
+                    border-color: #D2691E !important;
+                }
+            `;
+            document.head.appendChild(style);
+        });
+    </script>
+</body>
+</html> 

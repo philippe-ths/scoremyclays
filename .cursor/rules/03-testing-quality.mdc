@@ -1,0 +1,49 @@
+---
+globs: ["**/*.test.*", "**/*.spec.*", "**/test/**", "**/tests/**"]
+alwaysApply: true
+---
+
+# Testing and Quality Standards
+
+## Testing Strategy
+
+1. **User-Centric Testing**: Test clay shooting workflows and scenarios
+2. **Mobile Testing**: Validate on various mobile devices and screen sizes
+3. **Offline Testing**: Ensure core scoring functions work without internet
+4. **Performance Testing**: Verify fast loading and smooth interactions
+5. **Accessibility Testing**: Ensure usability for all clay shooters
+
+## Clay Shooting Test Scenarios
+
+1. **Basic Scoring**: Test fundamental clay scoring workflows
+2. **Competition Modes**: Validate different clay shooting disciplines (Trap, Skeet, Sporting)
+3. **Group Scoring**: Test multi-shooter scenarios and social features
+4. **Data Export**: Verify score sharing and export functionality
+5. **Error Recovery**: Test handling of input mistakes and corrections
+
+## Quality Assurance
+
+### Code Quality
+1. **Lint Checking**: Use appropriate linters for code consistency
+2. **Type Safety**: Implement proper type checking where applicable
+3. **Code Reviews**: Review code changes for clay shooting context accuracy
+4. **Performance Profiling**: Monitor app performance and optimize bottlenecks
+5. **Security Review**: Protect user data and scoring information
+
+### User Experience Quality
+1. **Usability Testing**: Test with actual clay shooters when possible
+2. **Interface Validation**: Ensure UI follows design system guidelines
+3. **Error Handling**: Provide clear, helpful error messages
+4. **Load Testing**: Verify performance under typical usage scenarios
+5. **Cross-Platform Testing**: Test on iOS, Android, and web platforms
+
+## Validation Process
+
+1. **Functional Testing**: Verify features match specifications in `/docs/`
+2. **Integration Testing**: Test feature interactions and data flow
+3. **Regression Testing**: Ensure new changes don't break existing functionality
+4. **User Acceptance**: Validate against clay shooter needs and workflows
+5. **Performance Benchmarks**: Meet mobile app performance standards
+
+*Maintain high quality standards throughout development*
+

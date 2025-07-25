@@ -1,0 +1,49 @@
+---
+globs: ["**/*.html", "**/*.css", "**/*.js", "**/*.ts", "**/*.vue", "**/*.svelte", "app/**/*"]
+alwaysApply: true
+---
+
+# Web Development Standards
+
+## Progressive Web App (PWA) Requirements
+
+1. **Mobile-First**: Design and test for mobile devices first
+2. **Offline Capability**: Implement service workers for core functionality
+3. **Performance**: Optimize for fast loading and smooth interactions
+4. **Responsive Design**: Ensure compatibility across all screen sizes
+5. **Touch-Friendly**: Design for touch interfaces and gestures
+
+## Frontend Development
+
+### Code Quality
+1. **Modern JavaScript**: Use ES6+ features and modern patterns
+2. **Type Safety**: Implement TypeScript where beneficial
+3. **Component Architecture**: Create reusable, maintainable components
+4. **State Management**: Use appropriate state management patterns
+5. **Error Handling**: Implement comprehensive error boundaries
+
+### Performance Optimization
+1. **Bundle Size**: Minimize JavaScript and CSS bundle sizes
+2. **Lazy Loading**: Implement code splitting and lazy loading
+3. **Caching**: Use appropriate caching strategies
+4. **Image Optimization**: Compress and optimize all images
+5. **Network Efficiency**: Minimize HTTP requests and payload sizes
+
+## Clay Shooting App Specifics
+
+### User Experience
+1. **Quick Scoring**: Minimize taps required for common scoring actions
+2. **Immediate Feedback**: Provide instant visual confirmation of inputs
+3. **Offline Sync**: Queue actions when offline, sync when online
+4. **Data Persistence**: Ensure scoring data is never lost
+5. **Gesture Support**: Implement intuitive touch gestures for scoring
+
+### Technical Requirements
+1. **Local Storage**: Use appropriate browser storage APIs
+2. **Background Sync**: Implement background synchronization
+3. **Push Notifications**: Support for scoring reminders and updates
+4. **Device APIs**: Utilize camera, GPS, and other relevant device features
+5. **Cross-Platform**: Ensure compatibility across iOS, Android, and web
+
+*Follow modern web standards while prioritizing clay shooter workflow*
+

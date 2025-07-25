@@ -1,0 +1,49 @@
+---
+alwaysApply: true
+---
+
+# ScoreMyClays - Project Master Guide
+
+## Project Overview
+
+**Purpose**: Independent mobile application for clay pigeon shooting scoring and performance tracking.
+
+**Scope**: Mobile app serving the clay shooting community with digital scoring, analytics, and social features.
+
+## Core Architecture Principles
+
+1. **Mobile-First Design**: Optimize for mobile devices and offline capability
+2. **User-Centric**: Focus on clay shooter needs and workflow
+3. **Performance**: Fast, responsive, and reliable scoring interface
+4. **Social Features**: Community engagement and competition features
+5. **Data Analytics**: Performance tracking and improvement insights
+
+## Technology Stack
+
+- **Frontend**: Modern web technologies for cross-platform compatibility
+- **Documentation**: Docusaurus for comprehensive documentation
+- **Development**: Progressive Web App (PWA) approach
+- **Design System**: Consistent UI/UX components for clay shooting context
+
+## Key Project Areas
+
+- `/docs/` - Complete project specifications and design guides
+- `/research/` - Market research and competitive analysis
+- `/app/` - Main application development
+- `/website/` - Documentation site (Docusaurus)
+- `/src/mock_up/` - UI prototypes and design exploration
+
+## Development Principles
+
+1. **Follow Specifications**: Adhere to functional spec and design guides in `/docs/`
+2. **Research-Driven**: Reference market research and competitor analysis
+3. **User Experience**: Prioritize clay shooter workflow and needs
+4. **Mobile Optimization**: Ensure excellent mobile performance
+5. **Incremental Development**: Build and test iteratively
+
+## Cross-Reference
+
+See @CLAUDE.md for additional guidance when working with Claude Code.
+
+*Consult specialized rules for specific development areas*
+

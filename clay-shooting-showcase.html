@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreMyClays - Clay Shooting Interface Showcase</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.5;
+            color: #2C3E50;
+            background-color: #FFFFFF;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Clay Shooting App Mockup */
+        .phone-mockup {
+            width: 375px;
+            height: 812px;
+            background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+            border-radius: 30px;
+            padding: 8px;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+        
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background-color: #FFFFFF;
+            border-radius: 22px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .status-bar {
+            height: 44px;
+            background-color: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .app-content {
+            height: calc(100% - 44px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .app-header {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E9ECEF;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2C3E50;
+        }
+        
+        .header-back {
+            width: 24px;
+            height: 24px;
+            background-color: #D2691E;
+            border-radius: 50%;
+        }
+        
+        /* Discipline Selection */
+        .discipline-selector {
+            padding: 20px;
+            background-color: #F8F9FA;
+        }
+        
+        .discipline-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .discipline-card {
+            background-color: #FFFFFF;
+            border: 2px solid #E9ECEF;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .discipline-card:hover {
+            border-color: #D2691E;
+        }
+        
+        .discipline-card.selected {
+            border-color: #D2691E;
+            background-color: #FFF3E0;
+        }
+        
+        .discipline-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 4px;
+        }
+        
+        .discipline-subtitle {
+            font-size: 12px;
+            color: #6C757D;
+        }
+        
+        /* Shooting Interface */
+        .shooting-interface {
+            flex: 1;
+            padding: 20px;
+            background: linear-gradient(135deg, #E8F5E8 0%, #F0F8F0 100%);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .stand-info {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stand-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 4px;
+        }
+        
+        .stand-subtitle {
+            font-size: 14px;
+            color: #6C757D;
+        }
+        
+        .target-display {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .target-counter {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+        
+        .target-instruction {
+            font-size: 16px;
+            color: #6C757D;
+            margin-bottom: 16px;
+        }
+        
+        .score-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .score-btn {
+            width: 120px;
+            height: 80px;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .score-btn.hit {
+            background-color: #228B22;
+            color: #FFFFFF;
+        }
+        
+        .score-btn.hit:active {
+            transform: scale(0.95);
+            background-color: #1E7B1E;
+        }
+        
+        .score-btn.miss {
+            background-color: #DC143C;
+            color: #FFFFFF;
+        }
+        
+        .score-btn.miss:active {
+            transform: scale(0.95);
+            background-color: #C4122F;
+        }
+        
+        /* Running Score */
+        .running-score {
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-top: auto;
+        }
+        
+        .current-score {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: #D2691E;
+            margin-bottom: 4px;
+        }
+        
+        .total-score {
+            font-size: 14px;
+            color: #6C757D;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            background-color: #FFFFFF;
+            border-top: 1px solid #E9ECEF;
+            height: 84px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;
+            color: #6C757D;
+            text-decoration: none;
+        }
+        
+        .nav-item.active {
+            color: #D2691E;
+        }
+        
+        .nav-icon {
+            width: 24px;
+            height: 24px;
+            background-color: currentColor;
+            border-radius: 4px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-label {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .nav-primary {
+            background-color: #D2691E;
+            color: #FFFFFF;
+            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            margin-top: -20px;
+            box-shadow: 0 4px 12px rgba(210,105,30,0.3);
+        }
+        
+        .nav-primary .nav-icon {
+            width: 32px;
+            height: 32px;
+            margin-bottom: 0;
+        }
+        
+        /* User Flow Sections */
+        .flow-section {
+            margin: 40px 0;
+            padding: 32px 0;
+            border-bottom: 1px solid #E9ECEF;
+        }
+        
+        .flow-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .flow-description {
+            font-size: 16px;
+            color: #6C757D;
+            text-align: center;
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .mockup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+            gap: 40px;
+            justify-items: center;
+        }
+        
+        /* Clay Target Animation */
+        .clay-target {
+            width: 40px;
+            height: 40px;
+            background-color: #D2691E;
+            border-radius: 50%;
+            margin: 8px auto;
+            position: relative;
+            animation: float 2s ease-in-out infinite;
+        }
+        
+        .clay-target::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px;
+            height: 20px;
+            background-color: #FFFFFF;
+            border-radius: 50%;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mockup-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .phone-mockup {
+                width: 320px;
+                height: 692px;
+            }
+        }
+        
+        /* Statistics Display */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 16px 0;
+        }
+        
+        .stat-item {
+            background-color: #F8F9FA;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: #2C3E50;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            color: #6C757D;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Ground Selection */
+        .ground-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E9ECEF;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 8px 0;
+        }
+        
+        .ground-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 4px;
+        }
+        
+        .ground-location {
+            font-size: 14px;
+            color: #6C757D;
+            margin-bottom: 8px;
+        }
+        
+        .ground-disciplines {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        
+        .discipline-tag {
+            background-color: #F8F9FA;
+            border: 1px solid #E9ECEF;
+            border-radius: 12px;
+            padding: 2px 8px;
+            font-size: 10px;
+            color: #6C757D;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="text-align: center; padding: 40px 0; border-bottom: 1px solid #E9ECEF; margin-bottom: 40px;">
+            <div class="clay-target"></div>
+            <h1 style="font-size: 32px; font-weight: 700; color: #D2691E; margin: 16px 0;">ScoreMyClays</h1>
+            <p style="font-size: 18px; color: #6C757D;">Clay Shooting Interface & User Flow Showcase</p>
+        </header>
+
+        <!-- Round Setup Flow -->
+        <section class="flow-section">
+            <h2 class="flow-title">Round Setup Flow</h2>
+            <p class="flow-description">
+                Quick and intuitive round setup with smart defaults and discipline selection.
+                GPS auto-detects shooting ground location for seamless experience.
+            </p>
+            
+            <div class="mockup-grid">
+                <!-- Discipline Selection -->
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>📶 📶 📶</span>
+                        </div>
+                        <div class="app-content">
+                            <div class="app-header">
+                                <div class="header-back"></div>
+                                <div class="header-title">New Round</div>
+                                <div></div>
+                            </div>
+                            <div class="discipline-selector">
+                                <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px; text-align: center;">Select Discipline</h3>
+                                <div class="discipline-grid">
+                                    <div class="discipline-card selected">
+                                        <div class="discipline-title">ESP</div>
+                                        <div class="discipline-subtitle">English Sporting</div>
+                                    </div>
+                                    <div class="discipline-card">
+                                        <div class="discipline-title">DTL</div>
+                                        <div class="discipline-subtitle">Down The Line</div>
+                                    </div>
+                                    <div class="discipline-card">
+                                        <div class="discipline-title">Skeet</div>
+                                        <div class="discipline-subtitle">25 Targets</div>
+                                    </div>
+                                    <div class="discipline-card">
+                                        <div class="discipline-title">Trap</div>
+                                        <div class="discipline-subtitle">Single Barrel</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-top: 24px;">
+                                    <h4 style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Shooting Ground</h4>
+                                    <div class="ground-card">
+                                        <div class="ground-name">Bisley Shooting Ground</div>
+                                        <div class="ground-location">Surrey, England</div>
+                                        <div class="ground-disciplines">
+                                            <span class="discipline-tag">ESP</span>
+                                            <span class="discipline-tag">DTL</span>
+                                            <span class="discipline-tag">Skeet</span>
+                                            <span class="discipline-tag">Trap</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="padding: 20px; margin-top: auto;">
+                                <button style="width: 100%; padding: 16px; background-color: #D2691E; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600;">
+                                    Start Round
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Score Entry Flow -->
+        <section class="flow-section">
+            <h2 class="flow-title">Score Entry Interface</h2>
+            <p class="flow-description">
+                Large, touch-friendly buttons optimized for outdoor conditions and gloved hands.
+                Immediate visual feedback and running score calculations.
+            </p>
+            
+            <div class="mockup-grid">
+                <!-- ESP Scoring -->
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>9:47</span>
+                            <span>📶 📶 📶</span>
+                        </div>
+                        <div class="app-content">
+                            <div class="app-header">
+                                <div class="header-back"></div>
+                                <div class="header-title">ESP Round 1</div>
+                                <div style="width: 24px; height: 24px; background-color: #228B22; border-radius: 50%;"></div>
+                            </div>
+                            
+                            <div class="shooting-interface">
+                                <div class="stand-info">
+                                    <div class="stand-title">Stand 3 of 8</div>
+                                    <div class="stand-subtitle">Bisley Shooting Ground</div>
+                                </div>
+                                
+                                <div class="target-display">
+                                    <div class="target-counter">Target 12 of 25</div>
+                                    <div class="target-instruction">Report Pair</div>
+                                    <div class="clay-target"></div>
+                                </div>
+                                
+                                <div class="score-buttons">
+                                    <button class="score-btn hit">HIT</button>
+                                    <button class="score-btn miss">MISS</button>
+                                </div>
+                                
+                                <div class="stats-grid">
+                                    <div class="stat-item">
+                                        <div class="stat-value">18</div>
+                                        <div class="stat-label">This Stand</div>
+                                    </div>
+                                    <div class="stat-item">
+                                        <div class="stat-value">72%</div>
+                                        <div class="stat-label">Percentage</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="running-score">
+                                    <div class="current-score">64/75</div>
+                                    <div class="total-score">Round Total • 85% Average</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bottom-nav">
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Home</div>
+                                </a>
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Scores</div>
+                                </a>
+                                <a href="#" class="nav-item nav-primary active">
+                                    <div class="nav-icon"></div>
+                                </a>
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Compete</div>
+                                </a>
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Profile</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DTL Scoring -->
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>10:15</span>
+                            <span>📶 📶 📶</span>
+                        </div>
+                        <div class="app-content">
+                            <div class="app-header">
+                                <div class="header-back"></div>
+                                <div class="header-title">DTL Round 1</div>
+                                <div style="width: 24px; height: 24px; background-color: #228B22; border-radius: 50%;"></div>
+                            </div>
+                            
+                            <div class="shooting-interface">
+                                <div class="stand-info">
+                                    <div class="stand-title">Station 2 of 5</div>
+                                    <div class="stand-subtitle">Down The Line</div>
+                                </div>
+                                
+                                <div class="target-display">
+                                    <div class="target-counter">Target 8 of 25</div>
+                                    <div class="target-instruction">Single Target</div>
+                                    <div class="clay-target"></div>
+                                </div>
+                                
+                                <div class="score-buttons">
+                                    <button class="score-btn hit">KILL</button>
+                                    <button class="score-btn miss">LOST</button>
+                                </div>
+                                
+                                <div style="background-color: #FFFFFF; border-radius: 12px; padding: 16px; margin: 16px 0;">
+                                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                                        <span style="font-size: 14px; color: #6C757D;">Station Progress:</span>
+                                        <span style="font-family: 'Roboto Mono', monospace; font-weight: 600;">4/5</span>
+                                    </div>
+                                    <div style="width: 100%; height: 4px; background-color: #E9ECEF; border-radius: 2px;">
+                                        <div style="width: 80%; height: 100%; background-color: #228B22; border-radius: 2px;"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="running-score">
+                                    <div class="current-score">22/25</div>
+                                    <div class="total-score">DTL Score • 88% Average</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bottom-nav">
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Home</div>
+                                </a>
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Scores</div>
+                                </a>
+                                <a href="#" class="nav-item nav-primary active">
+                                    <div class="nav-icon"></div>
+                                </a>
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Compete</div>
+                                </a>
+                                <a href="#" class="nav-item">
+                                    <div class="nav-icon"></div>
+                                    <div class="nav-label">Profile</div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Round Completion Flow -->
+        <section class="flow-section">
+            <h2 class="flow-title">Round Completion & Sharing</h2>
+            <p class="flow-description">
+                Professional score summary with detailed statistics and easy sharing options.
+                Automatic CPSA format export and social features for community engagement.
+            </p>
+            
+            <div class="mockup-grid">
+                <!-- Round Summary -->
+                <div class="phone-mockup">
+                    <div class="phone-screen">
+                        <div class="status-bar">
+                            <span>10:42</span>
+                            <span>📶 📶 📶</span>
+                        </div>
+                        <div class="app-content">
+                            <div class="app-header">
+                                <div class="header-back"></div>
+                                <div class="header-title">Round Complete</div>
+                                <div style="width: 24px; height: 24px; background-color: #228B22; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">✓</div>
+                            </div>
+                            
+                            <div style="padding: 20px; background-color: #F8F9FA; flex: 1; overflow-y: auto;">
+                                <!-- Achievement Badge -->
+                                <div style="background: linear-gradient(135deg, #D2691E, #FFB000); border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 20px; color: white;">
+                                    <div style="font-size: 20px; font-weight: 700; margin-bottom: 4px;">Personal Best!</div>
+                                    <div style="font-size: 14px; opacity: 0.9;">New ESP record</div>
+                                </div>
+                                
+                                <!-- Score Card -->
+                                <div style="background-color: #FFFFFF; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 2px solid #D2691E;">
+                                    <div style="text-align: center; margin-bottom: 16px;">
+                                        <div style="font-size: 16px; font-weight: 600; color: #2C3E50; margin-bottom: 4px;">ESP Round 1</div>
+                                        <div style="font-size: 14px; color: #6C757D;">Bisley Shooting Ground • Today</div>
+                                    </div>
+                                    
+                                    <div style="text-align: center; margin: 20px 0;">
+                                        <div style="font-family: 'Roboto Mono', monospace; font-size: 36px; font-weight: 700; color: #D2691E;">87/100</div>
+                                        <div style="font-size: 18px; color: #228B22; font-weight: 600;">87% • Class A</div>
+                                    </div>
+                                    
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; border-top: 1px solid #E9ECEF; padding-top: 16px;">
+                                        <div style="text-align: center;">
+                                            <div style="font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 600; color: #2C3E50;">8</div>
+                                            <div style="font-size: 10px; color: #6C757D; text-transform: uppercase;">Stands</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 600; color: #2C3E50;">32:15</div>
+                                            <div style="font-size: 10px; color: #6C757D; text-transform: uppercase;">Duration</div>
+                                        </div>
+                                        <div style="text-align: center;">
+                                            <div style="font-family: 'Roboto Mono', monospace; font-size: 18px; font-weight: 600; color: #2C3E50;">+3</div>
+                                            <div style="font-size: 10px; color: #6C757D; text-transform: uppercase;">vs Avg</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+                                    <button style="flex: 1; padding: 12px; background-color: #D2691E; color: #FFFFFF; border: none; border-radius: 8px; font-weight: 600;">
+                                        Share Score
+                                    </button>
+                                    <button style="flex: 1; padding: 12px; background-color: transparent; border: 2px solid #D2691E; color: #D2691E; border-radius: 8px; font-weight: 600;">
+                                        Export PDF
+                                    </button>
+                                </div>
+                                
+                                <!-- Quick Stats -->
+                                <div style="background-color: #FFFFFF; border-radius: 12px; padding: 16px;">
+                                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Performance Breakdown</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div style="text-align: center; padding: 12px; background-color: #F8F9FA; border-radius: 8px;">
+                                            <div style="font-family: 'Roboto Mono', monospace; font-size: 16px; font-weight: 600; color: #228B22;">92%</div>
+                                            <div style="font-size: 12px; color: #6C757D;">First Barrel</div>
+                                        </div>
+                                        <div style="text-align: center; padding: 12px; background-color: #F8F9FA; border-radius: 8px;">
+                                            <div style="font-family: 'Roboto Mono', monospace; font-size: 16px; font-weight: 600; color: #FFB000;">82%</div>
+                                            <div style="font-size: 12px; color: #6C757D;">Second Barrel</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div style="padding: 16px;">
+                                <button style="width: 100%; padding: 16px; background-color: #228B22; color: #FFFFFF; border: none; border-radius: 8px; font-size: 16px; font-weight: 600;">
+                                    Save & Continue
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Design Principles -->
+        <section class="flow-section">
+            <h2 class="flow-title">Clay Shooting Design Principles</h2>
+            <p class="flow-description">
+                Key design decisions optimized for outdoor shooting environments and clay shooting culture.
+            </p>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 32px 0;">
+                <div style="background-color: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #D2691E; margin-bottom: 12px;">🌞 Outdoor Optimization</h3>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8; color: #6C757D;">
+                        <li>• High contrast colors for bright sunlight</li>
+                        <li>• Large touch targets (120×80px minimum)</li>
+                        <li>• Glove-compatible capacitive touch</li>
+                        <li>• One-handed operation support</li>
+                    </ul>
+                </div>
+                
+                <div style="background-color: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #228B22; margin-bottom: 12px;">🎯 Clay Shooting Heritage</h3>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8; color: #6C757D;">
+                        <li>• Traditional terminology (HIT/MISS, KILL/LOST)</li>
+                        <li>• Professional scorecard formats</li>
+                        <li>• CPSA classification support</li>
+                        <li>• Respect for shooting ground etiquette</li>
+                    </ul>
+                </div>
+                
+                <div style="background-color: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #1565C0; margin-bottom: 12px;">⚡ Performance First</h3>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8; color: #6C757D;">
+                        <li>• Offline-first architecture</li>
+                        <li>• Instant score recording (&lt;100ms)</li>
+                        <li>• Zero loading states for core actions</li>
+                        <li>• Battery optimized for full-day use</li>
+                    </ul>
+                </div>
+                
+                <div style="background-color: #F8F9FA; border-radius: 12px; padding: 24px; border: 1px solid #E9ECEF;">
+                    <h3 style="font-size: 18px; font-weight: 600; color: #7B1FA2; margin-bottom: 12px;">👥 Social Integration</h3>
+                    <ul style="list-style: none; padding: 0; line-height: 1.8; color: #6C757D;">
+                        <li>• Squad scoring with friends</li>
+                        <li>• Ground check-in and discovery</li>
+                        <li>• Competition and challenge features</li>
+                        <li>• Achievement sharing and recognition</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <footer style="text-align: center; padding: 40px 0; border-top: 1px solid #E9ECEF; margin-top: 40px; color: #6C757D;">
+            <p>ScoreMyClays Clay Shooting Interface Showcase</p>
+            <p style="font-size: 14px;">Designed for the UK clay shooting community</p>
+            <div style="margin: 20px 0;">
+                <a href="design-system-showcase.html" style="color: #D2691E; text-decoration: none; margin: 0 12px;">← Design System Components</a>
+                <span style="color: #E9ECEF;">|</span>
+                <a href="#" style="color: #D2691E; text-decoration: none; margin: 0 12px;">Interactive Prototypes →</a>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Add interactive demos
+        document.addEventListener('DOMContentLoaded', function() {
+            // Score button interactions
+            const scoreButtons = document.querySelectorAll('.score-btn');
+            scoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Visual feedback
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1)';
+                    }, 100);
+                    
+                    // Update score display (demo)
+                    const isHit = this.classList.contains('hit');
+                    const currentScoreEl = this.closest('.phone-screen').querySelector('.current-score');
+                    if (currentScoreEl) {
+                        let [current, total] = currentScoreEl.textContent.split('/').map(n => parseInt(n));
+                        if (isHit && current < total) {
+                            current++;
+                            currentScoreEl.textContent = `${current}/${total}`;
+                        }
+                    }
+                });
+            });
+            
+            // Discipline card selection
+            const disciplineCards = document.querySelectorAll('.discipline-card');
+            disciplineCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    disciplineCards.forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+            
+            // Auto-update clay target animation position
+            let targetCount = 12;
+            const targetCounters = document.querySelectorAll('.target-counter');
+            
+            scoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    targetCount++;
+                    targetCounters.forEach(counter => {
+                        counter.textContent = `Target ${targetCount} of 25`;
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

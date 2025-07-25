@@ -1,0 +1,135 @@
+---
+description: "USE WHEN creating, structuring, editing, and maintaining Cursor Rules using .mdc format with proper metadata and content organization"
+alwaysApply: true
+---
+
+# Cursor Rule Management and Creation Methodology
+
+This rule provides comprehensive guidelines for creating, editing, structuring, and maintaining Cursor Rules in .mdc format.
+
+## CRITICAL: .mdc File Editing Requirements
+
+**IMPERATIVE**: When creating, reading, or updating ANY Cursor rule (.mdc) files:
+
+### For AI Agents
+AI agents MUST use direct filesystem commands (cat, echo, printf, sed, etc.) via shell rather than Cursor's file editing tools.
+
+### Required Method for AI Agents
+
+1. **Use Shell Commands ONLY**:
+   - `cat` for reading file contents
+   - `cat >`, `printf`, `echo`, `sed` for file creation/modification
+   - `cp` for backups before editing
+   - `mv` for file replacements
+   - `head`, `tail` for viewing file sections
+   - `rm` to remove backup or obsolete rule files after successful update
+
+2. **Reading Files**: Always use `cat` or `head` to read .mdc files
+3. **Verify Content**: Always use `cat` or `head` after editing
+4. **Force Writes**: Use `sync` to force filesystem writes
+5. **Never Use**: Cursor's built-in file editing tools or read_file tool for .mdc files
+6. **IMPERATIVE**: Always delete backup files (e.g., .backup) after a successful rule update to maintain a clean rules directory.
+
+### Why This Matters
+- Ensures proper formatting
+- Avoids caching issues
+- Guarantees rules are immediately written to disk
+- Prevents corruption of rule metadata
+- Maintains consistency in file operations
+
+## Rule Format Requirements
+
+### .mdc File Structure
+1. **YAML Frontmatter**: Always enclosed in `---` delimiters
+2. **Content Section**: Imperative directives below frontmatter
+3. **External References**: Use `@path/to/file.ext` syntax for examples
+
+### Required Frontmatter Fields
+- `description` (string): Concise explanation for Agent Requested rules
+- `globs` (array): File patterns for Auto Attached rules
+- `alwaysApply` (boolean): Set true for Always rules, false otherwise
+
+## Rule Types and Metadata Configuration
+
+### Always Rules
+- **Purpose**: Included in all AI contexts within scope
+- **Metadata**: `alwaysApply: true`
+- **Use Case**: Core principles, fundamental guidelines
+
+### Auto Attached Rules
+- **Purpose**: Triggered by specific file patterns
+- **Metadata**: `globs: ["*.ts", "**/*.test.js"]`, `alwaysApply: true`
+- **Use Case**: Technology-specific or file-type-specific guidance
+
+### Agent Requested Rules
+- **Purpose**: AI decides when to fetch based on description
+- **Metadata**: `description: "..."`, `alwaysApply: true`
+- **Use Case**: Specialized functionality or optional guidance
+
+### Manual Rules
+- **Purpose**: Explicitly invoked with @ruleName
+- **Metadata**: `alwaysApply: true` (no globs or description)
+- **Use Case**: Rare procedures or specific situations
+
+## Content Organization Standards
+
+### Directive-Focused Writing
+1. **Use Imperative Commands**: "Configure X", "Ensure Y", "Validate Z"
+2. **Avoid Passive Voice**: "The system should..." → "Configure the system to..."
+3. **Be Specific**: Provide concrete, actionable steps
+4. **Include Validation**: Specify how to verify completion
+
+### Rule Simplification Guidelines
+1. **Drastically Simplify**: Keep rules focused and concise
+2. **Project-Specific**: Align all rules with actual project context
+3. **Actionable Directives**: Every statement should guide action
+4. **Remove Redundancy**: Eliminate overlapping or verbose content
+5. **Essential Only**: Keep only rules that provide clear value
+
+## Rule Naming and Organization
+
+### Naming Convention
+- **Format**: `NN-descriptive-topic-name.mdc`
+- **Numbering**: Zero-padded sequential (00, 01, 02...)
+- **Priority**: Lower numbers for foundational rules
+- **Grouping**: Use letter suffix for related topics (05a, 05b)
+
+### Content Hierarchy
+1. **00-09**: Master guide, general principles, core concepts
+2. **10-19**: Development workflow and methodology
+3. **20-29**: Technology-specific guidelines
+4. **30+**: Specialized topics and advanced features
+
+## Rule Maintenance Requirements
+
+### Quality Standards
+- **Actionable Directives**: Every statement should guide action
+- **Complete Context**: Provide sufficient detail to avoid ambiguity
+- **Current Information**: Keep technology references up to date
+- **Consistency**: Ensure consistency across all rules
+- **Target under 200 lines per rule**: Keep rules focused and digestible
+
+## Rule Creation Workflow
+
+### 1. Planning Phase
+- Identify need based on development patterns and requirements
+- Determine appropriate rule type and metadata
+- Choose numbering and naming following convention
+
+### 2. Content Development
+- Write focused, imperative directives
+- Validate against quality standards
+- Keep content concise and actionable
+
+### 3. Integration Phase
+- Use shell commands for .mdc file creation (per this rule)
+- Remove backup files after update
+- Test rule loading and auto-attachment
+
+### 4. Validation Phase
+- Verify YAML frontmatter syntax
+- Confirm rule triggers correctly
+- Test with AI agent to ensure effectiveness
+
+*Invoke this rule when creating, updating, or maintaining Cursor Rules to ensure consistency and effectiveness.*
+
