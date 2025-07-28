@@ -6,512 +6,357 @@ sidebar_label: ScoreMyClays Technical Specification
 
 # ScoreMyClays Technical Specification
 
-## 1. Technology Stack Overview
+## 1. Architecture Overview
 
-### Core Development Stack
-- **AI-Assisted Development**: Claude Code for codebase structure and business logic
-- **UI Generation**: V0 for React component generation with Tailwind CSS
-- **Deployment Platform**: Vercel with edge functions and global CDN
-- **Database**: Supabase Postgres with Row-Level Security
-- **Offline Sync**: PowerSync for offline-first architecture
-- **API Layer**: tRPC with Zod validation for end-to-end type safety
-- **Database ORM**: Prisma Edge for optimized edge runtime performance
+### MVP-First Approach
+ScoreMyClays is built with an **ultra-simple MVP architecture** designed for rapid development and AI-agent compatibility. The system prioritizes **offline-first functionality** with cloud synchronization, targeting clay shooting scoring in environments with poor connectivity.
 
-### Supporting Technologies
-- **Frontend Framework**: Next.js 14+ with App Router
-- **Styling**: Tailwind CSS (V0 generated)
-- **State Management**: TanStack Query for server state caching
-- **Authentication**: Supabase Auth with social providers
-- **Testing**: Playwright for E2E testing
-- **Analytics**: Vercel Analytics + Supabase Log Drains
-
-## 2. Architecture Overview
-
-### Offline-First Architecture
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Mobile PWA    │    │   Vercel Edge   │    │   Supabase      │
-│                 │    │                 │    │                 │
-│ ┌─────────────┐ │    │ ┌─────────────┐ │    │ ┌─────────────┐ │
-│ │ React UI    │ │    │ │ tRPC API    │ │    │ │ Postgres    │ │
-│ │ (V0 Generated)│ │    │ │ Handlers    │ │    │ │ Database    │ │
-│ └─────────────┘ │    │ └─────────────┘ │    │ └─────────────┘ │
-│                 │    │                 │    │                 │
-│ ┌─────────────┐ │    │ ┌─────────────┐ │    │ ┌─────────────┐ │
-│ │ PowerSync   │ │◄──►│ │ PowerSync   │ │◄──►│ │ PowerSync   │ │
-│ │ Client      │ │    │ │ Service     │ │    │ │ Integration │ │
-│ └─────────────┘ │    │ └─────────────┘ │    │ └─────────────┘ │
-│                 │    │                 │    │                 │
-│ ┌─────────────┐ │    │ ┌─────────────┐ │    │ ┌─────────────┐ │
-│ │ Local       │ │    │ │ Edge        │ │    │ │ Auth &      │ │
-│ │ SQLite      │ │    │ │ Functions   │ │    │ │ Storage     │ │
-│ └─────────────┘ │    │ └─────────────┘ │    │ └─────────────┘ │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
-
-### Key Architectural Principles
+### Core Principles
 1. **Offline-First**: All critical functions work without internet connectivity
-2. **Edge-Optimized**: &lt;50ms latency globally using Vercel Edge Functions
-3. **Type-Safe**: End-to-end TypeScript with tRPC and Zod validation
-4. **Mobile-First**: PWA with native app-like experience
-5. **Real-time**: Live updates for competition scoring and leaderboards
+2. **Mobile-Optimized**: Sub-100ms response times with touch-friendly interface
+3. **AI-Agent Friendly**: Simple patterns that AI can easily understand and extend
+4. **Progressive Enhancement**: Start simple, add complexity incrementally
+5. **Real-time Sync**: Automatic data synchronization when connectivity available
 
-## 3. Database Schema Design
+## 2. Technology Stack
 
-### Core Tables (Prisma Schema)
-```prisma
-// User Management
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  avatar        String?
-  classification String?  // UK: A, B, C, D
-  cpsa_number   String?   @unique
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  
-  rounds        Round[]
-  club_memberships ClubMembership[]
-  
-  @@map("users")
+### MVP Technology Stack (Simplified)
+- **Frontend Framework**: Next.js 14+ with App Router and TypeScript
+- **Styling**: Tailwind CSS for rapid UI development
+- **Database**: Supabase PostgreSQL with Row-Level Security
+- **Offline Sync**: PowerSync SDK for bidirectional synchronization
+- **Hosting**: Vercel with global edge network
+- **Local Storage**: SQLite via PowerSync client
+- **State Management**: React useState (keep it simple for MVP)
+- **PWA**: next-pwa for offline capabilities
+
+### Development Tools
+- **UI Generation**: v0.dev for rapid component prototyping
+- **AI Development**: Cursor with Claude for code generation
+- **Testing**: Vitest for unit tests (E2E testing later)
+- **Deployment**: Vercel automatic deployments
+
+## 3. MVP Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Client (PWA)"
+        UI[React UI Components]
+        State[React useState]
+        PowerSyncClient[PowerSync Client]
+        SQLite[(Local SQLite)]
+        SW[Service Worker]
+    end
+    
+    subgraph "Cloud Services"
+        Vercel[Vercel Hosting]
+        Supabase[(Supabase PostgreSQL)]
+        PowerSyncService[PowerSync Service]
+    end
+    
+    UI --> State
+    State --> PowerSyncClient
+    PowerSyncClient --> SQLite
+    PowerSyncClient <--> PowerSyncService
+    PowerSyncService <--> Supabase
+    UI --> SW
+    
+    classDef mvp fill:#e8f5e8
+    classDef cloud fill:#e1f5fe
+    
+    class UI,State,PowerSyncClient,SQLite,SW mvp
+    class Vercel,Supabase,PowerSyncService cloud
+```
+
+## 4. MVP Data Model
+
+### Core Entities (Simplified)
+```typescript
+// MVP Data Types (TypeScript)
+interface Session {
+  id: string;
+  shootingGround: string;
+  shooterName: string;
+  date: Date;
+  positions: Position[];
+  totalScore: number;
+  totalTargets: number;
+  percentage: number;
+  synced: boolean;
 }
 
-// Shooting Rounds
-model Round {
-  id          String      @id @default(cuid())
-  user_id     String
-  discipline  Discipline
-  ground_id   String?
-  date        DateTime    @default(now())
-  targets     Int
-  score       Int
-  percentage  Float
-  weather     String?
-  notes       String?
-  synced      Boolean     @default(false)
-  created_at  DateTime    @default(now())
-  updated_at  DateTime    @updatedAt
-  
-  user        User        @relation(fields: [user_id], references: [id])
-  ground      Ground?     @relation(fields: [ground_id], references: [id])
-  shots       Shot[]
-  
-  @@map("rounds")
+interface Position {
+  id: string;
+  sessionId: string;
+  positionNumber: number; // 1-10
+  positionName: string;   // e.g., "High Tower"
+  targets: Target[];
+  score: number;          // hits out of 10
 }
 
-// Individual Shots
-model Shot {
-  id          String   @id @default(cuid())
-  round_id    String
-  station     Int
-  target      Int
-  hit         Boolean
-  created_at  DateTime @default(now())
-  
-  round       Round    @relation(fields: [round_id], references: [id])
-  
-  @@map("shots")
-}
-
-// Shooting Grounds
-model Ground {
-  id          String  @id @default(cuid())
-  name        String
-  location    String
-  postcode    String
-  latitude    Float?
-  longitude   Float?
-  facilities  Json?
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
-  
-  rounds      Round[]
-  competitions Competition[]
-  
-  @@map("grounds")
-}
-
-// Competition Management
-model Competition {
-  id          String         @id @default(cuid())
-  name        String
-  ground_id   String
-  date        DateTime
-  discipline  Discipline
-  entry_fee   Float?
-  max_entries Int?
-  status      CompetitionStatus
-  created_at  DateTime       @default(now())
-  
-  ground      Ground         @relation(fields: [ground_id], references: [id])
-  entries     CompetitionEntry[]
-  
-  @@map("competitions")
-}
-
-// Enums
-enum Discipline {
-  ESP
-  DTL
-  SKEET
-  TRAP
-  SPORTING
-}
-
-enum CompetitionStatus {
-  OPEN
-  CLOSED
-  CANCELLED
-  COMPLETED
+interface Target {
+  id: string;
+  positionId: string;
+  targetNumber: number;   // 1-10 within position
+  result: 'HIT' | 'MISS' | 'NO_BIRD';
+  timestamp: Date;
 }
 ```
 
-### PowerSync Integration Schema
+### PowerSync Schema Configuration
 ```sql
--- PowerSync sync rules for offline capability
-CREATE TABLE sync_rules (
+-- PowerSync local SQLite schema
+CREATE TABLE sessions (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  table_name TEXT NOT NULL,
-  sync_data JSONB,
-  last_sync TIMESTAMP DEFAULT NOW()
+  shooting_ground TEXT NOT NULL,
+  shooter_name TEXT NOT NULL,
+  date TEXT NOT NULL,
+  total_score INTEGER DEFAULT 0,
+  total_targets INTEGER DEFAULT 100,
+  percentage REAL DEFAULT 0,
+  synced INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
--- Offline queue for unsynced changes
-CREATE TABLE offline_queue (
+CREATE TABLE positions (
   id TEXT PRIMARY KEY,
-  user_id TEXT NOT NULL,
-  operation TEXT NOT NULL, -- 'INSERT', 'UPDATE', 'DELETE'
-  table_name TEXT NOT NULL,
-  record_id TEXT NOT NULL,
-  data JSONB,
-  created_at TIMESTAMP DEFAULT NOW()
+  session_id TEXT NOT NULL,
+  position_number INTEGER NOT NULL,
+  position_name TEXT NOT NULL,
+  score INTEGER DEFAULT 0,
+  FOREIGN KEY (session_id) REFERENCES sessions(id)
+);
+
+CREATE TABLE targets (
+  id TEXT PRIMARY KEY,
+  position_id TEXT NOT NULL,
+  target_number INTEGER NOT NULL,
+  result TEXT NOT NULL CHECK (result IN ('HIT', 'MISS', 'NO_BIRD')),
+  timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (position_id) REFERENCES positions(id)
 );
 ```
 
-## 4. API Design (tRPC Procedures)
+## 5. MVP Component Architecture
 
-### Authentication Procedures
+### Ultra-Simple State Management
 ```typescript
-// auth/auth.router.ts
-export const authRouter = router({
-  login: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      password: z.string().min(6)
-    }))
-    .mutation(async ({ input, ctx }) => {
-      // Supabase auth implementation
-    }),
-    
-  register: publicProcedure
-    .input(z.object({
-      email: z.string().email(),
-      password: z.string().min(6),
-      name: z.string().min(2)
-    }))
-    .mutation(async ({ input, ctx }) => {
-      // User creation with Supabase
-    }),
-    
-  getProfile: protectedProcedure
-    .query(async ({ ctx }) => {
-      // Return user profile data
-    })
-});
+// App.tsx - Root component with simple state
+function App() {
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [sessionHistory, setSessionHistory] = useState<Session[]>([]);
+  const [currentView, setCurrentView] = useState<'home' | 'session' | 'scoring'>('home');
+  
+  // PowerSync hook for offline sync
+  const { syncStatus, forcSync } = usePowerSync();
+  
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {currentView === 'home' && (
+        <HomeScreen 
+          sessionHistory={sessionHistory}
+          onStartSession={(session) => {
+            setCurrentSession(session);
+            setCurrentView('session');
+          }}
+        />
+      )}
+      {currentView === 'session' && (
+        <SessionScreen
+          session={currentSession}
+          onStartScoring={() => setCurrentView('scoring')}
+        />
+      )}
+      {currentView === 'scoring' && (
+        <ScoringScreen
+          session={currentSession}
+          onSessionComplete={() => setCurrentView('home')}
+        />
+      )}
+    </div>
+  );
+}
 ```
 
-### Scoring Procedures
+### Key UI Components
 ```typescript
-// scoring/scoring.router.ts
-export const scoringRouter = router({
-  createRound: protectedProcedure
-    .input(z.object({
-      discipline: z.enum(['ESP', 'DTL', 'SKEET', 'TRAP', 'SPORTING']),
-      ground_id: z.string().optional(),
-      targets: z.number().min(1).max(200),
-      weather: z.string().optional()
-    }))
-    .mutation(async ({ input, ctx }) => {
-      // Create new scoring round
-    }),
+// ScoringScreen.tsx - Main scoring interface
+function ScoringScreen({ session, onSessionComplete }: ScoringProps) {
+  const [currentPosition, setCurrentPosition] = useState(1);
+  const [currentTarget, setCurrentTarget] = useState(1);
+  const [positionScore, setPositionScore] = useState(0);
+  
+  const recordShot = (result: 'HIT' | 'MISS' | 'NO_BIRD') => {
+    // Simple state update - PowerSync handles persistence
+    if (result === 'HIT') setPositionScore(prev => prev + 1);
+    if (result !== 'NO_BIRD') setCurrentTarget(prev => prev + 1);
     
-  recordShot: protectedProcedure
-    .input(z.object({
-      round_id: z.string(),
-      station: z.number().min(1),
-      target: z.number().min(1),
-      hit: z.boolean()
-    }))
-    .mutation(async ({ input, ctx }) => {
-      // Record individual shot with offline queue
-    }),
-    
-  getRounds: protectedProcedure
-    .input(z.object({
-      limit: z.number().min(1).max(100).default(20),
-      offset: z.number().min(0).default(0),
-      discipline: z.enum(['ESP', 'DTL', 'SKEET', 'TRAP', 'SPORTING']).optional()
-    }))
-    .query(async ({ input, ctx }) => {
-      // Return paginated rounds with analytics
-    })
-});
+    // Save to PowerSync (automatic offline handling)
+    saveTarget({ positionId, targetNumber: currentTarget, result });
+  };
+  
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold">
+        Position {currentPosition}: {position.name}
+      </h1>
+      <p className="text-xl">Target {currentTarget} of 10</p>
+      <p className="text-lg">Position Score: {positionScore}/10</p>
+      
+      <div className="grid grid-cols-2 gap-4 mt-6">
+        <button 
+          onClick={() => recordShot('HIT')}
+          className="bg-green-500 text-white p-6 rounded-lg text-xl font-bold"
+        >
+          HIT
+        </button>
+        <button 
+          onClick={() => recordShot('MISS')}
+          className="bg-red-500 text-white p-6 rounded-lg text-xl font-bold"
+        >
+          MISS
+        </button>
+        <button 
+          onClick={() => recordShot('NO_BIRD')}
+          className="bg-blue-500 text-white p-4 rounded-lg"
+        >
+          NO BIRD
+        </button>
+        <button 
+          onClick={undoLastShot}
+          className="bg-gray-500 text-white p-4 rounded-lg"
+        >
+          UNDO
+        </button>
+      </div>
+    </div>
+  );
+}
 ```
 
-### Analytics Procedures
-```typescript
-// analytics/analytics.router.ts
-export const analyticsRouter = router({
-  getPerformanceStats: protectedProcedure
-    .input(z.object({
-      discipline: z.enum(['ESP', 'DTL', 'SKEET', 'TRAP', 'SPORTING']).optional(),
-      date_from: z.date().optional(),
-      date_to: z.date().optional()
-    }))
-    .query(async ({ input, ctx }) => {
-      // Return performance analytics
-    }),
-    
-  getLeaderboard: protectedProcedure
-    .input(z.object({
-      discipline: z.enum(['ESP', 'DTL', 'SKEET', 'TRAP', 'SPORTING']),
-      timeframe: z.enum(['week', 'month', 'year']).default('month')
-    }))
-    .query(async ({ input, ctx }) => {
-      // Return leaderboard data
-    })
-});
-```
-
-## 5. Offline Synchronization Strategy
+## 6. Offline-First Implementation
 
 ### PowerSync Configuration
 ```typescript
 // lib/powersync.ts
-import { PowerSyncDatabase } from '@powersync/react-native';
+import { PowerSyncDatabase } from '@powersync/web';
 
 export const db = new PowerSyncDatabase({
   schema: {
-    rounds: {
+    sessions: {
       id: 'text',
-      user_id: 'text',
-      discipline: 'text',
-      score: 'integer',
+      shooting_ground: 'text',
+      shooter_name: 'text',
+      total_score: 'integer',
       synced: 'integer'
     },
-    shots: {
+    positions: {
       id: 'text',
-      round_id: 'text',
-      station: 'integer',
-      target: 'integer',
-      hit: 'integer'
+      session_id: 'text',
+      position_number: 'integer',
+      position_name: 'text',
+      score: 'integer'
+    },
+    targets: {
+      id: 'text',
+      position_id: 'text',
+      target_number: 'integer',
+      result: 'text'
     }
   },
   
-  // Sync rules for offline data
+  // Simple sync rules for MVP
   syncRules: {
-    rounds: `
-      SELECT * FROM rounds 
-      WHERE user_id = current_user_id()
-    `,
-    shots: `
-      SELECT shots.* FROM shots
-      INNER JOIN rounds ON shots.round_id = rounds.id
-      WHERE rounds.user_id = current_user_id()
-    `
+    sessions: 'SELECT * FROM sessions',
+    positions: 'SELECT * FROM positions',
+    targets: 'SELECT * FROM targets'
   }
 });
-```
 
-### Conflict Resolution
-```typescript
-// lib/sync-manager.ts
-export class SyncManager {
-  async handleConflict(localData: any, remoteData: any) {
-    // Last-write-wins for score updates
-    if (localData.updated_at > remoteData.updated_at) {
-      return localData;
-    }
-    
-    // Merge shot arrays for complete rounds
-    if (localData.shots && remoteData.shots) {
-      const mergedShots = this.mergeShots(localData.shots, remoteData.shots);
-      return { ...remoteData, shots: mergedShots };
-    }
-    
-    return remoteData;
-  }
-  
-  private mergeShots(localShots: Shot[], remoteShots: Shot[]) {
-    // Merge by station and target, prefer local for conflicts
-    const shotMap = new Map();
-    
-    remoteShots.forEach(shot => {
-      shotMap.set(`${shot.station}-${shot.target}`, shot);
-    });
-    
-    localShots.forEach(shot => {
-      shotMap.set(`${shot.station}-${shot.target}`, shot);
-    });
-    
-    return Array.from(shotMap.values());
-  }
-}
-```
-
-## 6. Performance Optimization
-
-### Edge Function Optimization
-```typescript
-// app/api/trpc/[trpc]/route.ts
-import { fetchRequestHandler } from '@trpc/server/adapters/fetch';
-import { appRouter } from '@/lib/trpc/router';
-
-export const runtime = 'edge';
-
-const handler = (req: Request) =>
-  fetchRequestHandler({
-    endpoint: '/api/trpc',
-    req,
-    router: appRouter,
-    createContext: () => ({
-      // Edge-optimized context
-    }),
+// Initialize connection
+export const initPowerSync = async () => {
+  await db.init();
+  await db.connect({
+    endpoint: process.env.NEXT_PUBLIC_POWERSYNC_URL!,
+    token: 'anonymous' // MVP uses anonymous access
   });
-
-export { handler as GET, handler as POST };
-```
-
-### Database Query Optimization
-```typescript
-// lib/queries/performance.ts
-export const getUserPerformance = async (userId: string, discipline?: string) => {
-  const query = db.selectFrom('rounds')
-    .where('user_id', '=', userId)
-    .where('synced', '=', true)
-    .$if(discipline !== undefined, (qb) => qb.where('discipline', '=', discipline!))
-    .select([
-      'discipline',
-      'score',
-      'targets',
-      'date',
-      (eb) => eb.fn.avg('score').as('avg_score'),
-      (eb) => eb.fn.count('id').as('round_count')
-    ])
-    .groupBy(['discipline'])
-    .orderBy('date', 'desc');
-    
-  return await query.execute();
 };
 ```
 
-## 7. Security Implementation
-
-### Row-Level Security (Supabase)
-```sql
--- Users can only access their own data
-CREATE POLICY "Users can view own profile" ON users
-  FOR SELECT USING (auth.uid() = id);
-
--- Rounds access control
-CREATE POLICY "Users can view own rounds" ON rounds
-  FOR SELECT USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can create own rounds" ON rounds
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
--- Shots access control
-CREATE POLICY "Users can view own shots" ON shots
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM rounds 
-      WHERE rounds.id = shots.round_id 
-      AND rounds.user_id = auth.uid()
-    )
-  );
-```
-
-### API Security
+### Offline Data Operations
 ```typescript
-// lib/trpc/context.ts
-import { createServerSideHelpers } from '@trpc/react-query/server';
-import { createClient } from '@supabase/supabase-js';
-
-export const createContext = async (req: Request) => {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+// lib/scoring.ts - Simple data operations
+export const saveSession = async (session: Session) => {
+  await db.execute(
+    'INSERT INTO sessions (id, shooting_ground, shooter_name, date) VALUES (?, ?, ?, ?)',
+    [session.id, session.shootingGround, session.shooterName, session.date.toISOString()]
   );
-  
-  const token = req.headers.get('Authorization')?.replace('Bearer ', '');
-  
-  if (token) {
-    const { data: { user } } = await supabase.auth.getUser(token);
-    return { user, supabase };
-  }
-  
-  return { user: null, supabase };
 };
 
-export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
-  if (!ctx.user) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
-  }
-  return next({ ctx: { ...ctx, user: ctx.user } });
-});
+export const saveTarget = async (target: Target) => {
+  await db.execute(
+    'INSERT INTO targets (id, position_id, target_number, result) VALUES (?, ?, ?, ?)',
+    [target.id, target.positionId, target.targetNumber, target.result]
+  );
+  
+  // Auto-sync when online (PowerSync handles this automatically)
+};
+
+export const getSessionHistory = async (): Promise<Session[]> => {
+  const result = await db.execute('SELECT * FROM sessions ORDER BY date DESC');
+  return result.rows.map(row => ({
+    ...row,
+    date: new Date(row.date)
+  }));
+};
 ```
 
-## 8. PWA Configuration
+## 7. PWA Configuration
 
-### Service Worker (Offline Capabilities)
+### Service Worker (Minimal)
 ```typescript
-// public/sw.js
+// public/sw.js - Simple caching strategy
 const CACHE_NAME = 'scoremyclays-v1';
-const urlsToCache = [
+const ESSENTIAL_URLS = [
   '/',
-  '/scoring',
-  '/analytics',
+  '/offline',
   '/manifest.json'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
+      .then(cache => cache.addAll(ESSENTIAL_URLS))
   );
 });
 
 self.addEventListener('fetch', (event) => {
+  // Cache-first strategy for MVP simplicity
   event.respondWith(
     caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request);
-      })
+      .then(response => response || fetch(event.request))
   );
 });
 ```
 
-### Manifest Configuration
+### PWA Manifest
 ```json
 {
   "name": "ScoreMyClays",
   "short_name": "ScoreMyClays",
-  "description": "Clay pigeon shooting scoring app",
+  "description": "Clay shooting scoring app",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#D2691E",
+  "theme_color": "#22c55e",
   "icons": [
     {
-      "src": "/icon-192x192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512x512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
@@ -519,109 +364,176 @@ self.addEventListener('fetch', (event) => {
 }
 ```
 
-## 9. Development Workflow
+## 8. Performance Requirements
 
-### AI-Assisted Development Process
-1. **UI Generation**: Use V0 to create component mockups from design requirements
-2. **Code Structure**: Claude Code organizes components into proper architecture
-3. **API Development**: Generate tRPC procedures with proper validation
-4. **Database Schema**: Create Prisma models with PowerSync integration
-5. **Testing**: Playwright tests for critical user journeys
-6. **Deployment**: Automatic deployment to Vercel on git push
+### MVP Performance Targets
+- **Scoring Response Time**: < 100ms for HIT/MISS buttons
+- **App Load Time**: < 3 seconds on 3G connection
+- **Offline Capability**: 100% core functionality available offline
+- **Sync Time**: < 5 seconds for session sync when online
+- **Battery Usage**: Minimal drain during 2-hour shooting sessions
 
-### Environment Configuration
+### Optimization Strategies
 ```typescript
-// .env.local
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-POWERSYNC_URL=your_powersync_url
-POWERSYNC_JWT_SECRET=your_jwt_secret
-DATABASE_URL=your_database_url
+// Performance optimizations for MVP
+export const ScoringButton = memo(({ onClick, children, className }) => (
+  <button 
+    onClick={onClick}
+    className={`${className} transform transition-transform active:scale-95`}
+    style={{ touchAction: 'manipulation' }} // Eliminates 300ms delay
+  >
+    {children}
+  </button>
+));
+
+// Lazy loading for non-critical screens
+const SessionHistory = lazy(() => import('./SessionHistory'));
+const Analytics = lazy(() => import('./Analytics'));
 ```
 
-## 10. Deployment Strategy
+## 9. Deployment Architecture
 
 ### Vercel Configuration
-```json
-{
-  "framework": "nextjs",
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "functions": {
-    "app/api/trpc/**": {
-      "runtime": "edge"
-    }
+```typescript
+// next.config.js
+const withPWA = require('next-pwa');
+
+module.exports = withPWA({
+  pwa: {
+    dest: 'public',
+    disable: process.env.NODE_ENV === 'development'
   },
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        }
-      ]
-    }
-  ]
-}
+  experimental: {
+    appDir: true
+  },
+  env: {
+    NEXT_PUBLIC_POWERSYNC_URL: process.env.NEXT_PUBLIC_POWERSYNC_URL,
+    NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  }
+});
 ```
 
-### CI/CD Pipeline
-```yaml
-# .github/workflows/deploy.yml
-name: Deploy to Vercel
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: npm install
-      - name: Run tests
-        run: npm run test
-      - name: Build project
-        run: npm run build
-      - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v20
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.ORG_ID }}
-          vercel-project-id: ${{ secrets.PROJECT_ID }}
+### Environment Configuration
+```bash
+# .env.local (MVP configuration)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_POWERSYNC_URL=your_powersync_url
+NODE_ENV=development
+```
+
+## 10. Security Implementation
+
+### MVP Security Approach
+```typescript
+// Simple security for MVP (authentication later)
+export const validateSession = (session: Session): boolean => {
+  return (
+    session.shootingGround.length > 0 &&
+    session.shooterName.length > 0 &&
+    session.positions.length <= 10
+  );
+};
+
+export const sanitizeInput = (input: string): string => {
+  return input.trim().slice(0, 100); // Basic sanitization
+};
 ```
 
 ## 11. Testing Strategy
 
-### E2E Testing with Playwright
+### MVP Testing Approach
 ```typescript
-// tests/scoring.spec.ts
-import { test, expect } from '@playwright/test';
+// __tests__/scoring.test.ts
+import { render, fireEvent, screen } from '@testing-library/react';
+import ScoringScreen from '../components/ScoringScreen';
 
-test('complete scoring round offline', async ({ page }) => {
-  await page.goto('/scoring');
+test('records hit when HIT button pressed', () => {
+  render(<ScoringScreen session={mockSession} />);
   
-  // Start new round
-  await page.click('[data-testid="start-round"]');
-  await page.selectOption('[data-testid="discipline"]', 'ESP');
-  await page.fill('[data-testid="targets"]', '50');
-  await page.click('[data-testid="begin-round"]');
+  fireEvent.click(screen.getByText('HIT'));
   
-  // Record some shots
-  for (let i = 0; i < 10; i++) {
-    await page.click('[data-testid="hit-button"]');
-  }
+  expect(screen.getByText('Position Score: 1/10')).toBeInTheDocument();
+});
+
+test('advances target after hit or miss', () => {
+  render(<ScoringScreen session={mockSession} />);
   
-  // Verify score
-  await expect(page.locator('[data-testid="current-score"]')).toHaveText('10');
+  fireEvent.click(screen.getByText('HIT'));
   
-  // Complete round
-  await page.click('[data-testid="complete-round"]');
-  await expect(page.locator('[data-testid="final-score"]')).toHaveText('10/50 (20%)');
+  expect(screen.getByText('Target 2 of 10')).toBeInTheDocument();
 });
 ```
 
-This technical specification provides a comprehensive guide for implementing ScoreMyClays using the chosen AI-assisted development stack with robust offline capabilities and professional presentation suitable for the UK clay shooting market.
+## 12. Post-MVP Technical Roadmap
+
+### Phase 1: Authentication (Post-MVP)
+- Supabase Auth integration
+- User profiles and data isolation
+- Row-level security implementation
+
+### Phase 2: Enhanced Features
+- Multi-user sessions
+- Real-time collaboration
+- Advanced conflict resolution
+
+### Phase 3: Scalability
+- Database optimization
+- Advanced caching strategies
+- Performance monitoring
+
+### Phase 4: Advanced Features
+- Push notifications
+- Advanced analytics
+- Integration APIs
+
+## 13. Development Workflow
+
+### AI-Assisted Development
+1. **Component Generation**: Use v0.dev for UI components
+2. **Logic Implementation**: Cursor AI for business logic
+3. **Testing**: Simple unit tests for core functionality
+4. **Deployment**: Automatic Vercel deployment on git push
+
+### Environment Setup
+```bash
+# Quick start for development
+npm create next-app@latest scoremyclays --typescript --tailwind --app
+cd scoremyclays
+npm install @powersync/web @supabase/supabase-js
+npm install next-pwa
+npm run dev
+```
+
+## 14. Monitoring & Analytics
+
+### MVP Monitoring (Simple)
+```typescript
+// Simple logging for MVP
+export const logger = {
+  info: (message: string, data?: any) => {
+    console.log(`[INFO] ${message}`, data);
+  },
+  error: (message: string, error?: any) => {
+    console.error(`[ERROR] ${message}`, error);
+    // Vercel automatically captures console.error
+  }
+};
+
+// Usage analytics (basic)
+export const trackEvent = (event: string, data?: any) => {
+  logger.info(`Event: ${event}`, data);
+  // Add proper analytics later (Phase 2)
+};
+```
+
+## Conclusion
+
+This technical specification provides a **simplified, MVP-focused architecture** that prioritizes rapid development, offline functionality, and AI-agent compatibility. The design enables quick validation of the core concept while providing a solid foundation for future enhancements outlined in the [Product Roadmap](./ROADMAP.md).
+
+The architecture balances simplicity with scalability, ensuring the MVP can be built quickly while supporting the evolution to a comprehensive clay shooting platform.
+
+---
+
+*For business context, see [Service Description](./SERVICE_DESCRIPTION.md). For feature development roadmap, see [Product Roadmap](./ROADMAP.md).*
