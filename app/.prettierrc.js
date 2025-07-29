@@ -7,23 +7,23 @@ module.exports = {
   semi: true,
   singleQuote: true,
   quoteProps: 'as-needed',
-  
+
   // JSX and React
   jsxSingleQuote: true,
-  
+
   // Trailing commas
   trailingComma: 'es5',
-  
+
   // Spacing
   bracketSpacing: true,
   bracketSameLine: false,
-  
+
   // Arrow functions
   arrowParens: 'avoid',
-  
+
   // Line endings (auto for cross-platform compatibility)
   endOfLine: 'auto',
-  
+
   // File inclusion
   overrides: [
     {

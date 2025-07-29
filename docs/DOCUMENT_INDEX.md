@@ -37,6 +37,7 @@ sidebar_label: Documentation Index
 - **[TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md)** - Technical implementation and architecture guide  
 - **[ROADMAP.md](ROADMAP.md)** - Product development phases and timeline
 - **[DEVELOPMENT_WORKFLOW.md](DEVELOPMENT_WORKFLOW.md)** - Complete development workflow with ESLint, Prettier, and TypeScript
+- **[CI_CD_SETUP.md](CI_CD_SETUP.md)** - GitHub Actions CI/CD pipeline configuration and deployment guide
 
 ### Design System (/docs/DESIGN_GUIDES/)
 - **[scoremyclays_ux_design_guide_mvp.md](DESIGN_GUIDES/scoremyclays_ux_design_guide_mvp.md)** - User experience guidelines

@@ -1,6 +1,8 @@
 # ScoreMyClays - Development Scaffold
 
-This is a comprehensive development scaffold for the ScoreMyClays clay shooting scoring application. It's designed to work seamlessly with v0-generated UI/UX components and provides a complete foundation for offline-first clay shooting score tracking.
+This is a comprehensive development scaffold for the ScoreMyClays clay shooting scoring application.
+It's designed to work seamlessly with v0-generated UI/UX components and provides a complete
+foundation for offline-first clay shooting score tracking.
 
 ## 🎯 Features
 
@@ -51,23 +53,26 @@ src/
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - Optional: Supabase account (for cloud sync)
 
 ### Installation
 
 1. **Install dependencies**:
+
    ```bash
    npm install
    ```
 
 2. **Set up environment variables**:
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Edit `.env.local` with your configuration:
+
    ```env
    # Optional: For cloud sync (leave empty for offline-only mode)
    NEXT_PUBLIC_POWERSYNC_URL=your_powersync_url
@@ -76,6 +81,7 @@ src/
    ```
 
 3. **Start development server**:
+
    ```bash
    npm run dev
    ```
@@ -94,8 +100,9 @@ The app is configured as a Progressive Web App:
 ### PWA Icons Needed
 
 Create these icon sizes in `/public/icons/`:
+
 - icon-72.png (72x72)
-- icon-96.png (96x96) 
+- icon-96.png (96x96)
 - icon-128.png (128x128)
 - icon-144.png (144x144)
 - icon-152.png (152x152)
@@ -108,14 +115,16 @@ Create these icon sizes in `/public/icons/`:
 This scaffold is optimized for v0 component integration:
 
 ### 1. Component Structure
+
 All components follow shadcn/ui patterns that v0 expects:
+
 ```typescript
 // Example component structure v0 can enhance
 export function ScoringButton({ variant, children, onClick }: ButtonProps) {
   return (
-    <Button 
-      variant={variant} 
-      size="touch-lg" 
+    <Button
+      variant={variant}
+      size="touch-lg"
       onClick={onClick}
       className="clay-shooting-button"
     >
@@ -126,13 +135,16 @@ export function ScoringButton({ variant, children, onClick }: ButtonProps) {
 ```
 
 ### 2. Design System
+
 Pre-configured with clay shooting specific:
+
 - Colors: hit (green), miss (red), no-bird (blue)
 - Spacing: Touch-friendly sizing (44px minimum)
 - Typography: High contrast for outdoor use
 - Animations: Button press feedback
 
 ### 3. Integration Points
+
 Key areas where v0 components can be dropped in:
 
 - **`/src/components/scoring/`**: Scoring interface components
@@ -151,20 +163,21 @@ Key areas where v0 components can be dropped in:
 ### Scoring Rules
 
 - **Hit**: Target broken (1 point)
-- **Miss**: Target missed (0 points)  
+- **Miss**: Target missed (0 points)
 - **No Bird**: Faulty target, doesn't count (reshoot)
 
 ### State Management
 
 The `ScoringContext` manages:
+
 ```typescript
 interface ScoringState {
-  currentSession: Session | null
-  currentPosition: number    // 0-9 for positions 1-10
-  currentTarget: number     // 0-9 for targets 1-10
-  isScoring: boolean
-  canUndo: boolean
-  lastAction: ShotResult | null
+  currentSession: Session | null;
+  currentPosition: number; // 0-9 for positions 1-10
+  currentTarget: number; // 0-9 for targets 1-10
+  isScoring: boolean;
+  canUndo: boolean;
+  lastAction: ShotResult | null;
 }
 ```
 
@@ -173,6 +186,7 @@ interface ScoringState {
 ### Adding New Components
 
 1. **Create in appropriate directory**:
+
    ```typescript
    // src/components/scoring/target-display.tsx
    export function TargetDisplay({ targetNumber, result }: Props) {
@@ -181,8 +195,9 @@ interface ScoringState {
    ```
 
 2. **Use existing types**:
+
    ```typescript
-   import { ShotResult, Position } from '@/types'
+   import { ShotResult, Position } from '@/types';
    ```
 
 3. **Follow naming conventions**:
@@ -193,6 +208,7 @@ interface ScoringState {
 ### Styling Guidelines
 
 Use the pre-configured classes:
+
 ```typescript
 // Clay shooting specific
 <Button variant="hit" size="touch-lg">Hit</Button>
@@ -208,14 +224,15 @@ Use the pre-configured classes:
 ### State Updates
 
 Use the scoring context:
+
 ```typescript
-const { state, recordShot, undoLastShot } = useScoring()
+const { state, recordShot, undoLastShot } = useScoring();
 
 // Record a shot
-recordShot('hit')   // 'hit' | 'miss' | 'no-bird'
+recordShot('hit'); // 'hit' | 'miss' | 'no-bird'
 
 // Undo last shot
-undoLastShot()
+undoLastShot();
 ```
 
 ## 📊 Data Flow
@@ -225,11 +242,11 @@ graph TD
     UI[UI Components] --> Context[Scoring Context]
     Context --> LocalState[Local State]
     LocalState --> Storage[localStorage]
-    
+
     Context --> PowerSync[PowerSync Client]
     PowerSync --> SQLite[Local SQLite]
     PowerSync --> Cloud[Supabase Cloud]
-    
+
     UI --> Display[Score Display]
     LocalState --> Display
 ```
@@ -242,15 +259,16 @@ The app uses PowerSync for offline-first data sync:
 
 ```typescript
 // Context automatically handles sync
-const { db, isConnected } = usePowerSync()
+const { db, isConnected } = usePowerSync();
 
 // Manual operations (advanced usage)
-await db.execute('INSERT INTO sessions...')
+await db.execute('INSERT INTO sessions...');
 ```
 
 ### Local Storage Fallback
 
 When PowerSync isn't available:
+
 - Sessions saved to localStorage
 - Automatic JSON serialization with Date handling
 - Cache management for performance
@@ -271,6 +289,7 @@ vercel --prod
 ```
 
 The app is optimized for Vercel deployment with:
+
 - Static generation where possible
 - Edge runtime for global performance
 - Automatic PWA asset optimization
@@ -293,6 +312,7 @@ npm run build
 ### Clay Shooting Test Scenarios
 
 Test these workflows:
+
 1. **New Session**: Ground name → Shooter name → Position setup
 2. **Scoring**: 10 targets per position × 10 positions
 3. **Undo**: Undo last shot functionality
@@ -302,16 +322,19 @@ Test these workflows:
 ## 📁 Key Files Reference
 
 ### Configuration
+
 - `next.config.js` - Next.js with PWA config
 - `tailwind.config.ts` - Clay shooting design system
 - `tsconfig.json` - TypeScript configuration
 
 ### Core Application
+
 - `src/app/layout.tsx` - Root layout with providers
 - `src/context/scoring-context.tsx` - Main state management
 - `src/types/index.ts` - All TypeScript definitions
 
 ### Styling
+
 - `src/app/globals.css` - Clay shooting specific styles
 - CSS utilities for outdoor visibility and touch targets
 
@@ -326,8 +349,35 @@ Test these workflows:
 ## 📞 Support
 
 This scaffold follows the specifications in:
+
 - `/docs/FUNCTIONAL_SPECIFICATION.md`
 - `/docs/TECHNICAL_ARCHITECTURE.md`
 - Clay shooting workflow requirements
 
 For questions about clay shooting domain logic, refer to the research documents in `/research/`.
+
+## 🚀 CI/CD Pipeline
+
+ScoreMyClays includes a comprehensive GitHub Actions CI/CD pipeline:
+
+### Features
+- **Quality Assurance**: TypeScript, ESLint, Prettier, and security checks
+- **PWA Validation**: Service worker and manifest validation
+- **Clay Shooting Tests**: Domain-specific component validation
+- **Automated Deployment**: Vercel integration with preview deployments
+
+### Workflows
+- **CI Pipeline** (`.github/workflows/ci.yml`): Quality checks and build validation
+- **CD Pipeline** (`.github/workflows/deploy.yml`): Automated Vercel deployment
+
+### Setup
+1. Add GitHub repository secrets for Vercel integration
+2. Configure branch protection rules for main branch
+3. See `../docs/CI_CD_SETUP.md` for complete setup instructions
+
+### Validation
+Run the CI/CD validation script to check your setup:
+```bash
+# From project root
+./scripts/validate-ci-cd.sh
+```

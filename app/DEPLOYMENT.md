@@ -3,6 +3,7 @@
 ## Quick Deploy to Vercel
 
 ### One-Click Deploy
+
 The fastest way to deploy ScoreMyClays is using Vercel:
 
 ```bash
@@ -15,18 +16,20 @@ vercel --prod
 ```
 
 ### Environment Variables
+
 Configure these in Vercel Dashboard or via CLI:
 
 ```bash
 # Optional: For cloud sync (leave empty for offline-only)
 NEXT_PUBLIC_POWERSYNC_URL=your_powersync_url
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url  
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ## Manual Deployment
 
 ### Build Process
+
 ```bash
 # Install dependencies
 npm install
@@ -42,6 +45,7 @@ npm start
 ```
 
 ### Build Outputs
+
 - **Static files**: `/.next/static/`
 - **PWA assets**: `/public/sw.js`, `/public/workbox-*.js`
 - **App routes**: Server-side rendered pages
@@ -49,7 +53,9 @@ npm start
 ## PWA Configuration
 
 ### Required Assets
+
 Create these icon sizes in `/public/icons/`:
+
 - icon-72.png (72x72)
 - icon-96.png (96x96)
 - icon-128.png (128x128)
@@ -60,7 +66,9 @@ Create these icon sizes in `/public/icons/`:
 - icon-512.png (512x512)
 
 ### Manifest Settings
+
 The PWA manifest is configured in `/public/manifest.json` with:
+
 - Clay shooting specific metadata
 - Offline-first capabilities
 - Touch-friendly shortcuts
@@ -68,6 +76,7 @@ The PWA manifest is configured in `/public/manifest.json` with:
 ## Performance Optimization
 
 ### Production Checklist
+
 - [ ] Icons optimized and properly sized
 - [ ] Environment variables configured
 - [ ] PWA manifest includes all required fields
@@ -76,6 +85,7 @@ The PWA manifest is configured in `/public/manifest.json` with:
 - [ ] Build completes successfully (`npm run build`)
 
 ### Performance Targets
+
 - **First Load**: < 100kB JavaScript bundle
 - **PWA Score**: 90+ on Lighthouse
 - **Offline**: Core functionality works without internet
@@ -83,11 +93,13 @@ The PWA manifest is configured in `/public/manifest.json` with:
 ## Custom Domain
 
 ### Vercel Domain Setup
+
 1. Add domain in Vercel Dashboard
 2. Configure DNS (A/CNAME records)
 3. SSL automatically provisioned
 
 ### Recommended Structure
+
 - **Production**: `app.scoremyclays.com`
 - **Staging**: `staging.scoremyclays.com`
 - **Development**: Local development
@@ -95,11 +107,13 @@ The PWA manifest is configured in `/public/manifest.json` with:
 ## Monitoring
 
 ### Built-in Monitoring
+
 - Next.js analytics (automatic)
 - PWA performance metrics
 - Service worker statistics
 
 ### Optional Integrations
+
 - Vercel Analytics (set `NEXT_PUBLIC_VERCEL_ANALYTICS_ID`)
 - Error tracking (Sentry, etc.)
 - Performance monitoring
@@ -124,6 +138,7 @@ The PWA manifest is configured in `/public/manifest.json` with:
    - Verify PWA configuration in next.config.js
 
 ### Debug Commands
+
 ```bash
 # Check build
 npm run build
@@ -145,6 +160,7 @@ npm install
 ## Production Environment
 
 ### Environment Variables
+
 ```env
 # Required for Vercel deployment
 NODE_ENV=production
@@ -159,7 +175,8 @@ NEXT_PUBLIC_VERCEL_ANALYTICS_ID=
 ```
 
 ### Security Considerations
-- Environment variables properly scoped (NEXT_PUBLIC_ for client-side)
+
+- Environment variables properly scoped (NEXT*PUBLIC* for client-side)
 - No sensitive keys exposed to client
 - HTTPS enforced for PWA functionality
 - Service worker scope properly configured
