@@ -1,29 +1,99 @@
-Perfect! Here's the MVP-focused component system document that you can copy:
-
----
-
-```markdown
 ---
 id: mvp_component_system
-title: ScoreMyClays MVP Component System
-sidebar_label: MVP Component System
+title: ScoreMyClays Design System
+sidebar_label: Design System
 ---
 
-# ScoreMyClays MVP Component System
+# ScoreMyClays Design System
 
-*Ultra-simplified component library for MVP - focused exclusively on core scoring functionality*
+*Complete UI component library for clay pigeon shooting scoring - optimized for outdoor use and touch interaction*
 
-## Executive Summary
+## Overview
 
-This MVP component system provides **only the essential UI components** needed for the ScoreMyClays MVP. Every component is designed for **outdoor visibility, touch-first interaction, and offline reliability**.
+This design system provides all essential UI components for the ScoreMyClays application. Every component is designed for **outdoor visibility, touch-first interaction, and offline reliability**.
 
-**MVP Focus**: Single discipline (Sporting Clays), basic scoring workflow, no authentication, no social features.
+**Focus**: Sporting Clays discipline, intuitive scoring workflow, mobile-first design.
 
 ---
 
-## 1. Core Scoring Components
+## Live Component Examples
 
-### 1.1 Primary Action Buttons (HIT/MISS/NO BIRD/UNDO)
+### Primary Action Buttons
+
+The core scoring buttons that shooters interact with most frequently:
+
+<div style={{display: 'flex', gap: '8px', flexWrap: 'wrap', margin: '16px 0'}}>
+  <button style={{
+    width: '140px',
+    height: '100px',
+    borderRadius: '16px',
+    border: 'none',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '28px',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    cursor: 'pointer',
+    backgroundColor: '#22C55E',
+    color: '#FFFFFF',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+  }}>
+    HIT
+  </button>
+  <button style={{
+    width: '140px',
+    height: '100px',
+    borderRadius: '16px',
+    border: 'none',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '28px',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    cursor: 'pointer',
+    backgroundColor: '#EF4444',
+    color: '#FFFFFF',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+  }}>
+    MISS
+  </button>
+  <button style={{
+    width: '140px',
+    height: '100px',
+    borderRadius: '16px',
+    border: 'none',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '28px',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    cursor: 'pointer',
+    backgroundColor: '#F59E0B',
+    color: '#FFFFFF',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+  }}>
+    NO BIRD
+  </button>
+  <button style={{
+    width: '140px',
+    height: '100px',
+    borderRadius: '16px',
+    border: 'none',
+    fontFamily: 'Inter, sans-serif',
+    fontSize: '28px',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    cursor: 'pointer',
+    backgroundColor: '#6B7280',
+    color: '#FFFFFF',
+    boxShadow: '0 4px 8px rgba(0,0,0,0.15)'
+  }}>
+    UNDO
+  </button>
+</div>
+
+#### Implementation Code
 
 ```css
 .action-button {
@@ -47,19 +117,9 @@ This MVP component system provides **only the essential UI components** needed f
   color: #FFFFFF;
 }
 
-.action-button--hit:active {
-  background-color: #16A34A;
-  transform: scale(0.95);
-}
-
 .action-button--miss {
   background-color: #EF4444;
   color: #FFFFFF;
-}
-
-.action-button--miss:active {
-  background-color: #DC2626;
-  transform: scale(0.95);
 }
 
 .action-button--no-bird {
@@ -67,29 +127,37 @@ This MVP component system provides **only the essential UI components** needed f
   color: #FFFFFF;
 }
 
-.action-button--no-bird:active {
-  background-color: #D97706;
-  transform: scale(0.95);
-}
-
 .action-button--undo {
   background-color: #6B7280;
   color: #FFFFFF;
 }
 
-.action-button--undo:active {
-  background-color: #4B5563;
+.action-button:active {
   transform: scale(0.95);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 ```
 
-**Accessibility:**
-- Minimum 44x44px exceeded at 140x100px
-- High contrast ratios (7:1+)
-- Screen reader labels: "Hit", "Miss", "No Bird", "Undo"
-- Voice commands supported
+### Score Display Card
 
-### 1.2 Score Display (Current Position)
+Shows current position score and running total:
+
+<div style={{
+  backgroundColor: '#FFFFFF',
+  border: '3px solid #E5E7EB',
+  borderRadius: '12px',
+  padding: '24px',
+  textAlign: 'center',
+  margin: '16px 0',
+  boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+  maxWidth: '300px'
+}}>
+  <div style={{fontSize: '18px', fontWeight: '600', color: '#6B7280'}}>Current Position</div>
+  <div style={{fontSize: '48px', fontWeight: '900', color: '#1F2937'}}>7/10</div>
+  <div style={{fontSize: '24px', fontWeight: '700', color: '#D97706'}}>Running Total: 35/50</div>
+</div>
+
+#### Implementation Code
 
 ```css
 .score-display {
@@ -98,12 +166,11 @@ This MVP component system provides **only the essential UI components** needed f
   border-radius: 12px;
   padding: 24px;
   text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   margin: 16px 0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.score-display__target {
-  font-family: 'Inter', sans-serif;
+.score-display__label {
   font-size: 18px;
   font-weight: 600;
   color: #6B7280;
@@ -111,766 +178,255 @@ This MVP component system provides **only the essential UI components** needed f
 }
 
 .score-display__current {
-  font-family: 'Roboto Mono', monospace;
   font-size: 48px;
   font-weight: 900;
   color: #1F2937;
-  line-height: 1;
-  margin: 12px 0;
+  margin: 8px 0;
 }
 
-.score-display__running-total {
-  font-family: 'Roboto Mono', monospace;
+.score-display__total {
   font-size: 24px;
   font-weight: 700;
   color: #D97706;
-  margin-top: 16px;
-}
-
-.score-display__percentage {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: #059669;
-  margin-top: 8px;
 }
 ```
 
----
+### Form Components
 
-## 2. Form Components (Session Setup)
+Input fields for shooter and position setup:
 
-### 2.1 Text Input Fields
+<div style={{margin: '16px 0'}}>
+  <input 
+    type="text" 
+    placeholder="Shooter Name" 
+    style={{
+      width: '100%',
+      padding: '12px',
+      border: '3px solid #E5E7EB',
+      borderRadius: '8px',
+      marginBottom: '8px',
+      fontSize: '16px',
+      fontFamily: 'Inter, sans-serif'
+    }}
+  />
+  <input 
+    type="text" 
+    placeholder="Position Name" 
+    style={{
+      width: '100%',
+      padding: '12px',
+      border: '3px solid #E5E7EB',
+      borderRadius: '8px',
+      fontSize: '16px',
+      fontFamily: 'Inter, sans-serif'
+    }}
+  />
+</div>
+
+#### Implementation Code
 
 ```css
 .form-input {
   width: 100%;
-  padding: 20px;
+  padding: 12px;
   border: 3px solid #E5E7EB;
-  border-radius: 12px;
+  border-radius: 8px;
+  font-size: 16px;
   font-family: 'Inter', sans-serif;
-  font-size: 18px;
-  font-weight: 500;
-  color: #1F2937;
-  background-color: #FFFFFF;
   transition: border-color 0.2s ease;
-  min-height: 60px;
 }
 
 .form-input:focus {
   outline: none;
   border-color: #D97706;
-  box-shadow: 0 0 0 4px rgba(217,119,6,0.1);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
 .form-input::placeholder {
   color: #9CA3AF;
-  font-weight: 400;
-}
-
-.form-label {
-  display: block;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8px;
 }
 ```
 
-### 2.2 Primary Action Button (Start/Next/Finish)
+### Toast Notifications
 
-```css
-.primary-button {
-  width: 100%;
-  padding: 20px;
-  border: none;
-  border-radius: 12px;
-  background-color: #D97706;
-  color: #FFFFFF;
-  font-family: 'Inter', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  min-height: 60px;
-  box-shadow: 0 4px 8px rgba(217,119,6,0.2);
-}
+Feedback messages for user actions:
 
-.primary-button:hover {
-  background-color: #B45309;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 12px rgba(217,119,6,0.3);
-}
+<div style={{margin: '16px 0'}}>
+  <div style={{
+    backgroundColor: '#059669',
+    color: '#FFFFFF',
+    padding: '12px',
+    borderRadius: '8px',
+    textAlign: 'center',
+    marginBottom: '8px',
+    fontWeight: '600'
+  }}>
+    ✓ Score saved successfully!
+  </div>
+  <div style={{
+    backgroundColor: '#DC2626',
+    color: '#FFFFFF',
+    padding: '12px',
+    borderRadius: '8px',
+    textAlign: 'center',
+    fontWeight: '600'
+  }}>
+    ✗ Connection lost - working offline
+  </div>
+</div>
 
-.primary-button:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(217,119,6,0.2);
-}
-
-.primary-button:disabled {
-  background-color: #9CA3AF;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-```
-
----
-
-## 3. Layout Components
-
-### 3.1 Screen Container
-
-```css
-.screen-container {
-  min-height: 100vh;
-  padding: 20px;
-  background-color: #F9FAFB;
-  display: flex;
-  flex-direction: column;
-}
-
-.screen-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.screen-title {
-  font-family: 'Inter', sans-serif;
-  font-size: 28px;
-  font-weight: 800;
-  color: #1F2937;
-  margin-bottom: 8px;
-}
-
-.screen-subtitle {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #6B7280;
-}
-
-.screen-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  max-width: 400px;
-  margin: 0 auto;
-  width: 100%;
-}
-```
-
-### 3.2 Scoring Grid Layout
-
-```css
-.scoring-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin: 32px 0;
-  max-width: 320px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.scoring-grid--four-buttons {
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-}
-
-.scoring-grid__undo {
-  grid-column: 1 / -1;
-  margin-top: 16px;
-}
-```
-
----
-
-## 4. Data Display Components
-
-### 4.1 Position Summary Card
-
-```css
-.position-card {
-  background-color: #FFFFFF;
-  border: 2px solid #E5E7EB;
-  border-radius: 16px;
-  padding: 24px;
-  margin: 16px 0;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.position-card__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.position-card__name {
-  font-family: 'Inter', sans-serif;
-  font-size: 20px;
-  font-weight: 700;
-  color: #1F2937;
-}
-
-.position-card__score {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 24px;
-  font-weight: 900;
-  color: #D97706;
-}
-
-.position-card__details {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 2px solid #F3F4F6;
-}
-
-.position-card__detail {
-  text-align: center;
-}
-
-.position-card__detail-value {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 18px;
-  font-weight: 700;
-  color: #1F2937;
-  display: block;
-}
-
-.position-card__detail-label {
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: #6B7280;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-top: 4px;
-}
-```
-
-### 4.2 Final Scorecard Table
-
-```css
-.scorecard-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: #FFFFFF;
-  border: 2px solid #E5E7EB;
-  border-radius: 12px;
-  overflow: hidden;
-  margin: 24px 0;
-}
-
-.scorecard-table__header {
-  background-color: #F3F4F6;
-}
-
-.scorecard-table__header th {
-  padding: 16px 12px;
-  text-align: left;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #374151;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.scorecard-table__row {
-  border-bottom: 1px solid #F3F4F6;
-}
-
-.scorecard-table__row:nth-child(even) {
-  background-color: #F9FAFB;
-}
-
-.scorecard-table__cell {
-  padding: 16px 12px;
-  font-family: 'Roboto Mono', monospace;
-  font-size: 16px;
-  font-weight: 600;
-  color: #1F2937;
-}
-
-.scorecard-table__cell--position {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-}
-
-.scorecard-table__cell--score {
-  text-align: center;
-  font-weight: 900;
-  color: #D97706;
-}
-
-.scorecard-table__footer {
-  background-color: #FEF3C7;
-  font-weight: 900;
-}
-
-.scorecard-table__footer .scorecard-table__cell {
-  color: #92400E;
-  font-size: 18px;
-}
-```
-
----
-
-## 5. Feedback Components
-
-### 5.1 Toast Notifications (Offline/Sync Status)
+#### Implementation Code
 
 ```css
 .toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: #1F2937;
-  color: #FFFFFF;
-  padding: 16px 24px;
-  border-radius: 12px;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  z-index: 1000;
-  max-width: 320px;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
+  padding: 12px;
+  border-radius: 8px;
+  text-align: center;
   font-weight: 600;
-  animation: toast-slide-down 0.3s ease;
+  margin: 8px 0;
+  animation: slideIn 0.3s ease;
 }
 
 .toast--success {
   background-color: #059669;
-}
-
-.toast--warning {
-  background-color: #D97706;
+  color: #FFFFFF;
 }
 
 .toast--error {
   background-color: #DC2626;
+  color: #FFFFFF;
 }
 
-.toast--offline {
-  background-color: #6B7280;
+.toast--warning {
+  background-color: #D97706;
+  color: #FFFFFF;
 }
 
-@keyframes toast-slide-down {
+@keyframes slideIn {
   from {
+    transform: translateY(-100%);
     opacity: 0;
-    transform: translateX(-50%) translateY(-100%);
   }
   to {
+    transform: translateY(0);
     opacity: 1;
-    transform: translateX(-50%) translateY(0);
   }
 }
 ```
 
 ---
 
-## 6. Responsive Utilities
+## Design Principles
 
-### 6.1 Mobile-First Layout
+### 1. Outdoor Visibility
+- **High contrast colors** for bright sunlight conditions
+- **Large touch targets** (minimum 44px)
+- **Bold typography** with sufficient weight
 
-```css
-.container {
-  width: 100%;
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+### 2. Touch-First Interaction
+- **Generous spacing** between interactive elements
+- **Immediate visual feedback** on touch
+- **Large, clearly labeled buttons**
 
-/* Landscape phone adjustments */
-@media (orientation: landscape) and (max-height: 500px) {
-  .scoring-grid {
-    gap: 12px;
-  }
-  
-  .action-button {
-    height: 80px;
-    font-size: 24px;
-  }
-  
-  .screen-content {
-    justify-content: flex-start;
-    padding-top: 20px;
-  }
-}
+### 3. Offline Reliability
+- **Clear offline indicators** when connection is lost
+- **Local storage** for critical data
+- **Sync status** visible to users
 
-/* Tablet adjustments */
-@media (min-width: 768px) {
-  .container {
-    max-width: 600px;
-    padding: 0 40px;
-  }
-  
-  .scoring-grid {
-    max-width: 400px;
-    gap: 20px;
-  }
-  
-  .action-button {
-    width: 160px;
-    height: 120px;
-    font-size: 32px;
-  }
-}
-```
-
-### 6.2 Utility Classes
-
-```css
-/* Spacing */
-.mb-16 { margin-bottom: 16px; }
-.mb-24 { margin-bottom: 24px; }
-.mb-32 { margin-bottom: 32px; }
-.mt-16 { margin-top: 16px; }
-.mt-24 { margin-top: 24px; }
-.mt-32 { margin-top: 32px; }
-
-/* Text alignment */
-.text-center { text-align: center; }
-.text-left { text-align: left; }
-.text-right { text-align: right; }
-
-/* Display */
-.hidden { display: none; }
-.block { display: block; }
-.flex { display: flex; }
-.flex-column { flex-direction: column; }
-.justify-center { justify-content: center; }
-.align-center { align-items: center; }
-.space-between { justify-content: space-between; }
-```
+### 4. Performance
+- **Minimal animations** to preserve battery
+- **Optimized images** for fast loading
+- **Efficient CSS** for smooth scrolling
 
 ---
 
-## 7. Animation Library (Minimal)
+## Color System
 
-### 7.1 Button Feedback Animations
+### Primary Colors
+- **Orange**: `#D97706` - Primary brand color, CTAs
+- **Green**: `#22C55E` - Success states, HIT button
+- **Red**: `#EF4444` - Error states, MISS button
+- **Yellow**: `#F59E0B` - Warning states, NO BIRD button
 
-```css
-@keyframes button-press {
-  0% { transform: scale(1); }
-  50% { transform: scale(0.95); }
-  100% { transform: scale(1); }
-}
+### Neutral Colors
+- **Gray 900**: `#1F2937` - Primary text
+- **Gray 600**: `#4B5563` - Secondary text
+- **Gray 400**: `#9CA3AF` - Placeholder text
+- **Gray 200**: `#E5E7EB` - Borders, dividers
+- **White**: `#FFFFFF` - Backgrounds, cards
 
-@keyframes success-feedback {
-  0% { 
-    transform: scale(1); 
-    background-color: #22C55E;
-  }
-  50% { 
-    transform: scale(1.05); 
-    background-color: #16A34A;
-  }
-  100% { 
-    transform: scale(1); 
-    background-color: #22C55E;
-  }
-}
-
-@keyframes error-feedback {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-8px); }
-  75% { transform: translateX(8px); }
-}
-
-.animate-press {
-  animation: button-press 0.15s ease;
-}
-
-.animate-success {
-  animation: success-feedback 0.4s ease;
-}
-
-.animate-error {
-  animation: error-feedback 0.3s ease;
-}
-```
-
-### 7.2 Screen Transitions
-
-```css
-.screen-enter {
-  opacity: 0;
-  transform: translateX(100%);
-}
-
-.screen-enter-active {
-  opacity: 1;
-  transform: translateX(0);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.screen-exit {
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.screen-exit-active {
-  opacity: 0;
-  transform: translateX(-100%);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-```
+### Usage Guidelines
+- Use **high contrast** combinations for outdoor visibility
+- **Green for positive actions** (HIT, success)
+- **Red for negative actions** (MISS, errors)
+- **Orange for primary actions** and brand elements
 
 ---
 
-## 8. Accessibility (MVP Essentials)
+## Typography
 
-### 8.1 Focus Management
+### Font Family
+- **Primary**: Inter (web-safe fallback: sans-serif)
+- **Display**: Inter with increased font-weight
 
-```css
-.focus-visible {
-  outline: 3px solid #D97706;
-  outline-offset: 3px;
-}
+### Scale
+- **Heading 1**: 48px, weight 900
+- **Heading 2**: 32px, weight 700
+- **Heading 3**: 24px, weight 600
+- **Body**: 16px, weight 400
+- **Button**: 28px, weight 800 (action buttons)
+- **Small**: 14px, weight 400
 
-.skip-link {
-  position: absolute;
-  top: -40px;
-  left: 6px;
-  background: #D97706;
-  color: #FFFFFF;
-  padding: 8px 16px;
-  text-decoration: none;
-  border-radius: 8px;
-  z-index: 1001;
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.skip-link:focus {
-  top: 6px;
-}
-```
-
-### 8.2 Screen Reader Support
-
-```css
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.sr-only-focusable:focus {
-  position: static;
-  width: auto;
-  height: auto;
-  padding: inherit;
-  margin: inherit;
-  overflow: visible;
-  clip: auto;
-  white-space: normal;
-}
-```
+### Guidelines
+- **Bold text** for outdoor readability
+- **Uppercase** for action buttons
+- **Letter spacing** on buttons for clarity
 
 ---
 
-## 9. Offline/Loading States
+## Interactive Prototypes
 
-### 9.1 Loading Spinner
+For hands-on exploration of these components:
 
-```css
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #E5E7EB;
-  border-top: 4px solid #D97706;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 20px auto;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-text {
-  font-family: 'Inter', sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  color: #6B7280;
-  text-align: center;
-  margin-top: 12px;
-}
-```
-
-### 9.2 Offline Indicator
-
-```css
-.offline-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background-color: #6B7280;
-  color: #FFFFFF;
-  padding: 12px;
-  text-align: center;
-  font-family: 'Inter', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 999;
-  transform: translateY(-100%);
-  transition: transform 0.3s ease;
-}
-
-.offline-banner--visible {
-  transform: translateY(0);
-}
-
-.offline-banner__icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-```
+- **[Component Library](../../prototypes/component-library.html)** - Live component showcase
+- **[MVP User Flow](../../prototypes/mvp-user-flow.html)** - Complete user journey
+- **[Accessibility Demo](../../prototypes/accessibility-demo.html)** - Accessibility features
+- **[Performance Demo](../../prototypes/performance-demo.html)** - Optimization examples
+- **[Animation Showcase](../../prototypes/animation-showcase.html)** - UI animations
 
 ---
 
-## 10. Implementation Guidelines
+## Implementation Guidelines
 
-### 10.1 MVP Component Priority
+### CSS Structure
+```scss
+// Base styles
+@import 'base/typography';
+@import 'base/colors';
+@import 'base/layout';
 
-**Essential (Must Have):**
-1. Action buttons (HIT/MISS/NO BIRD/UNDO)
-2. Score display
-3. Text inputs (Place, Shooter, Position names)
-4. Primary action button (Start/Next/Finish)
-5. Position summary card
-6. Final scorecard table
+// Components
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/forms';
+@import 'components/notifications';
 
-**Important (Should Have):**
-7. Toast notifications
-8. Loading states
-9. Offline indicator
-10. Basic animations
+// Utilities
+@import 'utilities/spacing';
+@import 'utilities/responsive';
+```
 
-**Nice to Have (Could Have):**
-11. Advanced transitions
-12. Enhanced accessibility features
+### Component Architecture
+- **BEM methodology** for CSS class naming
+- **Component-based** structure for reusability
+- **Mobile-first** responsive design
+- **Touch-optimized** interaction states
 
-### 10.2 Performance Requirements
-
-- **Touch Response**: < 100ms for all button interactions
-- **Screen Transitions**: < 300ms between screens
-- **Offline Storage**: Instant save to local storage
-- **Bundle Size**: Keep CSS under 50KB compressed
-
-### 10.3 Browser Support (MVP)
-
-- **iOS Safari**: 14+
-- **Chrome Mobile**: 90+
-- **Firefox Mobile**: 90+
-- **Samsung Internet**: 14+
-
-### 10.4 Testing Checklist
-
-**Functionality:**
-- [ ] All buttons respond to touch
-- [ ] Score calculations are accurate
-- [ ] Data persists offline
-- [ ] Screen transitions work smoothly
-
-**Accessibility:**
-- [ ] All interactive elements have 44px+ touch targets
-- [ ] Color contrast meets WCAG AA (4.5:1)
-- [ ] Screen reader labels are present
-- [ ] Keyboard navigation works
-
-**Performance:**
-- [ ] App loads in under 3 seconds
-- [ ] Interactions feel instant
-- [ ] Works in airplane mode
-- [ ] Battery usage is minimal
+### Browser Support
+- **iOS Safari 12+** (primary mobile target)
+- **Chrome Mobile 70+** (Android support)
+- **PWA compatibility** for offline functionality
 
 ---
 
-## 11. Color Palette (MVP)
-
-```css
-:root {
-  /* Primary Colors */
-  --color-primary: #D97706;        /* Clay Orange */
-  --color-primary-dark: #B45309;   /* Hover state */
-  
-  /* Action Colors */
-  --color-hit: #22C55E;           /* Success Green */
-  --color-miss: #EF4444;          /* Error Red */
-  --color-no-bird: #F59E0B;       /* Warning Amber */
-  --color-undo: #6B7280;          /* Neutral Gray */
-  
-  /* Text Colors */
-  --color-text-primary: #1F2937;   /* Dark Gray */
-  --color-text-secondary: #6B7280; /* Medium Gray */
-  --color-text-muted: #9CA3AF;     /* Light Gray */
-  
-  /* Background Colors */
-  --color-bg-primary: #FFFFFF;     /* White */
-  --color-bg-secondary: #F9FAFB;   /* Light Gray */
-  --color-bg-tertiary: #F3F4F6;    /* Lighter Gray */
-  
-  /* Border Colors */
-  --color-border: #E5E7EB;         /* Light Border */
-  --color-border-focus: #D97706;   /* Focus Border */
-}
-```
-
----
-
-## 12. Typography Scale (MVP)
-
-```css
-:root {
-  /* Font Families */
-  --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: 'Roboto Mono', 'SF Mono', Monaco, monospace;
-  
-  /* Font Sizes */
-  --text-xs: 12px;    /* Labels, captions */
-  --text-sm: 14px;    /* Body text, notifications */
-  --text-base: 16px;  /* Default body text */
-  --text-lg: 18px;    /* Input text, subtitles */
-  --text-xl: 20px;    /* Button text, headings */
-  --text-2xl: 24px;   /* Running totals */
-  --text-3xl: 28px;   /* Screen titles, action buttons */
-  --text-4xl: 32px;   /* Large action buttons */
-  --text-5xl: 48px;   /* Current score display */
-  
-  /* Font Weights */
-  --font-normal: 400;
-  --font-medium: 500;
-  --font-semibold: 600;
-  --font-bold: 700;
-  --font-extrabold: 800;
-  --font-black: 900;
-}
-```
-
----
-
-This MVP component system provides everything needed to build the ScoreMyClays MVP with a focus on **simplicity, outdoor usability, and offline reliability**. Each component is designed to work perfectly for clay shooting scenarios while maintaining the ultra-simplified scope required for MVP validation.
-```
+*This design system serves as the foundation for all ScoreMyClays UI development. For implementation examples, refer to the interactive prototypes linked above.*

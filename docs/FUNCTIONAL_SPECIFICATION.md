@@ -188,7 +188,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 - **Offline Usage**: >50% of sessions include offline periods
 - **Sync Success Rate**: >95% successful data synchronization
 - **User Retention**: >60% users complete multiple sessions
-- **Performance**: <100ms scoring response time consistently
+- **Performance**: &lt;100ms scoring response time consistently
 
 ### User Experience Metrics
 - **Ease of Use**: Positive feedback on position-based scoring flow

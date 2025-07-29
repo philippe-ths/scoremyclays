@@ -23,8 +23,8 @@ sidebar_label: Documentation Index
 4. **[Product Roadmap](ROADMAP.md)** - Development phases and strategy
 
 ### 🎨 For Designers
-1. **[UX Design Guide](DESIGN_GUIDES/scoremyclays_ux_design_guide.md)** - User experience framework
-2. **[UI Design Guide](DESIGN_GUIDES/scoremyclays_ui_design_guide.md)** - Visual design system
+1. **[UX Design Guide](DESIGN_GUIDES/scoremyclays_ux_design_guide_mvp.md)** - User experience framework
+2. **[UI Design Guide](DESIGN_GUIDES/scoremyclays_ui_design_guide_mvp.md)** - Visual design system
 3. **[MVP Design System](DESIGN_GUIDES/MVP_design_system.md)** - Component specifications
 4. **[Component Showcase](../prototypes/component-library.html)** - Live component examples
 
@@ -36,11 +36,10 @@ sidebar_label: Documentation Index
 - **[FUNCTIONAL_SPECIFICATION.md](FUNCTIONAL_SPECIFICATION.md)** - Complete MVP requirements and specifications
 - **[TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md)** - Technical implementation and architecture guide  
 - **[ROADMAP.md](ROADMAP.md)** - Product development phases and timeline
-- **[SERVICE_DESCRIPTION.md](SERVICE_DESCRIPTION.md)** *(Deprecated - content moved to README.md)*
 
 ### Design System (/docs/DESIGN_GUIDES/)
-- **[scoremyclays_ux_design_guide.md](DESIGN_GUIDES/scoremyclays_ux_design_guide.md)** - User experience guidelines
-- **[scoremyclays_ui_design_guide.md](DESIGN_GUIDES/scoremyclays_ui_design_guide.md)** - Visual design standards
+- **[scoremyclays_ux_design_guide_mvp.md](DESIGN_GUIDES/scoremyclays_ux_design_guide_mvp.md)** - User experience guidelines
+- **[scoremyclays_ui_design_guide_mvp.md](DESIGN_GUIDES/scoremyclays_ui_design_guide_mvp.md)** - Visual design standards
 - **[MVP_design_system.md](DESIGN_GUIDES/MVP_design_system.md)** - Component specifications for MVP
 
 ---
@@ -167,8 +166,8 @@ UX_DESIGN_GUIDE.md → UI_DESIGN_GUIDE.md → MVP_DESIGN_SYSTEM.md → /prototyp
 4. View **[live prototypes](../prototypes/)** for product demonstration
 
 ### Designers & UX Professionals
-1. Begin with **[UX Design Guide](DESIGN_GUIDES/scoremyclays_ux_design_guide.md)**
-2. Reference **[UI Design Guide](DESIGN_GUIDES/scoremyclays_ui_design_guide.md)**
+1. Begin with **[UX Design Guide](DESIGN_GUIDES/scoremyclays_ux_design_guide_mvp.md)**
+2. Reference **[UI Design Guide](DESIGN_GUIDES/scoremyclays_ui_design_guide_mvp.md)**
 3. Implement using **[MVP Design System](DESIGN_GUIDES/MVP_design_system.md)**
 4. Test with **[interactive prototypes](../prototypes/)**
 
