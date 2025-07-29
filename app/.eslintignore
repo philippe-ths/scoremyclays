@@ -1,0 +1,39 @@
+# Build outputs
+.next/
+out/
+dist/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment files
+.env*
+
+# Service worker files
+public/sw.js
+public/workbox-*.js
+
+# Type definitions
+*.d.ts
+
+# Vercel
+.vercel/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# Coverage
+coverage/
+
+# Temporary files
+*.tmp
+*.temp

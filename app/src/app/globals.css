@@ -1,0 +1,290 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Using local fonts - Inter is imported in layout.tsx */
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+    --radius: 0.5rem;
+    
+    /* Clay Shooting Design System Variables */
+    --clay-primary: #2C5530;
+    --clay-primary-light: #3D7040;
+    --clay-primary-dark: #1E3A21;
+    --clay-accent: #8B4513;
+    --clay-accent-light: #A0591A;
+    --clay-accent-dark: #6B340F;
+    --clay-surface: #F8F9FA;
+    --clay-surface-elevated: #FFFFFF;
+    --clay-border: #E1E5E9;
+    --clay-text-primary: #2D3748;
+    --clay-text-secondary: #718096;
+    --clay-text-muted: #A0AEC0;
+    --clay-bg: #F7FAFC;
+    --clay-success: #22C55E;
+    --clay-error: #EF4444;
+    --clay-warning: #F59E0B;
+    --clay-info: #3B82F6;
+    
+    /* Touch targets */
+    --min-touch: 44px;
+    --touch-spacing: 8px;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  }
+  
+  /* Typography Scale */
+  .font-mono {
+    font-family: 'Roboto Mono', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  }
+}
+
+@layer utilities {
+  /* Clay Shooting Color Utilities */
+  .text-clay-primary { color: var(--clay-primary); }
+  .text-clay-primary-light { color: var(--clay-primary-light); }
+  .text-clay-primary-dark { color: var(--clay-primary-dark); }
+  .text-clay-accent { color: var(--clay-accent); }
+  .text-clay-accent-light { color: var(--clay-accent-light); }
+  .text-clay-accent-dark { color: var(--clay-accent-dark); }
+  .text-clay-text-primary { color: var(--clay-text-primary); }
+  .text-clay-text-secondary { color: var(--clay-text-secondary); }
+  .text-clay-text-muted { color: var(--clay-text-muted); }
+  
+  .bg-clay-primary { background-color: var(--clay-primary); }
+  .bg-clay-primary-light { background-color: var(--clay-primary-light); }
+  .bg-clay-primary-dark { background-color: var(--clay-primary-dark); }
+  .bg-clay-accent { background-color: var(--clay-accent); }
+  .bg-clay-accent-light { background-color: var(--clay-accent-light); }
+  .bg-clay-accent-dark { background-color: var(--clay-accent-dark); }
+  .bg-clay-surface { background-color: var(--clay-surface); }
+  .bg-clay-surface-elevated { background-color: var(--clay-surface-elevated); }
+  .bg-clay-bg { background-color: var(--clay-bg); }
+  
+  .border-clay-border { border-color: var(--clay-border); }
+  .border-clay-primary { border-color: var(--clay-primary); }
+  .border-clay-accent { border-color: var(--clay-accent); }
+  
+  /* Touch Target Utilities */
+  .min-w-touch { min-width: var(--min-touch); }
+  .min-h-touch { min-height: var(--min-touch); }
+  .touch-target {
+    min-width: var(--min-touch);
+    min-height: var(--min-touch);
+  }
+  
+  /* Clay Shooting Specific Components */
+  .card-primary {
+    background-color: var(--clay-surface-elevated);
+    border: 1px solid var(--clay-border);
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .card-secondary {
+    background-color: var(--clay-surface);
+    border: 1px solid var(--clay-border);
+  }
+  
+  .card-elevated {
+    background-color: var(--clay-surface-elevated);
+    border: 1px solid var(--clay-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Scoring Button Styles */
+  .btn-hit {
+    background-color: var(--clay-success);
+    color: white;
+    border: 2px solid var(--clay-success);
+    font-weight: 700;
+    font-size: 1.125rem;
+    min-height: 100px;
+    min-width: 140px;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn-hit:hover {
+    background-color: #16A34A;
+    border-color: #16A34A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+  }
+  
+  .btn-hit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(34, 197, 94, 0.3);
+  }
+  
+  .btn-miss {
+    background-color: var(--clay-error);
+    color: white;
+    border: 2px solid var(--clay-error);
+    font-weight: 700;
+    font-size: 1.125rem;
+    min-height: 100px;
+    min-width: 140px;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn-miss:hover {
+    background-color: #DC2626;
+    border-color: #DC2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+  }
+  
+  .btn-miss:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  }
+  
+  .btn-no-bird {
+    background-color: var(--clay-warning);
+    color: white;
+    border: 2px solid var(--clay-warning);
+    font-weight: 700;
+    font-size: 1.125rem;
+    min-height: 100px;
+    min-width: 140px;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn-no-bird:hover {
+    background-color: #D97706;
+    border-color: #D97706;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+  }
+  
+  .btn-no-bird:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.3);
+  }
+  
+  /* Navigation Button */
+  .nav-shoot-button {
+    background: linear-gradient(135deg, var(--clay-primary) 0%, var(--clay-primary-light) 100%);
+    color: white;
+    border: none;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .nav-shoot-button:hover {
+    background: linear-gradient(135deg, var(--clay-primary-light) 0%, var(--clay-primary) 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(44, 85, 48, 0.4);
+  }
+  
+  /* Animation Classes */
+  .animate-button-press {
+    animation: buttonPress 0.15s ease-in-out;
+  }
+  
+  @keyframes buttonPress {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+  
+  .animate-score-celebration {
+    animation: scoreCelebration 0.5s ease-in-out;
+  }
+  
+  @keyframes scoreCelebration {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.05); }
+    50% { transform: scale(1.02); }
+    75% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+  
+  /* Outdoor Visibility Optimizations */
+  .high-contrast {
+    filter: contrast(120%) brightness(110%);
+  }
+  
+  .shadow-outdoor {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Status Indicators */
+  .status-active {
+    background-color: var(--clay-success);
+    color: white;
+  }
+  
+  .status-inactive {
+    background-color: var(--clay-text-muted);
+    color: white;
+  }
+  
+  .status-warning {
+    background-color: var(--clay-warning);
+    color: white;
+  }
+  
+  .status-error {
+    background-color: var(--clay-error);
+    color: white;
+  }
+}

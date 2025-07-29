@@ -1,0 +1,132 @@
+---
+description: Complete development workflow integrating ESLint, Prettier, and TypeScript for ScoreMyClays
+globs: ["**/*.{ts,tsx,js,jsx}"]
+alwaysApply: true
+---
+
+# Development Workflow Standards
+
+## Integrated Development Environment
+
+Establish a seamless development workflow combining ESLint, Prettier, and TypeScript for optimal clay shooting app development.
+
+### Tool Separation and Integration
+- **ESLint**: Code quality, logic validation, best practices
+- **Prettier**: Code formatting, style consistency, automatic fixes
+- **TypeScript**: Type safety, compile-time error detection
+- **VS Code**: Unified interface with real-time feedback
+
+### Conflict-Free Configuration
+Ensure tools work together without interference:
+- ESLint extends `prettier` config last to disable formatting rules
+- Prettier handles all formatting automatically
+- TypeScript provides type checking separate from linting
+- VS Code integrates all tools with proper precedence
+
+## Daily Development Workflow
+
+### Immediate Feedback Loop
+1. **Write code** with TypeScript intellisense and error detection
+2. **See ESLint feedback** as red squiggles for logic issues only
+3. **Save files** to trigger automatic Prettier formatting
+4. **Auto-fix** correctable ESLint issues on save
+5. **Focus on logic** while tools handle style and basic fixes
+
+### Real-Time Quality Assurance
+- Address TypeScript errors immediately for type safety
+- Fix ESLint errors as they appear for code quality
+- Trust Prettier for consistent formatting across the project
+- Use import organization features for clean code structure
+
+## Pre-Commit Workflow
+
+### Quality Checklist
+Run these commands before every commit:
+```bash
+# 1. Check code quality and logic
+npm run lint
+
+# 2. Verify formatting consistency  
+npm run format:check
+
+# 3. Ensure type safety
+npm run type-check
+
+# 4. Fix auto-correctable issues
+npm run lint:fix
+
+# 5. Format any unformatted files
+npm run format
+```
+
+### Error Resolution Priority
+1. **TypeScript errors**: Fix immediately, they prevent builds
+2. **ESLint errors**: Address logic and safety issues
+3. **ESLint warnings**: Review and fix for better code quality
+4. **Formatting issues**: Let Prettier handle automatically
+
+## Code Quality Standards
+
+### TypeScript Best Practices
+- Use explicit types instead of `any` for scoring data
+- Implement proper error handling for offline clay shooting scenarios
+- Use type guards for user input validation
+- Prefer `import type` for type-only imports
+
+### React Best Practices
+- Implement proper keys for dynamic clay shooting round lists
+- Use accessibility attributes for outdoor mobile usage
+- Handle async operations with proper loading states
+- Optimize re-renders for touch-responsive scoring interfaces
+
+### Mobile PWA Considerations
+- Write performant code for clay shooting contexts
+- Handle offline scenarios gracefully
+- Optimize for touch interfaces and outdoor visibility
+- Implement proper error boundaries for scoring sessions
+
+## VS Code Optimization
+
+### Extension Requirements
+Install these extensions for optimal workflow:
+- ESLint extension for real-time code quality feedback
+- Prettier extension for automatic formatting
+- TypeScript support (built-in) for type checking
+- Error Lens for enhanced error visibility
+
+### Settings Configuration
+Configure `.vscode/settings.json` for unified experience:
+- Prettier as default formatter for automatic styling
+- ESLint auto-fix on save for correctable issues
+- Format on save for consistent code appearance
+- Proper file associations for TypeScript and React
+
+## Performance Optimization
+
+### Development Speed
+- Use ESLint for logic only, avoiding slow formatting rules
+- Enable incremental TypeScript compilation for faster builds
+- Configure file watching for immediate feedback
+- Use separate tools for separate concerns
+
+### Build Performance
+- Run type checking separate from linting for faster builds
+- Use efficient ESLint rules for mobile PWA requirements
+- Optimize formatting runs for large codebases
+- Cache tool outputs when possible
+
+## Team Collaboration
+
+### Consistency Standards
+- Enforce formatting with Prettier for zero style debates
+- Use ESLint rules for shared code quality standards
+- Maintain TypeScript strict mode for type safety
+- Document any rule exceptions with clear reasoning
+
+### Code Review Focus
+- Review logic and architecture, not formatting
+- Focus on clay shooting domain accuracy
+- Verify accessibility for outdoor mobile usage
+- Ensure offline-first patterns are followed
+
+Maintain separation of concerns: tools handle style, developers focus on clay shooting app logic and user experience.
