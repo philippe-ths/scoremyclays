@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Design - ScoreMyClays</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Inline styles for demonstration purposes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #D97706;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .content p {
+            margin-bottom: 16px;
+        }
+
+        .responsive-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .demo-box {
+            flex: 1 1 calc(50% - 16px);
+            background-color: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .demo-box h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .demo-box p {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        @media (max-width: 768px) {
+            .demo-box {
+                flex: 1 1 100%;
+            }
+        }
+
+        .footer {
+            background-color: #F3F4F6;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Responsive Design</h1>
+        </header>
+        <div class="content">
+            <h2>Responsive Layouts</h2>
+            <div class="responsive-demo">
+                <div class="demo-box">
+                    <h3>Portrait Phone</h3>
+                    <p>Optimized for single-hand use with large touch targets.</p>
+                </div>
+                <div class="demo-box">
+                    <h3>Landscape Phone</h3>
+                    <p>Adjusts layout for wider screens, maintaining readability.</p>
+                </div>
+                <div class="demo-box">
+                    <h3>Tablet Portrait</h3>
+                    <p>Utilizes additional space for enhanced content display.</p>
+                </div>
+                <div class="demo-box">
+                    <h3>Tablet Landscape</h3>
+                    <p>Maximizes use of screen real estate for detailed views.</p>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <p>ScoreMyClays Responsive Design - Demonstrating mobile-first layouts</p>
+        </footer>
+    </div>
+</body>
+</html>

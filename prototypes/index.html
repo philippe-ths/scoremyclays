@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreMyClays MVP Design System Prototypes</title>
+    <style>
+        /* MVP Design System Variables */
+        :root {
+            /* Primary Colors */
+            --color-primary: #D97706;
+            --color-primary-dark: #B45309;
+            
+            /* Action Colors */
+            --color-hit: #22C55E;
+            --color-miss: #EF4444;
+            --color-no-bird: #F59E0B;
+            --color-undo: #6B7280;
+            
+            /* Text Colors */
+            --color-text-primary: #1F2937;
+            --color-text-secondary: #6B7280;
+            --color-text-muted: #9CA3AF;
+            
+            /* Background Colors */
+            --color-bg-primary: #FFFFFF;
+            --color-bg-secondary: #F9FAFB;
+            --color-bg-tertiary: #F3F4F6;
+            
+            /* Border Colors */
+            --color-border: #E5E7EB;
+            --color-border-focus: #D97706;
+            
+            /* Font Families */
+            --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'Roboto Mono', 'SF Mono', Monaco, monospace;
+            
+            /* Font Sizes */
+            --text-xs: 12px;
+            --text-sm: 14px;
+            --text-base: 16px;
+            --text-lg: 18px;
+            --text-xl: 20px;
+            --text-2xl: 24px;
+            --text-3xl: 28px;
+            --text-4xl: 32px;
+            --text-5xl: 48px;
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-primary);
+            background-color: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .header h1 {
+            font-size: var(--text-4xl);
+            font-weight: 800;
+            color: var(--color-text-primary);
+            margin-bottom: 16px;
+        }
+
+        .header p {
+            font-size: var(--text-lg);
+            color: var(--color-text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .prototype-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 32px;
+            margin-bottom: 60px;
+        }
+
+        .prototype-card {
+            background: var(--color-bg-primary);
+            border: 2px solid var(--color-border);
+            border-radius: 16px;
+            padding: 32px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .prototype-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            border-color: var(--color-primary);
+        }
+
+        .prototype-card h3 {
+            font-size: var(--text-2xl);
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: 12px;
+        }
+
+        .prototype-card p {
+            font-size: var(--text-base);
+            color: var(--color-text-secondary);
+            margin-bottom: 20px;
+        }
+
+        .prototype-card .features {
+            list-style: none;
+        }
+
+        .prototype-card .features li {
+            font-size: var(--text-sm);
+            color: var(--color-text-muted);
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .prototype-card .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--color-hit);
+            font-weight: bold;
+        }
+
+        .design-principles {
+            background: var(--color-bg-primary);
+            border: 2px solid var(--color-border);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+        }
+
+        .design-principles h2 {
+            font-size: var(--text-3xl);
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 24px;
+        }
+
+        .principles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+        }
+
+        .principle {
+            padding: 20px;
+            background: var(--color-bg-tertiary);
+            border-radius: 12px;
+        }
+
+        .principle h4 {
+            font-size: var(--text-lg);
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-bottom: 8px;
+        }
+
+        .principle p {
+            font-size: var(--text-sm);
+            color: var(--color-text-secondary);
+        }
+
+        .color-palette {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        .color-swatch {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--text-xs);
+            font-weight: 600;
+            text-align: center;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .swatch-primary { background-color: var(--color-primary); }
+        .swatch-hit { background-color: var(--color-hit); }
+        .swatch-miss { background-color: var(--color-miss); }
+        .swatch-no-bird { background-color: var(--color-no-bird); }
+        .swatch-undo { background-color: var(--color-undo); }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .prototype-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .prototype-card {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>ScoreMyClays MVP Design System</h1>
+            <p>Interactive prototypes demonstrating the ultra-simplified design system for clay pigeon shooting scoring. Each prototype showcases core MVP functionality with outdoor-optimized UI components.</p>
+        </header>
+
+        <section class="design-principles">
+            <h2>MVP Design Principles</h2>
+            <div class="principles-grid">
+                <div class="principle">
+                    <h4>Ultra-Simplicity</h4>
+                    <p>One primary action per screen, extreme visual clarity, instant feedback under 100ms</p>
+                </div>
+                <div class="principle">
+                    <h4>Outdoor Optimized</h4>
+                    <p>High contrast for bright sunlight, large touch targets for gloved hands</p>
+                </div>
+                <div class="principle">
+                    <h4>Offline First</h4>
+                    <p>Core scoring functionality works perfectly without internet connection</p>
+                </div>
+                <div class="principle">
+                    <h4>Safety Conscious</h4>
+                    <p>Never distract from shooting activities, respect traditional clay shooting terminology</p>
+                </div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-swatch swatch-primary">Primary<br/>#D97706</div>
+                <div class="color-swatch swatch-hit">HIT<br/>#22C55E</div>
+                <div class="color-swatch swatch-miss">MISS<br/>#EF4444</div>
+                <div class="color-swatch swatch-no-bird">NO BIRD<br/>#F59E0B</div>
+                <div class="color-swatch swatch-undo">UNDO<br/>#6B7280</div>
+            </div>
+        </section>
+
+        <div class="prototype-grid">
+            <a href="mvp-user-flow.html" class="prototype-card">
+                <h3>MVP User Flow</h3>
+                <p>Complete user journey from session start to final scorecard, demonstrating the core MVP experience.</p>
+                <ul class="features">
+                    <li>Session setup with shooting ground and shooter name</li>
+                    <li>Position-by-position scoring workflow</li>
+                    <li>HIT/MISS/NO BIRD/UNDO button interactions</li>
+                    <li>Running score display and final scorecard</li>
+                    <li>Offline-first data persistence</li>
+                </ul>
+            </a>
+
+            <a href="component-library.html" class="prototype-card">
+                <h3>Component Library</h3>
+                <p>Comprehensive showcase of all MVP UI components with interactive examples and code snippets.</p>
+                <ul class="features">
+                    <li>Action buttons (HIT/MISS/NO BIRD/UNDO)</li>
+                    <li>Score display components</li>
+                    <li>Form inputs and primary action buttons</li>
+                    <li>Layout containers and responsive grids</li>
+                    <li>Toast notifications and loading states</li>
+                </ul>
+            </a>
+
+            <a href="responsive-demo.html" class="prototype-card">
+                <h3>Responsive Design</h3>
+                <p>Mobile-first responsive design demonstration across different screen sizes and orientations.</p>
+                <ul class="features">
+                    <li>Portrait and landscape phone layouts</li>
+                    <li>Tablet optimization (768px+)</li>
+                    <li>Touch target sizing for different devices</li>
+                    <li>Outdoor visibility testing</li>
+                    <li>Glove-friendly interaction patterns</li>
+                </ul>
+            </a>
+
+            <a href="accessibility-demo.html" class="prototype-card">
+                <h3>Accessibility Features</h3>
+                <p>Accessibility-focused demonstration showing inclusive design patterns for all clay shooters.</p>
+                <ul class="features">
+                    <li>High contrast mode (7:1 ratios)</li>
+                    <li>Large touch targets (150x100px minimum)</li>
+                    <li>Screen reader support and ARIA labels</li>
+                    <li>Keyboard navigation patterns</li>
+                    <li>Focus management and skip links</li>
+                </ul>
+            </a>
+
+            <a href="animation-showcase.html" class="prototype-card">
+                <h3>Animation & Feedback</h3>
+                <p>Minimal animation library showcasing button feedback, transitions, and user interaction responses.</p>
+                <ul class="features">
+                    <li>Button press feedback animations</li>
+                    <li>Score update visual feedback</li>
+                    <li>Screen transition animations</li>
+                    <li>Loading states and offline indicators</li>
+                    <li>Success/error feedback patterns</li>
+                </ul>
+            </a>
+
+            <a href="performance-demo.html" class="prototype-card">
+                <h3>Performance Optimization</h3>
+                <p>Performance-focused demonstration showing loading optimization and runtime efficiency.</p>
+                <ul class="features">
+                    <li>Critical CSS inlining (under 14KB)</li>
+                    <li>60fps animation performance</li>
+                    <li>Instant button response (under 100ms)</li>
+                    <li>Minimal DOM manipulation</li>
+                    <li>Battery-efficient interactions</li>
+                </ul>
+            </a>
+        </div>
+
+        <footer style="text-align: center; padding: 40px 0; color: var(--color-text-muted); font-size: var(--text-sm);">
+            <p>ScoreMyClays MVP Design System - Ultra-simplified for core scoring functionality</p>
+            <p>Designed for outdoor visibility, offline reliability, and instant feedback</p>
+        </footer>
+    </div>
+</body>
+</html>

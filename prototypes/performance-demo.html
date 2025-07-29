@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Optimization - ScoreMyClays</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Inline styles for demonstration purposes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #D97706;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .content p {
+            margin-bottom: 16px;
+        }
+
+        .performance-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .demo-box {
+            flex: 1 1 calc(50% - 16px);
+            background-color: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .demo-box h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .demo-box p {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        @media (max-width: 768px) {
+            .demo-box {
+                flex: 1 1 100%;
+            }
+        }
+
+        .footer {
+            background-color: #F3F4F6;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Performance Optimization</h1>
+        </header>
+        <div class="content">
+            <h2>Optimized Performance</h2>
+            <div class="performance-demo">
+                <div class="demo-box">
+                    <h3>Critical CSS Inlining</h3>
+                    <p>Ensures fast loading by inlining essential styles under 14KB.</p>
+                </div>
+                <div class="demo-box">
+                    <h3>60fps Animations</h3>
+                    <p>Utilizes transform and opacity for smooth animations.</p>
+                </div>
+                <div class="demo-box">
+                    <h3>Instant Button Response</h3>
+                    <p>All interactions respond in under 100ms for a seamless experience.</p>
+                </div>
+                <div class="demo-box">
+                    <h3>Minimal DOM Manipulation</h3>
+                    <p>Efficient updates to ensure high performance and low battery usage.</p>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <p>ScoreMyClays Performance Optimization - Ensuring fast and efficient interactions</p>
+        </footer>
+    </div>
+</body>
+</html>

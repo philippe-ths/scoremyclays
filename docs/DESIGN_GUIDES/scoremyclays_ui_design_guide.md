@@ -1,699 +1,448 @@
 ---
-id: scoremyclays_ui_design_guide
-title: ScoreMyClays UI Design Guide
-sidebar_label: ScoreMyClays UI Design Guide
+id: scoremyclays_ui_design_guide_mvp
+title: ScoreMyClays MVP UI Design Guide
+sidebar_label: MVP UI Design Guide
 ---
 
-# ScoreMyClays UI Design Guide
+# ScoreMyClays MVP UI Design Guide
 
-*Comprehensive visual design system adapted from GolfGameBook analysis*
+*Ultra-simplified visual design system for MVP - focused on core scoring functionality*
 
 ## Executive Summary
 
-This UI design guide establishes the visual language for ScoreMyClays, translating GolfGameBook's successful design patterns to clay shooting contexts. The system prioritizes outdoor visibility, touch-friendly interactions, and professional presentation while respecting British clay shooting traditions.
+This MVP UI design guide establishes a **minimal, focused visual language** for ScoreMyClays MVP, prioritizing **extreme simplicity, outdoor visibility, and instant usability**. Based on proven golf app patterns and clay shooting requirements, this system ensures users can score effectively with minimal cognitive load.
+
+**MVP Focus**: Single discipline (Sporting Clays), offline-first scoring, ultra-simple interface.
 
 ---
 
-## 1. Design Philosophy
+## 1. MVP Design Philosophy
 
-### 1.1 Core Design Principles
-**Outdoor Sports Optimization:**
-- **High contrast first** - visibility in bright outdoor conditions
-- **Large touch targets** - gloved hands and safety considerations
-- **Immediate feedback** - instant visual confirmation of actions
-- **Minimal cognitive load** - focus remains on shooting safety
+### 1.1 Core Principles (MVP)
+**Ultra-Simplicity First:**
+- **One primary action per screen** - no exceptions
+- **Extreme visual clarity** - high contrast, large elements
+- **Instant feedback** - < 100ms response to all taps
+- **Offline-optimized** - works perfectly without internet
 
-**Clay Shooting Heritage:**
-- **Traditional color schemes** - earth tones, clay orange, gun metal
-- **Professional presentation** - suitable for club records
-- **British sporting culture** - respect for tradition and formality
-- **Safety-conscious design** - never distract from shooting protocols
+**Clay Shooting Context:**
+- **Outdoor visibility** - bright sunlight readability
+- **Glove compatibility** - large touch targets
+- **Safety conscious** - never distract from shooting
+- **Traditional respect** - familiar clay shooting terminology
 
-### 1.2 Visual Hierarchy
-**Primary Level:**
-- Current score and round information
-- Essential action buttons (HIT/MISS)
-- Safety-critical information
-- Navigation elements
+### 1.2 MVP Visual Hierarchy
+**Primary Level (Only):**
+- Current target number and position
+- HIT/MISS/NO BIRD/UNDO buttons
+- Running score display
+- Next action button
 
-**Secondary Level:**
-- Round details and statistics
-- Social features and notifications
-- Weather and ground information
-- Performance trends
-
-**Tertiary Level:**
-- Historical data and analytics
-- Settings and preferences
-- Help and support content
-- Advanced features
+**Everything Else is Secondary** - removed from MVP interface
 
 ---
 
-## 2. Color System
+## 2. MVP Color System
 
-### 2.1 Primary Color Palette
+### 2.1 Primary Colors (3 Only)
 **Clay Orange (#D2691E):**
-- **Usage**: Primary brand color, CTAs, highlights
-- **Accessibility**: WCAG AA compliant with white text
-- **Emotion**: Energetic, sporting, traditional clay target color
-- **Applications**: Buttons, active states, notifications
+- Usage: Primary actions, active states
+- Applications: "Start Session", active buttons, progress
 
-**Gun Metal (#2C3E50):**
-- **Usage**: Primary text, navigation, professional elements
-- **Accessibility**: WCAG AAA compliant with white backgrounds
-- **Emotion**: Professional, reliable, traditional
-- **Applications**: Headers, body text, icons
-
-**Field Green (#228B22):**
-- **Usage**: Success states, positive feedback, nature connection
-- **Accessibility**: WCAG AA compliant with white text
-- **Emotion**: Success, nature, shooting ground environment
-- **Applications**: Success indicators, positive notifications
-
-### 2.2 Secondary Color Palette
-**Sky Blue (#87CEEB):**
-- **Usage**: Information states, secondary actions
-- **Accessibility**: WCAG AA compliant with dark text
-- **Emotion**: Calm, informative, open sky
-- **Applications**: Info badges, secondary buttons
-
-**Warning Amber (#FFB000):**
-- **Usage**: Warnings, important notifications
-- **Accessibility**: WCAG AA compliant with dark text
-- **Emotion**: Caution, attention, safety
-- **Applications**: Warning alerts, missing data indicators
+**Success Green (#228B22):**
+- Usage: HIT button only
+- Applications: Hit confirmation, positive feedback
 
 **Error Red (#DC143C):**
-- **Usage**: Errors, deletion, negative feedback
-- **Accessibility**: WCAG AA compliant with white text
-- **Emotion**: Alert, stop, error
-- **Applications**: Error messages, deletion confirmations
+- Usage: MISS button only
+- Applications: Miss indication, error states
 
-### 2.3 Neutral Color Palette
-**Background Colors:**
-- **Light Mode**: #FFFFFF (Pure white)
-- **Dark Mode**: #1A1A1A (Near black)
-- **Card Background**: #F8F9FA (Light gray)
-- **Surface**: #E9ECEF (Medium gray)
+### 2.2 Neutral Colors (Minimal)
+**Background:**
+- Light Mode: #FFFFFF (Pure white)
+- Text: #2C3E50 (Gun Metal)
+- Disabled: #ADB5BD (Light gray)
 
-**Text Colors:**
-- **Primary Text**: #212529 (Dark gray)
-- **Secondary Text**: #6C757D (Medium gray)
-- **Disabled Text**: #ADB5BD (Light gray)
-- **Inverted Text**: #FFFFFF (White)
-
-### 2.4 Accessibility Considerations
-**Contrast Ratios:**
-- **Large text**: Minimum 3:1 ratio
-- **Small text**: Minimum 4.5:1 ratio
-- **Interactive elements**: 4.5:1 minimum
-- **Brand colors**: All tested for accessibility
-
-**Color Blindness:**
-- **Red-green**: Patterns and icons supplement color
-- **Blue-yellow**: Sufficient contrast maintained
-- **Total color blindness**: High contrast modes available
+### 2.3 MVP Color Rules
+- **Maximum 5 colors total** in the entire app
+- **High contrast ratios**: 7:1 minimum for outdoor use
+- **No gradients or complex color schemes**
+- **Color-blind friendly**: Patterns supplement all color coding
 
 ---
 
-## 3. Typography System
+## 3. MVP Typography System
 
-### 3.1 Font Family
-**Primary Font: Inter**
-- **Rationale**: Optimized for UI, excellent readability
-- **Weights**: Regular (400), Medium (500), Semi-Bold (600), Bold (700)
-- **Fallbacks**: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto
+### 3.1 Font Family (Single)
+**Primary Font: Inter (System Fallback)**
+- Weights: Regular (400), Semi-Bold (600), Bold (700)
+- Fallbacks: -apple-system, BlinkMacSystemFont, "Segoe UI"
 
-**Secondary Font: Roboto Mono**
-- **Usage**: Score displays, statistics, data tables
-- **Rationale**: Monospace for aligned numerical data
-- **Weights**: Regular (400), Medium (500), Bold (700)
+### 3.2 MVP Type Scale (Simplified)
+**Extra Large (48px/3rem):**
+- Usage: Current score display
+- Weight: Bold (700)
+- Example: "7/10"
 
-### 3.2 Type Scale
-**Display (32px/2rem):**
-- **Usage**: Page titles, major headings
-- **Weight**: Bold (700)
-- **Line height**: 1.2
-- **Example**: "ESP Round 1"
+**Large (32px/2rem):**
+- Usage: Target numbers, position names
+- Weight: Semi-Bold (600)
+- Example: "Target 3 of 10"
 
-**Heading Large (24px/1.5rem):**
-- **Usage**: Section titles, card headers
-- **Weight**: Semi-Bold (600)
-- **Line height**: 1.3
-- **Example**: "Stand 3 of 8"
+**Medium (24px/1.5rem):**
+- Usage: Button labels
+- Weight: Semi-Bold (600)
+- Example: "HIT", "MISS"
 
-**Heading Medium (20px/1.25rem):**
-- **Usage**: Subsection titles
-- **Weight**: Medium (500)
-- **Line height**: 1.4
-- **Example**: "Running Score"
-
-**Body Large (18px/1.125rem):**
-- **Usage**: Important body text, button labels
-- **Weight**: Regular (400)
-- **Line height**: 1.5
-- **Example**: Score entry buttons
-
-**Body (16px/1rem):**
-- **Usage**: Standard body text
-- **Weight**: Regular (400)
-- **Line height**: 1.5
-- **Example**: General content
-
-**Caption (14px/0.875rem):**
-- **Usage**: Secondary information, metadata
-- **Weight**: Regular (400)
-- **Line height**: 1.4
-- **Example**: "Shot at Bisley Camp"
-
-**Small (12px/0.75rem):**
-- **Usage**: Fine print, timestamps
-- **Weight**: Regular (400)
-- **Line height**: 1.3
-- **Example**: "Updated 5 mins ago"
+**Body (18px/1.125rem):**
+- Usage: Secondary text, input labels
+- Weight: Regular (400)
+- Example: "Position Name"
 
 ### 3.3 Outdoor Readability
-**High Contrast Mode:**
-- **Increased font weights**: Medium becomes default
-- **Larger sizes**: 18px minimum for body text
-- **Enhanced spacing**: 1.6 line height minimum
-- **Bold emphasis**: Important text automatically bold
-
-**Glare Protection:**
-- **Dark mode**: Reduces screen brightness
-- **Text shadows**: Subtle shadows for enhanced readability
-- **Background opacity**: Semi-transparent overlays
-- **Contrast adjustment**: User-controlled contrast levels
+- **Minimum 18px for all text**
+- **Bold weight for all important text**
+- **High contrast backgrounds always**
+- **No text over images** in MVP
 
 ---
 
-## 4. Component Design System
+## 4. MVP Component System
 
-### 4.1 Buttons
-**Primary Button (Clay Orange):**
-```
-Background: #D2691E
-Text: #FFFFFF
-Padding: 16px 24px
-Border radius: 8px
-Font: Body Large, Medium (500)
-Min height: 48px
-```
-
-**Secondary Button (Outline):**
-```
-Background: Transparent
-Border: 2px solid #D2691E
-Text: #D2691E
-Padding: 14px 22px
-Border radius: 8px
-Font: Body Large, Medium (500)
-Min height: 48px
+### 4.1 Score Entry Buttons (Primary)
+**HIT Button:**
+```css
+.score-button--hit {
+  width: 150px;
+  height: 100px;
+  background-color: #228B22;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
 ```
 
-**Tertiary Button (Text):**
-```
-Background: Transparent
-Text: #2C3E50
-Padding: 12px 16px
-Font: Body Large, Medium (500)
-Min height: 44px
-```
-
-**Large Action Button (Score Entry):**
-```
-Background: #F8F9FA
-Border: 2px solid #E9ECEF
-Text: #2C3E50
-Padding: 20px
-Border radius: 12px
-Font: Display, Bold (700)
-Min height: 80px
-Active state: Clay Orange background
+**MISS Button:**
+```css
+.score-button--miss {
+  width: 150px;
+  height: 100px;
+  background-color: #DC143C;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
 ```
 
-### 4.2 Score Entry Interface
-**Hit/Miss Buttons:**
-```
-HIT Button:
-- Background: #228B22
-- Text: #FFFFFF
-- Size: 120px x 80px
-- Border radius: 12px
-- Font: Heading Large, Bold
-
-MISS Button:
-- Background: #DC143C
-- Text: #FFFFFF
-- Size: 120px x 80px
-- Border radius: 12px
-- Font: Heading Large, Bold
+**Secondary Buttons (NO BIRD, UNDO):**
+```css
+.score-button--secondary {
+  width: 120px;
+  height: 80px;
+  background-color: #F8F9FA;
+  color: #2C3E50;
+  border: 2px solid #E9ECEF;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+}
 ```
 
-**Number Pad (for disciplines with numerical scores):**
-```
-Number Buttons:
-- Background: #F8F9FA
-- Border: 2px solid #E9ECEF
-- Text: #2C3E50
-- Size: 80px x 80px
-- Border radius: 12px
-- Font: Display, Bold
-- Active: Clay Orange background
-```
-
-### 4.3 Cards & Containers
-**Standard Card:**
-```
-Background: #FFFFFF
-Border: 1px solid #E9ECEF
-Border radius: 12px
-Padding: 20px
-Box shadow: 0 2px 4px rgba(0,0,0,0.1)
+### 4.2 Primary Action Button
+**Start Session / Next Position:**
+```css
+.primary-action {
+  width: 100%;
+  height: 60px;
+  background-color: #D2691E;
+  color: #FFFFFF;
+  border-radius: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  border: none;
+  margin: 24px 0;
+}
 ```
 
-**Round Summary Card:**
-```
-Background: #FFFFFF
-Border: 2px solid #D2691E
-Border radius: 12px
-Padding: 24px
-Box shadow: 0 4px 8px rgba(0,0,0,0.15)
+### 4.3 Score Display
+**Running Score:**
+```css
+.score-display {
+  background-color: #F8F9FA;
+  border: 3px solid #E9ECEF;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.score-display__current {
+  font-size: 48px;
+  font-weight: 700;
+  color: #2C3E50;
+  line-height: 1.1;
+}
+
+.score-display__label {
+  font-size: 18px;
+  font-weight: 600;
+  color: #6C757D;
+  margin-top: 8px;
+}
 ```
 
-**Stat Card:**
-```
-Background: #F8F9FA
-Border: 1px solid #E9ECEF
-Border radius: 8px
-Padding: 16px
-Text align: center
-```
+### 4.4 Input Fields (Minimal)
+**Text Input:**
+```css
+.form-input {
+  width: 100%;
+  padding: 20px;
+  border: 3px solid #E9ECEF;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 400;
+  color: #2C3E50;
+  background-color: #FFFFFF;
+  min-height: 60px;
+}
 
-### 4.4 Navigation
-**Bottom Navigation:**
-```
-Background: #FFFFFF
-Border top: 1px solid #E9ECEF
-Height: 84px
-Padding: 8px 0
-
-Tab Items:
-- Icon size: 24px
-- Text: Caption, Medium (500)
-- Active color: #D2691E
-- Inactive color: #6C757D
-- Min touch target: 44px x 44px
-```
-
-**Primary Action (SHOOT):**
-```
-Background: #D2691E
-Border radius: 50% (circular)
-Size: 64px x 64px
-Icon: 32px, white
-Shadow: 0 4px 12px rgba(210,105,30,0.3)
-```
-
-### 4.5 Input Fields
-**Standard Input:**
-```
-Background: #FFFFFF
-Border: 2px solid #E9ECEF
-Border radius: 8px
-Padding: 16px
-Font: Body, Regular
-Min height: 48px
-Focus: Clay Orange border
-```
-
-**Search Input:**
-```
-Background: #F8F9FA
-Border: 1px solid #E9ECEF
-Border radius: 24px
-Padding: 12px 16px
-Font: Body, Regular
-Icon: Search icon left-aligned
-Placeholder: Medium gray
-```
-
-### 4.6 Data Display
-**Score Display:**
-```
-Background: #F8F9FA
-Border: 2px solid #E9ECEF
-Border radius: 8px
-Padding: 16px
-Font: Roboto Mono, Bold
-Text align: center
-Color: #2C3E50
-```
-
-**Statistics Table:**
-```
-Background: #FFFFFF
-Border: 1px solid #E9ECEF
-Cell padding: 12px
-Header background: #F8F9FA
-Header font: Body, Medium (500)
-Data font: Roboto Mono, Regular
-Alternating row colors
+.form-input:focus {
+  outline: none;
+  border-color: #D2691E;
+  box-shadow: 0 0 0 3px rgba(210,105,30,0.2);
+}
 ```
 
 ---
 
-## 5. Iconography System
+## 5. MVP Layout System
 
-### 5.1 Icon Style
-**Design Principles:**
-- **Outlined style**: 2px stroke weight
-- **Rounded corners**: 2px radius on line ends
-- **Consistent sizing**: 24px standard, 32px for primary actions
-- **Optical alignment**: Visual center, not geometric center
+### 5.1 Screen Structure (Standard)
+**All MVP screens follow this pattern:**
+```
+[Header: Position/Target Info]
+[Main Content: Score Display or Input]
+[Action Buttons: Large, Centered]
+[Secondary Actions: Smaller, Bottom]
+```
 
-### 5.2 Core Icons
-**Navigation Icons:**
-- **Home**: House outline
-- **Scores**: Target with score markings
-- **Shoot**: Crosshair or target
-- **Compete**: Trophy outline
-- **Profile**: User circle
-
-**Action Icons:**
-- **Add**: Plus circle
-- **Edit**: Pencil
-- **Delete**: Trash can
-- **Share**: Share arrow
-- **Settings**: Gear
-
-**Status Icons:**
-- **Success**: Checkmark circle (green)
-- **Error**: X circle (red)
-- **Warning**: Exclamation triangle (amber)
-- **Info**: Info circle (blue)
-
-### 5.3 Clay Shooting Specific Icons
-**Disciplines:**
-- **ESP**: Sporting clays icon
-- **DTL**: Down the line target
-- **Skeet**: Skeet field layout
-- **Trap**: Trap house icon
-
-**Equipment:**
-- **Gun**: Shotgun silhouette
-- **Cartridge**: Shell icon
-- **Choke**: Choke tube icon
-- **Glasses**: Safety glasses
-
-**Scoring:**
-- **Hit**: Filled circle or checkmark
-- **Miss**: Empty circle or X
-- **Kill**: Broken target icon
-- **Lost**: Intact target icon
-
----
-
-## 6. Layout System
-
-### 6.1 Grid System
-**12-Column Grid:**
-- **Container max-width**: 1200px
-- **Gutter width**: 20px
-- **Breakpoints**: 
-  - Mobile: 375px
-  - Tablet: 768px
-  - Desktop: 1024px
-
-**Mobile-First Approach:**
-- **Single column**: Default layout
-- **Two columns**: Tablet landscape
-- **Multi-column**: Desktop only
-
-### 6.2 Spacing System
+### 5.2 Spacing System (Simplified)
 **Base Unit: 8px**
-- **XS**: 4px (0.25rem)
-- **S**: 8px (0.5rem)
-- **M**: 16px (1rem)
-- **L**: 24px (1.5rem)
-- **XL**: 32px (2rem)
-- **XXL**: 40px (2.5rem)
+- Small: 8px
+- Medium: 16px
+- Large: 24px
+- Extra Large: 32px
 
 **Component Spacing:**
-- **Internal padding**: 16px standard
-- **Between components**: 24px
-- **Section spacing**: 32px
-- **Page margins**: 20px mobile, 32px desktop
+- Button padding: 20px
+- Screen margins: 20px
+- Between elements: 24px
+- Section spacing: 32px
 
-### 6.3 Responsive Behavior
-**Mobile (375px - 767px):**
-- **Single column layouts**
-- **Full-width components**
-- **Stacked navigation**
-- **Touch-optimized spacing**
-
-**Tablet (768px - 1023px):**
-- **Two-column layouts**
-- **Sidebar navigation**
-- **Larger touch targets**
-- **Landscape optimizations**
-
-**Desktop (1024px+):**
-- **Multi-column layouts**
-- **Hover states**
-- **Keyboard navigation**
-- **Dense information display**
+### 5.3 Touch Targets
+**Minimum Sizes:**
+- Primary buttons: 150x100px
+- Secondary buttons: 120x80px
+- Text inputs: 60px height
+- All interactive elements: 44x44px minimum
 
 ---
 
-## 7. Interaction Design
+## 6. MVP Screen Specifications
+
+### 6.1 Start Screen
+**Elements:**
+- App title (32px, bold)
+- "Shooting Ground" input field
+- "Shooter Name" input field
+- "Start Session" button (primary action)
+
+**Layout:**
+- Centered, single column
+- Maximum 4 elements on screen
+- Large spacing between elements
+
+### 6.2 Position Setup Screen
+**Elements:**
+- "Position 1 of 10" (32px, bold)
+- "Position Name" input field
+- "Start Shooting" button (primary action)
+
+### 6.3 Scoring Screen (Core)
+**Elements:**
+- Position name (24px)
+- "Target X of 10" (32px, bold)
+- Current position score "X/10" (48px, bold)
+- HIT button (150x100px, green)
+- MISS button (150x100px, red)
+- NO BIRD button (120x80px, gray)
+- UNDO button (120x80px, gray)
+
+**Layout:**
+- Score display at top
+- HIT/MISS buttons side by side, centered
+- NO BIRD/UNDO buttons below, smaller
+
+### 6.4 Position Summary Screen
+**Elements:**
+- "Position X Complete" (32px, bold)
+- Position score "X/10" (48px, bold)
+- Running total "Total: X/Y" (32px)
+- "Next Position" button (primary action)
+
+### 6.5 Final Scorecard Screen
+**Elements:**
+- "Session Complete" (32px, bold)
+- Final score "X/100" (48px, bold)
+- Position breakdown (simple list)
+- "Start New Session" button (primary action)
+
+---
+
+## 7. MVP Interaction Design
 
 ### 7.1 Touch Interactions
-**Minimum Touch Targets:**
-- **Buttons**: 44px x 44px minimum
-- **Score entry**: 80px x 80px for primary actions
-- **Links**: 40px x 40px minimum
-- **Form inputs**: 48px height minimum
+**Button Press Feedback:**
+- Immediate color change (< 50ms)
+- Scale animation (0.95x for 100ms)
+- Haptic feedback (if available)
+- Audio feedback (optional)
 
-**Feedback Patterns:**
-- **Immediate visual feedback**: Color change on touch
-- **Haptic feedback**: Vibration for score entry
-- **Audio feedback**: Optional sound confirmation
-- **Loading states**: Skeleton screens, never spinners
+### 7.2 Gestures (Minimal)
+**Supported:**
+- Tap: All primary interactions
+- Long press: UNDO confirmation
 
-### 7.2 Gestures
-**Supported Gestures:**
-- **Tap**: Primary selection
-- **Long press**: Context menus
-- **Swipe**: Navigation between screens
-- **Pull to refresh**: Update data
-- **Pinch to zoom**: Scorecard viewing
+**Not Supported in MVP:**
+- Swipe gestures
+- Pinch to zoom
+- Complex multi-touch
 
-**Avoided Gestures:**
-- **Complex multi-finger**: Difficult with gloves
-- **Precise movements**: Challenging outdoors
-- **Hidden interactions**: All actions visible
+### 7.3 Animations (Minimal)
+**Button Press:**
+```css
+.button-press {
+  transform: scale(0.95);
+  transition: transform 0.1s ease;
+}
+```
 
-### 7.3 Animation & Transitions
-**Micro-interactions:**
-- **Button press**: 100ms scale down
-- **Success feedback**: 300ms checkmark animation
-- **Error shake**: 200ms horizontal movement
-- **Loading pulse**: 1000ms opacity cycle
+**Score Update:**
+```css
+.score-update {
+  animation: pulse 0.3s ease;
+}
 
-**Page Transitions:**
-- **Slide transitions**: 300ms ease-out
-- **Fade overlays**: 200ms opacity change
-- **Modal appearance**: 250ms scale up
-- **Bottom sheet**: 300ms slide up
-
----
-
-## 8. Accessibility Features
-
-### 8.1 Visual Accessibility
-**High Contrast Mode:**
-- **Enhanced contrast ratios**: 7:1 minimum
-- **Bold text options**: Automatically applied
-- **Larger text sizes**: User-controlled scaling
-- **Reduced motion**: Disable animations
-
-**Low Vision Support:**
-- **Screen reader compatibility**: Full VoiceOver support
-- **Focus indicators**: High contrast outlines
-- **Color-blind friendly**: Patterns supplement color
-- **Magnification**: Works with system zoom
-
-### 8.2 Motor Accessibility
-**Touch Assistance:**
-- **Larger touch targets**: 60px minimum option
-- **Sticky buttons**: Prevent accidental presses
-- **Voice input**: Score entry by voice
-- **Switch control**: External device support
-
-**Outdoor Considerations:**
-- **Glove compatibility**: Capacitive touch optimized
-- **One-handed operation**: All primary functions
-- **Simplified interactions**: Reduce complex gestures
-- **Error prevention**: Confirmation dialogs
-
-### 8.3 Cognitive Accessibility
-**Mental Load Reduction:**
-- **Familiar patterns**: Consistent interactions
-- **Clear labeling**: Descriptive button text
-- **Progress indicators**: Show completion status
-- **Undo functionality**: Reversible actions
-
-**Learning Support:**
-- **Contextual help**: Discipline-specific guidance
-- **Tutorials**: Interactive learning
-- **Tooltips**: Explanation for complex features
-- **Consistent behavior**: Predictable responses
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+```
 
 ---
 
-## 9. Brand Integration
+## 8. MVP Accessibility
 
-### 9.1 Logo Treatment
-**Primary Logo:**
-- **Horizontal layout**: Full name with icon
-- **Vertical layout**: Stacked for square spaces
-- **Icon only**: 32px minimum size
-- **Monochrome**: Single color versions
+### 8.1 Essential Features
+**Visual:**
+- High contrast mode (7:1 ratios)
+- Large text options (user scalable)
+- Clear focus indicators
 
-**Usage Guidelines:**
-- **Clear space**: 2x logo height on all sides
-- **Minimum size**: 120px wide for horizontal
-- **Background contrast**: Always legible
-- **No modifications**: Use approved versions only
+**Motor:**
+- Large touch targets (150x100px minimum)
+- No precise gestures required
+- Voice input for score entry (future)
 
-### 9.2 Brand Voice in UI
-**Tone Characteristics:**
-- **Professional**: Serious about the sport
-- **Approachable**: Welcoming to beginners
-- **Encouraging**: Celebrates improvement
-- **Precise**: Accurate and detailed
+**Cognitive:**
+- One action per screen
+- Clear, simple language
+- Consistent button placement
 
-**Copy Guidelines:**
-- **Button text**: Action-oriented (Record, Share, Join)
-- **Error messages**: Helpful, not blaming
-- **Success messages**: Encouraging, specific
-- **Instructions**: Clear, concise steps
-
-### 9.3 Clay Shooting Context
-**Cultural Sensitivity:**
-- **Traditional terminology**: Use established terms
-- **British English**: Colour, honour, centre
-- **Formal address**: Respectful communication
-- **Safety emphasis**: Always prioritize safety
-
-**Visual References:**
-- **Clay targets**: Orange circles, broken patterns
-- **Shooting grounds**: Rural, green environments
-- **Equipment**: Shotguns, cartridges, safety gear
-- **Competitions**: Trophies, certificates, classifications
+### 8.2 Screen Reader Support
+```css
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+```
 
 ---
 
-## 10. Implementation Guidelines
+## 9. MVP Performance Guidelines
 
-### 10.1 Development Handoff
-**Asset Delivery:**
-- **SVG icons**: Scalable, all sizes
-- **PNG fallbacks**: 1x, 2x, 3x resolutions
-- **Color definitions**: Hex, RGB, HSL values
-- **Typography**: Font files and specifications
+### 9.1 Loading Performance
+- **Critical CSS inline** (< 14KB)
+- **Images optimized** (WebP format)
+- **Fonts preloaded** (Inter only)
+- **No external dependencies** for core functionality
 
-**Component Specifications:**
-- **Measurement units**: Pixels and rem values
-- **Interaction states**: Hover, active, disabled
-- **Responsive behavior**: Breakpoint specifications
-- **Animation timings**: Duration and easing
-
-### 10.2 Quality Assurance
-**Testing Requirements:**
-- **Cross-device testing**: Multiple screen sizes
-- **Accessibility testing**: Screen readers, keyboard
-- **Performance testing**: Loading times, animations
-- **Usability testing**: Real user feedback
-
-**Approval Process:**
-- **Design review**: Stakeholder approval
-- **Development review**: Technical feasibility
-- **User testing**: Validation with clay shooters
-- **Iteration cycles**: Continuous improvement
-
-### 10.3 Design System Evolution
-**Version Control:**
-- **Component library**: Centralized design system
-- **Documentation**: Always up-to-date
-- **Change tracking**: Version history
-- **Team communication**: Updates and rationale
-
-**Continuous Improvement:**
-- **User feedback**: Regular collection and analysis
-- **Analytics integration**: Usage pattern analysis
-- **Performance monitoring**: System responsiveness
-- **Accessibility audits**: Regular compliance checks
+### 9.2 Runtime Performance
+- **60fps animations** (transform/opacity only)
+- **Instant button response** (< 100ms)
+- **Minimal DOM manipulation**
+- **Efficient event handling**
 
 ---
 
-## 11. Platform-Specific Considerations
+## 10. MVP Implementation Checklist
 
-### 11.1 iOS Design Adaptations
-**iOS Guidelines:**
-- **SF Symbols**: Use system icons where appropriate
-- **Navigation patterns**: iOS-standard back buttons
-- **Keyboard handling**: Proper input management
-- **Safe areas**: Respect notch and home indicator
+### 10.1 Core Components
+- [ ] Score entry buttons (HIT/MISS/NO BIRD/UNDO)
+- [ ] Score display component
+- [ ] Primary action button
+- [ ] Text input field
+- [ ] Screen layout container
 
-**iOS-Specific Features:**
-- **Dynamic Type**: Support system text sizing
-- **Dark Mode**: Automatic theme switching
-- **Haptic feedback**: Appropriate haptic patterns
-- **Shortcuts**: Siri integration for common actions
+### 10.2 Screens
+- [ ] Start screen
+- [ ] Position setup screen
+- [ ] Scoring screen
+- [ ] Position summary screen
+- [ ] Final scorecard screen
 
-### 11.2 Android Design Adaptations
-**Material Design Elements:**
-- **Floating Action Button**: Primary action emphasis
-- **Bottom sheets**: Android-standard modals
-- **Snackbars**: Temporary messages
-- **Ripple effects**: Touch feedback
+### 10.3 Interactions
+- [ ] Button press feedback
+- [ ] Score update animations
+- [ ] Form validation
+- [ ] Navigation flow
 
-**Android-Specific Features:**
-- **Adaptive icons**: Multiple icon formats
-- **Back button**: Hardware back button support
-- **Notification system**: Rich notifications
-- **Widgets**: Home screen widgets
-
-### 11.3 Web Application Considerations
-**Progressive Web App:**
-- **Responsive design**: All screen sizes
-- **Offline functionality**: Service worker implementation
-- **App-like experience**: Full-screen, no browser chrome
-- **Installation**: Add to home screen
-
-**Web-Specific Features:**
-- **Keyboard navigation**: Full accessibility
-- **URL routing**: Bookmarkable pages
-- **Print styles**: Scorecard printing
-- **Share API**: Native sharing when available
+### 10.4 Accessibility
+- [ ] High contrast support
+- [ ] Large touch targets
+- [ ] Screen reader labels
+- [ ] Keyboard navigation
 
 ---
 
 ## Conclusion
 
-This UI design guide provides a comprehensive visual framework for ScoreMyClays, adapted from GolfGameBook's proven success patterns. The system balances modern design principles with clay shooting traditions, ensuring both usability and cultural appropriateness.
+This MVP UI design guide provides a **ultra-focused, simplified design system** that prioritizes the core scoring experience. By eliminating complexity and focusing on the essential user journey, ScoreMyClays MVP will deliver a fast, reliable, and intuitive clay shooting scoring experience.
 
-Key success factors:
-- **Outdoor optimization**: High contrast, large targets, glove compatibility
-- **Professional presentation**: Suitable for official records and sharing
-- **Accessibility first**: Inclusive design for all users
-- **Clay shooting context**: Respectful of traditions and terminology
+**Key Success Factors:**
+- **Extreme simplicity** - one action per screen
+- **Outdoor optimization** - high contrast, large targets
+- **Instant feedback** - immediate response to all actions
+- **Offline-first** - works perfectly without internet
 
-By following these guidelines, ScoreMyClays will deliver a visually appealing, highly functional, and culturally appropriate experience that serves the UK clay shooting community effectively.
+The design system intentionally excludes 90% of typical app features to focus on validating the core concept quickly and efficiently.
 
 ---
 
-*Next: Component specifications, design tokens, and asset library creation.*
+*Next: UX Design Guide MVP and Component Implementation Examples*

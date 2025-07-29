@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animation & Feedback - ScoreMyClays</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Inline styles for demonstration purposes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #D97706;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .content p {
+            margin-bottom: 16px;
+        }
+
+        .animation-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .demo-box {
+            flex: 1 1 calc(50% - 16px);
+            background-color: #F3F4F6;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .demo-box h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .demo-box p {
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #22C55E;
+            color: #FFFFFF;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .button:hover {
+            background-color: #16A34A;
+        }
+
+        .button:active {
+            background-color: #15803D;
+        }
+
+        @keyframes button-press {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1); }
+        }
+
+        .animate-press {
+            animation: button-press 0.15s ease;
+        }
+
+        @media (max-width: 768px) {
+            .demo-box {
+                flex: 1 1 100%;
+            }
+        }
+
+        .footer {
+            background-color: #F3F4F6;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Animation & Feedback</h1>
+        </header>
+        <div class="content">
+            <h2>Interactive Feedback</h2>
+            <div class="animation-demo">
+                <div class="demo-box">
+                    <h3>Button Press Animation</h3>
+                    <p>Visual feedback for button interactions.</p>
+                    <a href="#" class="button animate-press">Press Me</a>
+                </div>
+                <div class="demo-box">
+                    <h3>Score Update Animation</h3>
+                    <p>Visual feedback for score updates.</p>
+                    <div style="background-color: #FFFFFF; border: 3px solid #E5E7EB; border-radius: 12px; padding: 24px; text-align: center; animation: pulse 0.3s ease;">
+                        <div style="font-size: 48px; font-weight: 900; color: #1F2937;">7/10</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <p>ScoreMyClays Animation & Feedback - Enhancing user interaction</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MVP User Flow - ScoreMyClays</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Inline styles for demonstration purposes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #D97706;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .content p {
+            margin-bottom: 16px;
+        }
+
+        .button {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #22C55E;
+            color: #FFFFFF;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .button:hover {
+            background-color: #16A34A;
+        }
+
+        .button:active {
+            background-color: #15803D;
+        }
+
+        .footer {
+            background-color: #F3F4F6;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>MVP User Flow</h1>
+        </header>
+        <div class="content">
+            <h2>Session Start</h2>
+            <p>Enter the shooting ground and shooter name to begin a new session.</p>
+            <a href="#" class="button">Start Session</a>
+
+            <h2>Position Setup</h2>
+            <p>Enter the position name and prepare for scoring.</p>
+            <a href="#" class="button">Start Shooting</a>
+
+            <h2>Scoring</h2>
+            <p>Use the HIT, MISS, NO BIRD, and UNDO buttons to record scores.</p>
+            <a href="#" class="button">Next Position</a>
+
+            <h2>Final Scorecard</h2>
+            <p>Review the final scorecard and start a new session if desired.</p>
+            <a href="#" class="button">Start New Session</a>
+        </div>
+        <footer class="footer">
+            <p>ScoreMyClays MVP User Flow - Demonstrating core scoring functionality</p>
+        </footer>
+    </div>
+</body>
+</html>

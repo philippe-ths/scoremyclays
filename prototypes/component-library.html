@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Component Library - ScoreMyClays</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Inline styles for demonstration purposes */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB;
+            color: #1F2937;
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #D97706;
+            color: #FFFFFF;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .content p {
+            margin-bottom: 16px;
+        }
+
+        .component {
+            margin-bottom: 32px;
+        }
+
+        .component h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .component .example {
+            background-color: #F3F4F6;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #22C55E;
+            color: #FFFFFF;
+            text-align: center;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-right: 8px;
+            text-decoration: none;
+            transition: background-color 0.2s ease;
+        }
+
+        .button:hover {
+            background-color: #16A34A;
+        }
+
+        .button:active {
+            background-color: #15803D;
+        }
+
+        .footer {
+            background-color: #F3F4F6;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Component Library</h1>
+        </header>
+        <div class="content">
+            <h2>UI Components</h2>
+            <div class="component">
+                <h3>Action Buttons</h3>
+                <div class="example">
+                    <a href="#" class="button">HIT</a>
+                    <a href="#" class="button" style="background-color: #EF4444;">MISS</a>
+                    <a href="#" class="button" style="background-color: #F59E0B;">NO BIRD</a>
+                    <a href="#" class="button" style="background-color: #6B7280;">UNDO</a>
+                </div>
+            </div>
+
+            <div class="component">
+                <h3>Score Display</h3>
+                <div class="example">
+                    <div style="background-color: #FFFFFF; border: 3px solid #E5E7EB; border-radius: 12px; padding: 24px; text-align: center;">
+                        <div style="font-size: 18px; font-weight: 600; color: #6B7280;">Current Position</div>
+                        <div style="font-size: 48px; font-weight: 900; color: #1F2937;">7/10</div>
+                        <div style="font-size: 24px; font-weight: 700; color: #D97706;">Running Total: 35/50</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="component">
+                <h3>Form Inputs</h3>
+                <div class="example">
+                    <input type="text" placeholder="Shooter Name" style="width: 100%; padding: 12px; border: 3px solid #E5E7EB; border-radius: 8px; margin-bottom: 8px;">
+                    <input type="text" placeholder="Position Name" style="width: 100%; padding: 12px; border: 3px solid #E5E7EB; border-radius: 8px;">
+                </div>
+            </div>
+
+            <div class="component">
+                <h3>Toast Notifications</h3>
+                <div class="example">
+                    <div style="background-color: #059669; color: #FFFFFF; padding: 12px; border-radius: 8px; text-align: center;">Success: Score saved!</div>
+                    <div style="background-color: #DC2626; color: #FFFFFF; padding: 12px; border-radius: 8px; text-align: center; margin-top: 8px;">Error: Connection lost!</div>
+                </div>
+            </div>
+        </div>
+        <footer class="footer">
+            <p>ScoreMyClays Component Library - Showcasing MVP UI components</p>
+        </footer>
+    </div>
+</body>
+</html>
