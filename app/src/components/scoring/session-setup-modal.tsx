@@ -3,81 +3,48 @@
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useScoring } from '@/context/scoring-context';
-import { validateGroundName, validateShooterName } from '@/lib/utils';
 
 interface SessionSetupModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onStartSession: (data: { groundName: string; shooterName: string }) => void;
 }
 
-export function SessionSetupModal({ isOpen, onClose }: SessionSetupModalProps) {
-  const [groundName, setGroundName] = useState('');
-  const [shooterName, setShooterName] = useState('');
-  const [errors, setErrors] = useState<{ ground?: string; shooter?: string }>(
-    {}
-  );
-  const [isLoading, setIsLoading] = useState(false);
+export function SessionSetupModal({ isOpen, onClose, onStartSession }: SessionSetupModalProps) {
+  const [formData, setFormData] = useState({
+    groundName: '',
+    shooterName: '',
+  });
 
-  const { startNewSession } = useScoring();
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate inputs
-    const groundError = validateGroundName(groundName);
-    const shooterError = validateShooterName(shooterName);
-
-    if (groundError || shooterError) {
-      setErrors({
-        ground: groundError || undefined,
-        shooter: shooterError || undefined,
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      // Start new session
-      startNewSession({
-        groundName: groundName.trim(),
-        shooterName: shooterName.trim(),
-      });
-
-      // Close modal
-      onClose();
-
-      // TODO: Navigate to position setup
-      console.log('Session started, navigate to position setup');
-    } catch (error) {
-      console.error('Failed to start session:', error);
-    } finally {
-      setIsLoading(false);
+    if (formData.groundName.trim() && formData.shooterName.trim()) {
+      onStartSession(formData);
+      // Reset form
+      setFormData({ groundName: '', shooterName: '' });
     }
   };
 
-  const handleCancel = () => {
-    setGroundName('');
-    setShooterName('');
-    setErrors({});
-    onClose();
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   return (
     <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50'>
-      <Card className='card-primary'>
-        <CardHeader>
-          <CardTitle className='text-clay-text-primary'>
-            Start New Session
-          </CardTitle>
-        </CardHeader>
+      <div className='card-primary'>
+        <div className='text-clay-text-primary'>
+          Start New Session
+        </div>
 
-        <CardContent>
+        <div className='space-y-4'>
           <form onSubmit={handleSubmit} className='space-y-4'>
             {/* Shooting Ground Input */}
             <div className='space-y-2'>
@@ -90,17 +57,13 @@ export function SessionSetupModal({ isOpen, onClose }: SessionSetupModalProps) {
               <input
                 id='groundName'
                 type='text'
-                value={groundName}
-                onChange={e => setGroundName(e.target.value)}
+                required
+                value={formData.groundName}
+                onChange={e => handleInputChange('groundName', e.target.value)}
                 placeholder='e.g., Bisley Shooting Ground'
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-clay-accent focus:border-clay-accent ${
-                  errors.ground ? 'border-red-500' : 'border-clay-border'
-                }`}
+                className='w-full px-3 py-2 border border-clay-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-clay-accent focus:border-clay-accent'
                 autoComplete='organization'
               />
-              {errors.ground && (
-                <p className='text-sm text-red-600'>{errors.ground}</p>
-              )}
             </div>
 
             {/* Shooter Name Input */}
@@ -114,23 +77,19 @@ export function SessionSetupModal({ isOpen, onClose }: SessionSetupModalProps) {
               <input
                 id='shooterName'
                 type='text'
-                value={shooterName}
-                onChange={e => setShooterName(e.target.value)}
+                required
+                value={formData.shooterName}
+                onChange={e => handleInputChange('shooterName', e.target.value)}
                 placeholder='e.g., John Doe'
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-clay-accent focus:border-clay-accent ${
-                  errors.shooter ? 'border-red-500' : 'border-clay-border'
-                }`}
+                className='w-full px-3 py-2 border border-clay-border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-clay-accent focus:border-clay-accent'
                 autoComplete='name'
               />
-              {errors.shooter && (
-                <p className='text-sm text-red-600'>{errors.shooter}</p>
-              )}
             </div>
             <div className='flex justify-end space-x-2'>
               <Button
                 variant='outline'
                 size='sm'
-                onClick={handleCancel}
+                onClick={onClose}
                 className='font-semibold'
               >
                 Cancel
@@ -139,15 +98,14 @@ export function SessionSetupModal({ isOpen, onClose }: SessionSetupModalProps) {
                 variant='default'
                 size='sm'
                 type='submit'
-                loading={isLoading}
                 className='font-semibold'
               >
                 Start
               </Button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

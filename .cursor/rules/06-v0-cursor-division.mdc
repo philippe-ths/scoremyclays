@@ -1,0 +1,98 @@
+---
+description: "Defines clear separation between v0 (UI/UX) and Cursor (logic/infrastructure) responsibilities"
+alwaysApply: true
+---
+
+# v0 and Cursor Division of Responsibilities
+
+## CRITICAL: Tool-Specific Responsibilities
+
+### v0.dev Responsibilities (UI/UX ONLY)
+1. **Visual Design**: All component styling, layouts, and visual elements
+2. **User Experience**: User flows, interactions, and interface behavior
+3. **Component Structure**: JSX structure and component composition
+4. **CSS/Styling**: All Tailwind classes, custom CSS, and visual styling
+5. **Responsive Design**: Mobile-first layouts and breakpoint handling
+6. **Accessibility**: ARIA attributes, semantic HTML, and accessibility patterns
+7. **UI Component Creation**: New UI components and their visual implementation
+
+### Cursor Responsibilities (Everything Except UI/UX)
+1. **Business Logic**: All application logic, state management, and data processing
+2. **API Integration**: Backend connections, data fetching, and external services
+3. **Database Operations**: Data models, queries, and persistence
+4. **Authentication**: User auth, security, and permission systems
+5. **Performance Optimization**: Code optimization, caching, and performance tuning
+6. **Testing**: Unit tests, integration tests, and quality assurance
+7. **Infrastructure**: Build systems, CI/CD, deployment, and configuration
+8. **Type Safety**: TypeScript types, interfaces, and type definitions
+9. **Utilities**: Helper functions, libraries, and non-UI utilities
+
+## IMPERATIVE: Cursor UI/UX Restrictions
+
+### What Cursor MUST NOT Do
+1. **Never modify visual styling** - No changes to Tailwind classes or CSS
+2. **Never alter component structure** - No changes to JSX layout or hierarchy
+3. **Never change UI interactions** - No modifications to user interface behavior
+4. **Never add visual elements** - No new buttons, forms, or UI components
+5. **Never modify responsive behavior** - No changes to mobile/desktop layouts
+6. **Never alter accessibility attributes** - No changes to ARIA or semantic HTML
+
+### What Cursor MUST Do Instead
+1. **Conform to existing UI** - Work within the established v0 design system
+2. **Preserve visual integrity** - Maintain all existing styling and layouts
+3. **Implement logic only** - Add functionality without changing appearance
+4. **Request v0 changes** - When UI changes are needed, explicitly request v0 work
+5. **Document UI needs** - Clearly specify what UI changes would be helpful
+6. **Work around UI constraints** - Implement features within existing interface
+
+## Clay Shooting App Specific Guidelines
+
+### v0 Handles
+- Scoring interface design and clay shooting-specific UI elements
+- Outdoor visibility optimizations and touch-friendly interfaces
+- Clay shooting workflow user experience and navigation
+- Mobile-first responsive design for outdoor shooting environments
+- Visual feedback for scoring actions and clay shooting terminology
+
+### Cursor Handles
+- Offline scoring data persistence and synchronization
+- Clay shooting calculation logic and scoring algorithms
+- Performance optimization for real-time clay shooting scenarios
+- Integration with clay shooting data sources and external services
+- Security and user authentication for clay shooting communities
+
+## Workflow Integration
+
+### When UI Changes Are Needed
+1. **Document the requirement** - Clearly specify what UI change is needed
+2. **Request v0 work** - Explicitly state that v0 should handle the UI update
+3. **Implement supporting logic** - Add necessary backend logic for new UI features
+4. **Maintain separation** - Never implement UI changes directly in Cursor
+
+### v0 Handoff Requirements
+1. **Preserve component props** - Maintain all existing prop interfaces
+2. **Keep event handlers** - Preserve onClick, onChange, and other event patterns
+3. **Maintain data flow** - Keep existing state and data passing patterns
+4. **Document changes** - Clearly communicate any new logic requirements
+
+### Quality Assurance
+1. **Visual integrity checks** - Verify no unintended UI changes occurred
+2. **Functionality validation** - Ensure logic works with existing UI
+3. **Mobile testing** - Confirm clay shooting app works on mobile devices
+4. **Accessibility verification** - Validate outdoor usability is maintained
+
+## Error Prevention
+
+### Before Making Changes
+1. **Identify if change affects UI** - If yes, request v0 work instead
+2. **Verify logic-only scope** - Ensure changes are purely functional
+3. **Check existing UI patterns** - Work within established interface
+4. **Validate no styling impact** - Confirm no visual changes will occur
+
+### During Implementation
+1. **Preserve all UI code** - Never modify JSX structure or styling
+2. **Use existing event patterns** - Work with established UI interactions
+3. **Maintain responsive behavior** - Don't break mobile clay shooting interface
+4. **Keep accessibility intact** - Preserve outdoor usability features
+
+*Maintain strict separation: v0 creates and owns all visual design, Cursor implements all logic and infrastructure while conforming to v0's UI/UX decisions.*

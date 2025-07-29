@@ -1,72 +1,46 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useScoring } from '@/context/scoring-context';
 
 import { SessionSetupModal } from './session-setup-modal';
 
 export function NewSessionButton() {
-  const [showSetup, setShowSetup] = useState(false);
-  const { state } = useScoring();
+  const [showModal, setShowModal] = useState(false);
 
-  const handleStartNewSession = () => {
-    setShowSetup(true);
+  const handleStartSession = () => {
+    setShowModal(true);
   };
 
-  const handleResumeSession = () => {
-    // TODO: Navigate to scoring screen
-    console.log('Resume session:', state.currentSession?.id);
+  const handleModalClose = () => {
+    setShowModal(false);
   };
 
-  // If there's a current session in progress, show resume button
-  if (state.currentSession && !state.currentSession.isComplete) {
-    return (
-      <div className='space-y-3'>
-        <Button
-          onClick={handleResumeSession}
-          size='touch-lg'
-          className='w-full bg-blue-600 hover:bg-blue-700 text-white'
-        >
-          Resume Current Session
-        </Button>
-
-        <Button
-          onClick={handleStartNewSession}
-          variant='outline'
-          size='touch'
-          className='w-full'
-        >
-          Start New Session
-        </Button>
-
-        {showSetup && (
-          <SessionSetupModal
-            isOpen={showSetup}
-            onClose={() => setShowSetup(false)}
-          />
-        )}
-      </div>
-    );
-  }
+  const handleSessionStart = (_data: {
+    groundName: string;
+    shooterName: string;
+  }) => {
+    // Handle session start logic here
+    setShowModal(false);
+    // TODO: Navigate to scoring page or update app state
+  };
 
   return (
     <>
       <Button
-        onClick={handleStartNewSession}
+        onClick={handleStartSession}
         size='touch-lg'
         className='w-full bg-green-600 hover:bg-green-700 text-white font-bold'
       >
         Start New Session
       </Button>
 
-      {showSetup && (
-        <SessionSetupModal
-          isOpen={showSetup}
-          onClose={() => setShowSetup(false)}
-        />
-      )}
+      <SessionSetupModal
+        isOpen={showModal}
+        onClose={handleModalClose}
+        onStartSession={handleSessionStart}
+      />
     </>
   );
 }

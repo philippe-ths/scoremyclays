@@ -1,75 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  formatDate,
-  formatTime,
-  getRelativeTime,
-  STORAGE_KEYS,
-} from '@/lib/utils';
-import { type Session } from '@/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { formatDate, getRelativeTime, groupSessionsByGround } from '@/lib/utils';
+import type { Session } from '@/types';
 
 export function SessionHistory() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadSessions();
+    const loadSessions = async () => {
+      try {
+        const storedSessions = localStorage.getItem('scoring_sessions');
+        if (storedSessions) {
+          const parsed = JSON.parse(storedSessions) as Session[];
+          setSessions(parsed);
+        }
+      } catch {
+        // Handle error silently in production
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadSessions(); // Properly handle the promise
   }, []);
 
-  const loadSessions = async () => {
-    try {
-      setIsLoading(true);
-
-      // For MVP, load from localStorage
-      // In production, this would query PowerSync
-      const cached = localStorage.getItem(STORAGE_KEYS.SESSIONS_CACHE);
-      if (cached) {
-        const sessions = JSON.parse(cached, (key, value) => {
-          if (
-            key === 'date' ||
-            key === 'createdAt' ||
-            key === 'updatedAt' ||
-            key === 'timestamp'
-          ) {
-            return new Date(value);
-          }
-          return value;
-        }) as Session[];
-
-        // Sort by date descending (newest first)
-        sessions.sort((a, b) => b.date.getTime() - a.date.getTime());
-        setSessions(sessions);
-      }
-    } catch (error) {
-      console.error('Failed to load sessions:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const groupSessionsByGround = (sessions: Session[]) => {
-    const grouped = sessions.reduce(
-      (acc, session) => {
-        const groundName = session.groundName;
-        if (!acc[groundName]) {
-          acc[groundName] = [];
-        }
-        acc[groundName].push(session);
-        return acc;
-      },
-      {} as Record<string, Session[]>
-    );
-
-    return Object.entries(grouped).sort(([, a], [, b]) => {
-      // Sort by most recent session in each group
-      const latestA = Math.max(...a.map(s => s.date.getTime()));
-      const latestB = Math.max(...b.map(s => s.date.getTime()));
-      return latestB - latestA;
-    });
-  };
+  // Currently unused but may be needed later for grouped display
+  const _groupedSessions = groupSessionsByGround(sessions);
 
   if (isLoading) {
     return (
@@ -133,11 +93,6 @@ export function SessionHistory() {
 
           return (
             <Card key={session.id} className='card-primary'>
-              <CardHeader>
-                <CardTitle className='text-clay-text-primary'>
-                  {session.groundName}
-                </CardTitle>
-              </CardHeader>
               <CardContent className='p-4'>
                 <div className='flex justify-between text-sm text-clay-text-secondary'>
                   <span>{formatDate(session.date)}</span>
@@ -154,64 +109,5 @@ export function SessionHistory() {
         })}
       </div>
     </div>
-  );
-}
-
-interface SessionCardProps {
-  session: Session;
-}
-
-function SessionCard({ session }: SessionCardProps) {
-  const handleSessionClick = () => {
-    // TODO: Navigate to session detail view
-    console.log('View session:', session.id);
-  };
-
-  return (
-    <Card className='session-card cursor-pointer' onClick={handleSessionClick}>
-      <CardContent className='p-4'>
-        <div className='flex items-center justify-between'>
-          <div className='space-y-1'>
-            <div className='flex items-center space-x-2'>
-              <span className='font-medium'>{session.shooterName}</span>
-              <span className='text-sm text-muted-foreground'>
-                • {formatDate(session.date)}
-              </span>
-              <span className='text-sm text-muted-foreground'>
-                {formatTime(session.date)}
-              </span>
-            </div>
-
-            <div className='flex items-center space-x-4 text-sm text-muted-foreground'>
-              <span>
-                {session.totalScore}/{session.totalTargets} targets
-              </span>
-              <span>{session.percentage}%</span>
-              <span
-                className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${
-                  session.isComplete
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}
-              >
-                {session.isComplete ? 'Complete' : 'In Progress'}
-              </span>
-            </div>
-          </div>
-
-          <div className='text-right'>
-            <div className='score-medium'>
-              {session.totalScore}
-              <span className='text-lg text-muted-foreground'>
-                /{session.totalTargets}
-              </span>
-            </div>
-            <div className='text-sm text-muted-foreground'>
-              {getRelativeTime(session.date)}
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   );
 }

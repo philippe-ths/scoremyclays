@@ -1,20 +1,14 @@
-import { type ClassValue, clsx } from 'clsx';
+import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import {
-  type Session,
-  type Position,
-  type Shot,
-  type ShotResult,
-  SPORTING_CLAYS_CONFIG,
-} from '@/types';
+import type { Session, Position, Shot, ShotResult } from '@/types';
 
 // Tailwind class merger utility
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Score calculation utilities
+// Scoring calculation functions
 export function calculatePositionScore(shots: Shot[]): number {
   return shots.filter(shot => shot.result === 'hit').length;
 }
@@ -34,7 +28,7 @@ export function getPositionProgress(position: Position): {
   percentage: number;
 } {
   const current = position.shots.length;
-  const total = SPORTING_CLAYS_CONFIG.TARGETS_PER_POSITION;
+  const total = 10; // Sporting Clays targets per position
   const percentage = calculatePercentage(current, total);
 
   return { current, total, percentage };
@@ -48,13 +42,13 @@ export function getSessionProgress(session: Session): {
   percentage: number;
 } {
   const positionsComplete = session.positions.filter(p => p.isComplete).length;
-  const totalPositions = SPORTING_CLAYS_CONFIG.POSITIONS_PER_SESSION;
+  const totalPositions = 10; // Sporting Clays positions per session
 
   const targetsShot = session.positions.reduce(
     (total, position) => total + position.shots.length,
     0
   );
-  const totalTargets = SPORTING_CLAYS_CONFIG.TOTAL_TARGETS;
+  const totalTargets = 100; // Total targets in Sporting Clays (10 positions × 10 targets)
 
   const percentage = calculatePercentage(session.totalScore, targetsShot);
 
@@ -70,17 +64,17 @@ export function getSessionProgress(session: Session): {
 // Session utilities
 export function isSessionComplete(session: Session): boolean {
   return (
-    session.positions.length === SPORTING_CLAYS_CONFIG.POSITIONS_PER_SESSION &&
+    session.positions.length === 10 &&
     session.positions.every(position => position.isComplete)
   );
 }
 
 export function isPositionComplete(position: Position): boolean {
-  return position.shots.length === SPORTING_CLAYS_CONFIG.TARGETS_PER_POSITION;
+  return position.shots.length >= 10; // Sporting Clays has 10 shots per position
 }
 
 export function canRecordShot(position: Position): boolean {
-  return position.shots.length < SPORTING_CLAYS_CONFIG.TARGETS_PER_POSITION;
+  return position.shots.length < 10;
 }
 
 export function getNextTargetNumber(position: Position): number {
@@ -128,12 +122,13 @@ export function validatePositionName(name: string): string | null {
 }
 
 // Date and time utilities
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', {
+export function formatDate(date: Date | string | number): string {
+  const d = new Date(date);
+  return d.toLocaleDateString('en-GB', {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
-  }).format(date);
+  });
 }
 
 export function formatDateTime(date: Date): string {
@@ -146,26 +141,28 @@ export function formatDateTime(date: Date): string {
   }).format(date);
 }
 
-export function formatTime(date: Date): string {
-  return new Intl.DateTimeFormat('en-GB', {
+export function formatTime(date: Date | string | number): string {
+  const d = new Date(date);
+  return d.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
-  }).format(date);
+  });
 }
 
-export function getRelativeTime(date: Date): string {
+export function getRelativeTime(date: Date | string | number): string {
+  const d = new Date(date);
   const now = new Date();
-  const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
+  const diffInHours = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60));
+  
   if (diffInHours < 1) {
     return 'Just now';
   } else if (diffInHours < 24) {
-    return `${Math.floor(diffInHours)} hours ago`;
-  } else if (diffInHours < 168) {
-    // 7 days
-    return `${Math.floor(diffInHours / 24)} days ago`;
+    return `${diffInHours}h ago`;
+  } else if (diffInHours < 48) {
+    return 'Yesterday';
   } else {
-    return formatDate(date);
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d ago`;
   }
 }
 
@@ -175,23 +172,22 @@ export function generateId(): string {
 }
 
 export function generateSessionId(): string {
-  return `session-${generateId()}`;
+  return `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
 export function generatePositionId(): string {
-  return `position-${generateId()}`;
+  return `position_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
 export function generateShotId(): string {
-  return `shot-${generateId()}`;
+  return `shot_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
 // Storage key utilities
 export const STORAGE_KEYS = {
-  CURRENT_SESSION: 'scoremyclays-current-session',
-  SESSIONS_CACHE: 'scoremyclays-sessions-cache',
-  APP_SETTINGS: 'scoremyclays-settings',
-  SYNC_STATUS: 'scoremyclays-sync-status',
+  CURRENT_SESSION: 'scoring_current_session',
+  SESSIONS_CACHE: 'scoring_sessions_cache',
+  USER_PREFERENCES: 'scoring_user_preferences',
 } as const;
 
 // Shot result utilities
@@ -222,7 +218,7 @@ export function getShotResultIcon(result: ShotResult): string {
 }
 
 // Performance utilities
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -233,7 +229,7 @@ export function debounce<T extends (...args: any[]) => any>(
   };
 }
 
-export function throttle<T extends (...args: any[]) => any>(
+export function throttle<T extends (...args: never[]) => unknown>(
   func: T,
   limit: number
 ): (...args: Parameters<T>) => void {
@@ -245,4 +241,26 @@ export function throttle<T extends (...args: any[]) => any>(
       setTimeout(() => (inThrottle = false), limit);
     }
   };
+}
+
+// Group sessions by shooting ground for history display
+export function groupSessionsByGround(sessions: Session[]): [string, Session[]][] {
+  const grouped = sessions.reduce(
+    (acc, session) => {
+      const groundName = session.groundName;
+      if (!acc[groundName]) {
+        acc[groundName] = [];
+      }
+      acc[groundName].push(session);
+      return acc;
+    },
+    {} as Record<string, Session[]>
+  );
+
+  return Object.entries(grouped).sort(([, a], [, b]) => {
+    // Sort by most recent session in each group
+    const latestA = Math.max(...a.map(s => new Date(s.date).getTime()));
+    const latestB = Math.max(...b.map(s => new Date(s.date).getTime()));
+    return latestB - latestA;
+  });
 }

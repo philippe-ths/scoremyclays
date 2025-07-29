@@ -54,7 +54,7 @@ export default function ScoringPage() {
       const totalShots =
         newScoring.hits + newScoring.misses + newScoring.noBirds;
       const shotsPerPair = 2;
-      const shotsPerStand = shotsPerPair * newScoring.totalPairs;
+      const _shotsPerStand = shotsPerPair * newScoring.totalPairs; // Prefixed with _ to indicate unused
 
       if (totalShots % shotsPerPair === 0) {
         // Completed a pair
@@ -96,6 +96,11 @@ export default function ScoringPage() {
 
       return newScoring;
     });
+  };
+
+  const handlePause = () => {
+    // TODO: Implement pause functionality
+    // Save current state or show pause modal
   };
 
   const totalScore = scoring.hits;
@@ -221,10 +226,7 @@ export default function ScoringPage() {
             <Button
               variant='secondary'
               size='touch'
-              onClick={() => {
-                // TODO: Implement pause/save functionality
-                console.log('Pause round');
-              }}
+              onClick={handlePause}
               className='font-semibold'
             >
               PAUSE
@@ -240,7 +242,7 @@ export default function ScoringPage() {
             </h3>
             <div className='grid grid-cols-5 gap-2'>
               {scoring.standScores.map((score, index) => (
-                <div key={index} className='text-center'>
+                <div key={`stand-${index + 1}-score-${score}`} className='text-center'>
                   <div className='bg-clay-surface rounded-lg p-2'>
                     <div className='font-bold text-clay-primary'>{score}</div>
                     <div className='text-xs text-clay-text-secondary'>

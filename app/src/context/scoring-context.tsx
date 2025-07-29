@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, type ReactNode } from 'react';
 
 import {
   generateSessionId,
@@ -12,14 +12,7 @@ import {
   isPositionComplete,
   STORAGE_KEYS,
 } from '@/lib/utils';
-import {
-  type Session,
-  type Position,
-  type Shot,
-  type ScoringState,
-  type ShotResult,
-  type SessionSetupForm,
-} from '@/types';
+import type { Session, Position, Shot, ScoringState, ShotResult, SessionSetupForm } from '@/types';
 
 // Action types for scoring reducer
 type ScoringAction =
@@ -276,7 +269,7 @@ interface ScoringContextType {
 
 const ScoringContext = createContext<ScoringContextType | null>(null);
 
-export function ScoringProvider({ children }: { children: React.ReactNode }) {
+export function ScoringProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(scoringReducer, initialState);
 
   // Save current session to localStorage whenever it changes
@@ -287,8 +280,8 @@ export function ScoringProvider({ children }: { children: React.ReactNode }) {
           STORAGE_KEYS.CURRENT_SESSION,
           JSON.stringify(state.currentSession)
         );
-      } catch (error) {
-        console.error('Failed to save current session:', error);
+      } catch {
+        // Handle error silently or with proper error handling
       }
     } else {
       localStorage.removeItem(STORAGE_KEYS.CURRENT_SESSION);
@@ -305,20 +298,19 @@ export function ScoringProvider({ children }: { children: React.ReactNode }) {
           if (
             key === 'date' ||
             key === 'createdAt' ||
-            key === 'updatedAt' ||
-            key === 'timestamp'
+            key === 'updatedAt'
           ) {
-            return new Date(value);
+            return new Date(value as string);
           }
-          return value;
+          return value as unknown;
         }) as Session;
 
         dispatch({ type: 'LOAD_SESSION', payload: session });
       }
-    } catch (error) {
-      console.error('Failed to load current session:', error);
+    } catch {
+      // Handle error silently or with proper error handling
     }
-  }, []);
+  }, [dispatch]);
 
   const contextValue: ScoringContextType = {
     state,

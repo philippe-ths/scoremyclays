@@ -361,22 +361,27 @@ For questions about clay shooting domain logic, refer to the research documents 
 ScoreMyClays includes a comprehensive GitHub Actions CI/CD pipeline:
 
 ### Features
+
 - **Quality Assurance**: TypeScript, ESLint, Prettier, and security checks
 - **PWA Validation**: Service worker and manifest validation
 - **Clay Shooting Tests**: Domain-specific component validation
 - **Automated Deployment**: Vercel integration with preview deployments
 
 ### Workflows
+
 - **CI Pipeline** (`.github/workflows/ci.yml`): Quality checks and build validation
 - **CD Pipeline** (`.github/workflows/deploy.yml`): Automated Vercel deployment
 
 ### Setup
+
 1. Add GitHub repository secrets for Vercel integration
 2. Configure branch protection rules for main branch
 3. See `../docs/CI_CD_SETUP.md` for complete setup instructions
 
 ### Validation
+
 Run the CI/CD validation script to check your setup:
+
 ```bash
 # From project root
 ./scripts/validate-ci-cd.sh
