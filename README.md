@@ -1,80 +1,162 @@
 # ScoreMyClays
 
-A mobile application for clay pigeon shooting scoring and performance tracking, designed specifically for the UK clay shooting community.
+An **offline-first Progressive Web Application** for clay pigeon shooting scoring and performance tracking, designed specifically for the UK clay shooting community.
 
 ## Overview
 
-ScoreMyClays is an independent project focused on digitizing clay shooting scoring with robust offline capabilities, professional analytics, and social features. Built for the unique needs of clay shooting disciplines including ESP (English Sporting), DTL (Down The Line), Skeet, Trap, and Sporting Clays.
+ScoreMyClays addresses the critical need for reliable clay shooting scoring in environments with poor connectivity. Built as a mobile-first PWA, it provides simple, fast, and dependable score tracking that works seamlessly both online and offline.
 
-### Key Features
+### Core Value Proposition
 
-- **Offline-First Scoring**: Works reliably at shooting grounds with poor connectivity
-- **Multiple Disciplines**: ESP, DTL, Skeet, Trap, and Sporting Clays support
-- **Professional Analytics**: Performance tracking and classification management
-- **Social Features**: Share scorecards and compare with shooting partners
-- **Club Integration**: B2B features for shooting clubs and competitions
+**"Simple, reliable clay shooting score tracking that works anywhere, anytime - with or without an internet connection."**
 
 ## Market Opportunity
 
-- **130-180k** total clay shooting participants in the UK
-- **60k regular shooters** (Monthly + Club Regulars) generate 96% of activity volume
+- **60,000 regular UK clay shooters** generate 96% of activity volume
 - **3 million rounds** shot annually (100-clay equivalents)
-- Target market: 60k regulars who drive revenue concentration
 - Proven digital transformation success in golf (78% core golfer adoption)
+- **Critical gap**: No reliable offline-first clay shooting apps exist
 
-## Technology Approach
+### Target Market
+- **Primary**: Recreational and competitive Sporting Clays shooters
+- **Secondary**: Shooting clubs and competition organizers
+- **Geographic Focus**: UK clay shooting community
 
-- **Mobile-first** responsive design (375px-768px)
-- **Offline-capable** architecture for unreliable connectivity
-- **High contrast UI** optimized for outdoor conditions
-- **Large touch targets** designed for gloved hands
-- **Professional presentation** adapted from successful golf apps
+## Key Features (MVP)
+
+### ✅ Core Functionality
+- **Offline-First Architecture**: Works reliably at shooting grounds with poor connectivity
+- **Session-Based Scoring**: 10 positions × 10 targets per session (Sporting Clays)
+- **Simple Scoring Interface**: Large HIT/MISS/NO BIRD/UNDO buttons
+- **Real-Time Feedback**: Live score tracking and position summaries
+- **Session History**: Past sessions grouped by shooting ground
+- **Cloud Synchronization**: Automatic sync when connectivity available
+
+### 🚀 Technical Features
+- **Progressive Web App (PWA)**: Native app-like experience
+- **Mobile-Optimized**: Touch-friendly interface for outdoor use
+- **Sub-100ms Response**: Instant feedback for scoring actions
+- **Cross-Platform**: Works on iOS, Android, and web browsers
+- **Battery Efficient**: Optimized for long shooting sessions
+
+## Technology Stack
+
+- **Frontend**: Next.js 14+ with TypeScript and Tailwind CSS
+- **Backend**: Supabase PostgreSQL with Row-Level Security
+- **Offline Sync**: PowerSync SDK for bidirectional synchronization
+- **Hosting**: Vercel with global edge network
+- **Local Storage**: SQLite via PowerSync client
 
 ## Repository Structure
 
 ```
-├── docs/                   # Core project documentation
-│   ├── FUNCTIONAL_SPEC.md  # Complete requirements specification
-│   ├── FEATURES.md         # Feature specifications
-│   ├── FEASIBILITY_ANALYSIS.md # Business case and strategy
-│   └── DESIGN_GUIDES/      # UI/UX design system
-├── research/               # Market research and analysis
-│   ├── MARKET_RESEARCH.md  # UK market analysis
-│   ├── SHOOTER_NUMBERS.md  # User segmentation data
-│   └── GOLF_APPS/         # Competitive analysis
-├── src/                   # Source code and prototypes
-│   └── mock_up/           # HTML/CSS UI mockups
-└── scripts/               # Utility scripts
+├── docs/                          # Core project documentation
+│   ├── FUNCTIONAL_SPECIFICATION.md # Complete MVP requirements
+│   ├── TECHNICAL_ARCHITECTURE.md   # Technical implementation guide
+│   ├── ROADMAP.md                  # Development phases and features
+│   └── DESIGN_GUIDES/              # UI/UX design system
+├── research/                       # Market research and analysis
+│   ├── MARKET_RESEARCH.md          # UK market analysis
+│   ├── SHOOTER_NUMBERS.md          # User segmentation data
+│   └── GOLF_APPS/                  # Competitive analysis
+├── prototypes/                     # UI/UX prototypes and demos
+├── plans/                          # Implementation planning
+├── app/                           # Next.js application
+└── website/                       # Docusaurus documentation site
 ```
 
 ## Getting Started
 
-1. **For Product Strategy**: Start with `/docs/FEASIBILITY_ANALYSIS.md`
-2. **For Development**: Review `/docs/FUNCTIONAL_SPEC.md` and `/docs/DESIGN_GUIDES/`
-3. **For Design**: See UI mockups in `/src/mock_up/`
-4. **For Research**: Explore `/research/` directory
+### For Developers
+1. **Start Here**: [Technical Architecture](docs/TECHNICAL_ARCHITECTURE.md)
+2. **Requirements**: [Functional Specification](docs/FUNCTIONAL_SPECIFICATION.md)
+3. **UI Guidelines**: [Design Guides](docs/DESIGN_GUIDES/)
+4. **Prototypes**: [Interactive Mockups](prototypes/)
 
-See `/docs/DOCUMENT_INDEX.md` for complete navigation guide.
+### For Business Analysis
+1. **Market Research**: [Market Analysis](research/MARKET_RESEARCH.md)
+2. **User Data**: [Shooter Numbers](research/SHOOTER_NUMBERS.md)
+3. **Competitive Analysis**: [Golf Apps Analysis](research/GOLF_APPS/)
+4. **Development Plan**: [Product Roadmap](docs/ROADMAP.md)
+
+### For Designers
+1. **UX Guidelines**: [UX Design Guide](docs/DESIGN_GUIDES/scoremyclays_ux_design_guide.md)
+2. **UI System**: [UI Design Guide](docs/DESIGN_GUIDES/scoremyclays_ui_design_guide.md)
+3. **Components**: [MVP Design System](docs/DESIGN_GUIDES/MVP_design_system.md)
+4. **Live Demos**: [Interactive Prototypes](prototypes/)
 
 ## Business Model
 
-**Freemium** approach with three tiers:
-- **Free**: Basic scoring for recreational shooters
-- **Premium**: Advanced analytics and social features (£2.99/month)
-- **Club**: Competition management and member features (£19.99/month)
+**Freemium Approach** with MVP validation:
+- **MVP Phase**: Free core scoring functionality
+- **Phase 1**: Authentication and user profiles
+- **Phase 2**: Premium analytics and multi-user sessions (£2.99/month)
+- **Phase 3**: Club management features (£19.99/month)
 
 **Target**: Break-even at 2,500 premium users within 18 months
 
 ## Development Status
 
-Currently in **research and design phase**:
-- ✅ Market research completed
-- ✅ Competitive analysis finished
-- ✅ UI/UX design system defined
-- ✅ Interactive mockups created
-- 🔄 Technical architecture planning
-- ⏳ MVP development
+### ✅ Completed
+- Market research and validation
+- Competitive analysis (golf app insights)
+- UI/UX design system and prototypes
+- Technical architecture specification
+- MVP functional requirements
 
-## Contact
+### 🔄 Current Phase
+- **UI Experiment Framework**: Testing design system with interactive prototypes
+- **Technical Planning**: Finalizing MVP implementation approach
+- **Market Validation**: Gathering feedback from clay shooting community
 
-This project is in active development. See `/docs/` for detailed specifications and `/research/` for market validation.
+### ⏳ Next Steps
+- MVP development (Next.js + PowerSync + Supabase)
+- User testing with real shooters
+- Market launch and iteration
+
+## MVP Success Criteria
+
+**MVP is successful if:**
+- 80%+ session completion rate
+- 50%+ sessions include offline usage
+- 95%+ successful data synchronization
+- 60%+ user retention for multiple sessions
+- Sub-100ms consistent scoring response times
+- Zero critical bugs in core workflows
+
+## Architecture Highlights
+
+### Offline-First Design
+- **Local Storage**: SQLite database via PowerSync
+- **Automatic Sync**: Background synchronization when online
+- **Conflict Resolution**: Built-in handling for offline/online data conflicts
+- **Performance**: All critical functions available without internet
+
+### Mobile-Optimized UX
+- **Large Touch Targets**: Designed for gloved hands and outdoor conditions
+- **High Contrast UI**: Visible in bright sunlight
+- **Instant Feedback**: Sub-100ms response times for scoring actions
+- **Battery Efficient**: Optimized for 2+ hour shooting sessions
+
+## Contributing
+
+This project follows AI-assisted development workflows:
+- **Component Generation**: v0.dev for rapid UI prototyping
+- **Logic Implementation**: Cursor AI for business logic
+- **Testing**: Vitest for unit tests
+- **Deployment**: Automatic Vercel deployments
+
+See the [Technical Architecture](docs/TECHNICAL_ARCHITECTURE.md) for detailed development guidelines.
+
+## Contact & Documentation
+
+- **Complete Documentation**: See [docs/](docs/) directory
+- **Technical Specs**: [TECHNICAL_ARCHITECTURE.md](docs/TECHNICAL_ARCHITECTURE.md)
+- **Market Research**: [research/](research/) directory
+- **Live Prototypes**: [prototypes/](prototypes/) directory
+
+This project is in active development. For detailed specifications, implementation guides, and market validation, explore the documentation directories above.
+
+---
+
+*ScoreMyClays aims to become the leading digital platform for UK clay shooting, starting with a proven MVP foundation and expanding through user-driven development.*

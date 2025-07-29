@@ -1,114 +1,180 @@
 ---
 id: DOCUMENT_INDEX
-title: ScoreMyClays Document Index
-sidebar_label: ScoreMyClays Document Index
+title: ScoreMyClays Documentation Index
+sidebar_label: Documentation Index
 ---
 
-# ScoreMyClays Document Index
+# ScoreMyClays Documentation Index
 
-*Complete documentation structure and file locations*
+*Complete documentation structure and navigation guide*
 
-## Project Root Files
+## Quick Start Guide
 
-### Core Documentation
-- **CLAUDE.md** - Project instructions for Claude Code
-- **README.md** - Main project readme
+### 🚀 For Developers
+1. **[Technical Architecture](TECHNICAL_ARCHITECTURE.md)** - Complete technical implementation guide
+2. **[Functional Specification](FUNCTIONAL_SPECIFICATION.md)** - MVP requirements and user flows
+3. **[Design Guides](DESIGN_GUIDES/)** - UI/UX design system and components
+4. **[Live Prototypes](../prototypes/)** - Interactive demos and testing
 
----
+### 📊 For Business Analysis
+1. **[Market Research](../research/MARKET_RESEARCH.md)** - UK clay shooting market analysis
+2. **[Shooter Numbers](../research/SHOOTER_NUMBERS.md)** - User segmentation and classifications
+3. **[Golf App Insights](../research/GOLF_APP_INSIGHTS.md)** - Competitive analysis learnings
+4. **[Product Roadmap](ROADMAP.md)** - Development phases and strategy
 
-## /docs/ Directory
-
-### Core Project Documentation
-- **FUNCTIONAL_SPEC.md** - Complete functional specification
-- **FEASIBILITY_ANALYSIS.md** - Comprehensive business case analysis
-- **FEATURES.md** - Feature specifications and requirements
-- **DOCUMENT_INDEX.md** - This document index
-- **BROKEN_LINKS_REPORT.md** - File reference fixes report
-
-### /docs/DESIGN_GUIDES/
-- **design_system_components.md** - Detailed component specifications
-- **scoremyclays_ui_design_guide.md** - Visual design system
-- **scoremyclays_ux_design_guide.md** - User experience framework
-
----
-
-## /research/ Directory
-
-### Market & User Research
-- **MARKET_RESEARCH.md** - UK clay shooting market analysis
-- **SHOOTER_NUMBERS.md** - Shooter numbers and classification data
-- **FEATURES_FUTURES.md** - Future feature considerations
-
-### Golf App Analysis
-- **GOLF_APP_INSIGHTS.md** - Synthesis of golf app market lessons
-- **GOLF_APPS_ANALYSED.md** - List of analyzed golf applications
-
-### /research/GOLF_APPS/golfgamebook/
-- **ui_analysis.md** - Visual design analysis
-- **key_features.md** - Feature breakdown
-- **gameplay_analysis.md** - Live session analysis
-- **detailed_ux_review.md** - Comprehensive UX review
-- **screenshots/** - 60+ app screenshots and images
-  - **image_catalog.md** - Screenshot documentation
+### 🎨 For Designers
+1. **[UX Design Guide](DESIGN_GUIDES/scoremyclays_ux_design_guide.md)** - User experience framework
+2. **[UI Design Guide](DESIGN_GUIDES/scoremyclays_ui_design_guide.md)** - Visual design system
+3. **[MVP Design System](DESIGN_GUIDES/MVP_design_system.md)** - Component specifications
+4. **[Component Showcase](../prototypes/component-library.html)** - Live component examples
 
 ---
 
-## /scripts/ Directory
+## Core Documentation (/docs/)
 
-### Utility Scripts
-- **download_images.sh** - Batch image download script
-- **quick_download.sh** - Single image download utility
+### Primary Documents
+- **[FUNCTIONAL_SPECIFICATION.md](FUNCTIONAL_SPECIFICATION.md)** - Complete MVP requirements and specifications
+- **[TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md)** - Technical implementation and architecture guide  
+- **[ROADMAP.md](ROADMAP.md)** - Product development phases and timeline
+- **[SERVICE_DESCRIPTION.md](SERVICE_DESCRIPTION.md)** *(Deprecated - content moved to README.md)*
 
----
-
-## Document Cross-References
-
-### FUNCTIONAL_SPEC.md References
-The functional specification references the following documents that need path updates:
-- Market Research: `/research/market_research_cleaned.md` → `/research/MARKET_RESEARCH.md`
-- Feature Specifications: `/research/FEATURES.md` → `/docs/FEATURES.md`
-- Golf App Market Insights: `/research/GOLF_APP_INSIGHTS.md` ✓
-- Feasibility Analysis: `/research/FEASIBILITY_ANALYSIS.md` → `/docs/FEASIBILITY_ANALYSIS.md`
-- Shooter Numbers: `/research/shooter_numbers_classification.md` → `/research/SHOOTER_NUMBERS.md`
-- Golf Apps Analyzed: `/research/golf_apps_analyzed.md` → `/research/GOLF_APPS_ANALYSED.md`
-- GolfGameBook files: `/research/golfgamebook/*` → `/research/GOLF_APPS/golfgamebook/*`
-- Design Guides: `/research/design_guides/*` → `/docs/DESIGN_GUIDES/*`
-
-### Common Reference Patterns
-- Market data: Reference `/research/MARKET_RESEARCH.md` and `/research/SHOOTER_NUMBERS.md`
-- Features: Reference `/docs/FEATURES.md`
-- Business case: Reference `/docs/FEASIBILITY_ANALYSIS.md`
-- Design system: Reference `/docs/DESIGN_GUIDES/` directory
-- Golf insights: Reference `/research/GOLF_APPS/` directory
+### Design System (/docs/DESIGN_GUIDES/)
+- **[scoremyclays_ux_design_guide.md](DESIGN_GUIDES/scoremyclays_ux_design_guide.md)** - User experience guidelines
+- **[scoremyclays_ui_design_guide.md](DESIGN_GUIDES/scoremyclays_ui_design_guide.md)** - Visual design standards
+- **[MVP_design_system.md](DESIGN_GUIDES/MVP_design_system.md)** - Component specifications for MVP
 
 ---
 
-## Quick Navigation
+## Research & Analysis (/research/)
 
-### For Developers
-1. Start with `/docs/FUNCTIONAL_SPEC.md` for requirements
-2. Review `/docs/DESIGN_GUIDES/` for UI/UX specifications
-3. Check `/src/mock_up/ui_mockup.html` for working example
-4. See `/src/mock_up/README_UI.md` for implementation notes
+### Market Intelligence
+- **[MARKET_RESEARCH.md](../research/MARKET_RESEARCH.md)** - UK clay shooting market analysis and opportunity
+- **[SHOOTER_NUMBERS.md](../research/SHOOTER_NUMBERS.md)** - Target audience segmentation and classification data
+- **[GOLF_APP_INSIGHTS.md](../research/GOLF_APP_INSIGHTS.md)** - Lessons learned from golf app market analysis
 
-### For Business Analysis
-1. Read `/docs/FEASIBILITY_ANALYSIS.md` for business case
-2. Review `/research/MARKET_RESEARCH.md` for market data
-3. Check `/research/SHOOTER_NUMBERS.md` for user segments
-4. See `/docs/FEATURES.md` for feature priorities
-
-### For Designers
-1. Study `/docs/DESIGN_GUIDES/scoremyclays_ux_design_guide.md`
-2. Reference `/docs/DESIGN_GUIDES/scoremyclays_ui_design_guide.md`
-3. Use `/docs/DESIGN_GUIDES/design_system_components.md` for specs
-4. View `/src/mock_up/ui_components_showcase.html` for examples
-
-### For Product Strategy
-1. Review `/research/GOLF_APP_INSIGHTS.md` for market lessons
-2. Study `/research/GOLF_APPS/golfgamebook/` for competitor analysis
-3. Check `/research/FEATURES_FUTURES.md` for roadmap ideas
-4. Read `/docs/FEASIBILITY_ANALYSIS.md` for strategic approach
+### Competitive Analysis (/research/GOLF_APPS/)
+- **[GOLF_APPS_ANALYSED.md](../research/GOLF_APPS_ANALYSED.md)** - Complete list of analyzed applications
+- **[golfgamebook/](../research/GOLF_APPS/golfgamebook/)** - Detailed analysis of leading golf scoring app
+  - **[key_features.md](../research/GOLF_APPS/golfgamebook/key_features.md)** - Feature breakdown
+  - **[detailed_ux_review.md](../research/GOLF_APPS/golfgamebook/detailed_ux_review.md)** - UX analysis
+  - **[screenshots/](../research/GOLF_APPS/golfgamebook/screenshots/)** - 60+ app screenshots
 
 ---
 
-*Last updated: July 2025*
+## Implementation & Prototypes
+
+### Planning Documents (/plans/)
+- **[ui-experiment-implementation-plan.md](../plans/ui-experiment-implementation-plan.md)** - UI implementation strategy
+- **[ai-task-list.md](../plans/ai-task-list.md)** - AI-generated development tasks
+
+### Interactive Prototypes (/prototypes/)
+- **[index.html](../prototypes/index.html)** - Prototype navigation hub
+- **[mvp-user-flow.html](../prototypes/mvp-user-flow.html)** - Complete MVP user journey
+- **[component-library.html](../prototypes/component-library.html)** - Design system components
+- **[accessibility-demo.html](../prototypes/accessibility-demo.html)** - Accessibility features
+- **[performance-demo.html](../prototypes/performance-demo.html)** - Performance optimizations
+- **[responsive-demo.html](../prototypes/responsive-demo.html)** - Mobile responsiveness
+- **[animation-showcase.html](../prototypes/animation-showcase.html)** - UI animations
+
+### Application Code (/app/)
+- **[Next.js Application](../app/)** - Main application development
+- **[Vite Configuration](../app/vite.config.js)** - Build configuration
+- **[PWA Manifest](../app/public/manifest.json)** - Progressive Web App setup
+
+---
+
+## Documentation Site (/website/)
+
+### Docusaurus Site
+- **[Documentation Website](../website/)** - Comprehensive documentation portal
+- **[Configuration](../website/docusaurus.config.ts)** - Site configuration
+- **[Deployment](../website/deploy.sh)** - Deployment scripts
+
+---
+
+## Document Relationships
+
+### Primary Flow for New Developers
+```
+README.md → FUNCTIONAL_SPECIFICATION.md → TECHNICAL_ARCHITECTURE.md → DESIGN_GUIDES/ → /prototypes/
+```
+
+### Business Analysis Flow
+```
+README.md → MARKET_RESEARCH.md → SHOOTER_NUMBERS.md → GOLF_APP_INSIGHTS.md → ROADMAP.md
+```
+
+### Design Development Flow
+```
+UX_DESIGN_GUIDE.md → UI_DESIGN_GUIDE.md → MVP_DESIGN_SYSTEM.md → /prototypes/
+```
+
+---
+
+## Cross-References & Dependencies
+
+### Architecture Dependencies
+- **TECHNICAL_ARCHITECTURE.md** references **FUNCTIONAL_SPECIFICATION.md** for requirements
+- **ROADMAP.md** builds upon **FUNCTIONAL_SPECIFICATION.md** MVP scope
+- **Design guides** inform **prototype implementations**
+
+### Business Context
+- **Market research** validates **functional specifications**
+- **Golf app insights** inform **UX design guidelines**
+- **Shooter numbers** support **target market** definitions
+
+### Implementation References
+- **Prototypes** demonstrate **design system** components
+- **Technical architecture** implements **functional requirements**
+- **Roadmap phases** extend **MVP specifications**
+
+---
+
+## Document Status
+
+### ✅ Current & Complete
+- FUNCTIONAL_SPECIFICATION.md *(Primary specification)*
+- TECHNICAL_ARCHITECTURE.md *(Consolidated technical guide)*
+- Market research documents
+- Design system guides
+- Interactive prototypes
+
+### 🔄 Regular Updates
+- ROADMAP.md *(Updated based on progress)*
+- Prototype implementations
+- Task planning documents
+
+### ⚠️ Deprecated
+- SERVICE_DESCRIPTION.md *(Content moved to README.md)*
+- FUNCTIONAL_SPEC_MVP.md *(Merged into FUNCTIONAL_SPECIFICATION.md)*
+- ARCHITECTURE.md *(Merged into TECHNICAL_ARCHITECTURE.md)*
+- TECHNICAL_SPEC.md *(Merged into TECHNICAL_ARCHITECTURE.md)*
+
+---
+
+## Getting Started Recommendations
+
+### New Team Members
+1. Read **[README.md](../README.md)** for project overview
+2. Review **[FUNCTIONAL_SPECIFICATION.md](FUNCTIONAL_SPECIFICATION.md)** for requirements
+3. Study **[TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md)** for implementation
+4. Explore **[prototypes/](../prototypes/)** for hands-on understanding
+
+### Stakeholders & Business Users
+1. Start with **[README.md](../README.md)** for executive summary
+2. Review **[MARKET_RESEARCH.md](../research/MARKET_RESEARCH.md)** for market context
+3. Check **[ROADMAP.md](ROADMAP.md)** for development timeline
+4. View **[live prototypes](../prototypes/)** for product demonstration
+
+### Designers & UX Professionals
+1. Begin with **[UX Design Guide](DESIGN_GUIDES/scoremyclays_ux_design_guide.md)**
+2. Reference **[UI Design Guide](DESIGN_GUIDES/scoremyclays_ui_design_guide.md)**
+3. Implement using **[MVP Design System](DESIGN_GUIDES/MVP_design_system.md)**
+4. Test with **[interactive prototypes](../prototypes/)**
+
+---
+
+*This index serves as the central navigation hub for all ScoreMyClays documentation. For the most current information, always refer to the primary documents listed above.*
+
+**Last Updated**: Current
+**Document Status**: Primary navigation reference

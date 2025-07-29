@@ -1,33 +1,33 @@
 ---
-id: TECHNICAL_SPEC
-title: ScoreMyClays Technical Specification
-sidebar_label: ScoreMyClays Technical Specification
+id: TECHNICAL_ARCHITECTURE
+title: ScoreMyClays Technical Architecture
+sidebar_label: Technical Architecture
 ---
 
-# ScoreMyClays Technical Specification
+# ScoreMyClays Technical Architecture
 
-## 1. Architecture Overview
+## Overview
 
-### MVP-First Approach
-ScoreMyClays is built with an **ultra-simple MVP architecture** designed for rapid development and AI-agent compatibility. The system prioritizes **offline-first functionality** with cloud synchronization, targeting clay shooting scoring in environments with poor connectivity.
+ScoreMyClays is built as an **offline-first Progressive Web Application** specifically designed for clay shooting scoring. The architecture prioritizes simplicity, reliability, and AI-agent compatibility while ensuring the core functionality works seamlessly with or without internet connectivity.
 
-### Core Principles
+## Core Design Principles
+
 1. **Offline-First**: All critical functions work without internet connectivity
-2. **Mobile-Optimized**: Sub-100ms response times with touch-friendly interface
-3. **AI-Agent Friendly**: Simple patterns that AI can easily understand and extend
-4. **Progressive Enhancement**: Start simple, add complexity incrementally
-5. **Real-time Sync**: Automatic data synchronization when connectivity available
+2. **Mobile-Optimized**: Sub-100ms response times with touch-friendly interface  
+3. **MVP-Focused**: Ultra-simple architecture for rapid development and validation
+4. **AI-Agent Friendly**: Simple patterns that AI can easily understand and extend
+5. **Progressive Enhancement**: Start simple, add complexity incrementally
 
-## 2. Technology Stack
+## Technology Stack
 
 ### MVP Technology Stack (Simplified)
-- **Frontend Framework**: Next.js 14+ with App Router and TypeScript
-- **Styling**: Tailwind CSS for rapid UI development
+- **Frontend**: Next.js 14+ with App Router and TypeScript
+- **Styling**: Tailwind CSS + shadcn/ui components  
+- **State Management**: React useState (keep it simple for MVP)
 - **Database**: Supabase PostgreSQL with Row-Level Security
 - **Offline Sync**: PowerSync SDK for bidirectional synchronization
-- **Hosting**: Vercel with global edge network
 - **Local Storage**: SQLite via PowerSync client
-- **State Management**: React useState (keep it simple for MVP)
+- **Hosting**: Vercel with global edge network
 - **PWA**: next-pwa for offline capabilities
 
 ### Development Tools
@@ -36,8 +36,9 @@ ScoreMyClays is built with an **ultra-simple MVP architecture** designed for rap
 - **Testing**: Vitest for unit tests (E2E testing later)
 - **Deployment**: Vercel automatic deployments
 
-## 3. MVP Architecture Diagram
+## System Architecture
 
+### High-Level Architecture
 ```mermaid
 graph TB
     subgraph "Client (PWA)"
@@ -68,9 +69,36 @@ graph TB
     class Vercel,Supabase,PowerSyncService cloud
 ```
 
-## 4. MVP Data Model
+### Data Flow
+```mermaid
+sequenceDiagram
+    participant User
+    participant PWA
+    participant PowerSync
+    participant SQLite
+    participant Supabase
+    
+    Note over User,Supabase: Online Scoring
+    User->>PWA: Record Shot (HIT/MISS)
+    PWA->>PowerSync: Save Score
+    PowerSync->>SQLite: Store Locally
+    PowerSync->>Supabase: Sync to Cloud
+    
+    Note over User,Supabase: Offline Scoring
+    User->>PWA: Record Shot (Offline)
+    PWA->>PowerSync: Save Score
+    PowerSync->>SQLite: Store Locally
+    Note over PowerSync: Queue for sync
+    
+    Note over User,Supabase: Return Online
+    PowerSync->>Supabase: Sync Queued Data
+    Supabase-->>PowerSync: Confirm Sync
+    PowerSync->>SQLite: Update Status
+```
 
-### Core Entities (Simplified)
+## Data Model (MVP)
+
+### Core Entities
 ```typescript
 // MVP Data Types (TypeScript)
 interface Session {
@@ -103,7 +131,7 @@ interface Target {
 }
 ```
 
-### PowerSync Schema Configuration
+### Database Schema
 ```sql
 -- PowerSync local SQLite schema
 CREATE TABLE sessions (
@@ -137,7 +165,7 @@ CREATE TABLE targets (
 );
 ```
 
-## 5. MVP Component Architecture
+## Component Architecture
 
 ### Ultra-Simple State Management
 ```typescript
@@ -148,7 +176,7 @@ function App() {
   const [currentView, setCurrentView] = useState<'home' | 'session' | 'scoring'>('home');
   
   // PowerSync hook for offline sync
-  const { syncStatus, forcSync } = usePowerSync();
+  const { syncStatus, forceSync } = usePowerSync();
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -234,7 +262,7 @@ function ScoringScreen({ session, onSessionComplete }: ScoringProps) {
 }
 ```
 
-## 6. Offline-First Implementation
+## Offline-First Implementation
 
 ### PowerSync Configuration
 ```typescript
@@ -283,7 +311,7 @@ export const initPowerSync = async () => {
 };
 ```
 
-### Offline Data Operations
+### Data Operations
 ```typescript
 // lib/scoring.ts - Simple data operations
 export const saveSession = async (session: Session) => {
@@ -311,7 +339,7 @@ export const getSessionHistory = async (): Promise<Session[]> => {
 };
 ```
 
-## 7. PWA Configuration
+## PWA Configuration
 
 ### Service Worker (Minimal)
 ```typescript
@@ -364,7 +392,7 @@ self.addEventListener('fetch', (event) => {
 }
 ```
 
-## 8. Performance Requirements
+## Performance Requirements
 
 ### MVP Performance Targets
 - **Scoring Response Time**: < 100ms for HIT/MISS buttons
@@ -391,7 +419,7 @@ const SessionHistory = lazy(() => import('./SessionHistory'));
 const Analytics = lazy(() => import('./Analytics'));
 ```
 
-## 9. Deployment Architecture
+## Deployment & Environment Configuration
 
 ### Vercel Configuration
 ```typescript
@@ -414,16 +442,22 @@ module.exports = withPWA({
 });
 ```
 
-### Environment Configuration
+### Environment Setup
 ```bash
 # .env.local (MVP configuration)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_POWERSYNC_URL=your_powersync_url
 NODE_ENV=development
+
+# Quick start for development
+npm create next-app@latest scoremyclays --typescript --tailwind --app
+cd scoremyclays
+npm install @powersync/web @supabase/supabase-js next-pwa
+npm run dev
 ```
 
-## 10. Security Implementation
+## Security Implementation
 
 ### MVP Security Approach
 ```typescript
@@ -441,7 +475,7 @@ export const sanitizeInput = (input: string): string => {
 };
 ```
 
-## 11. Testing Strategy
+## Testing Strategy
 
 ### MVP Testing Approach
 ```typescript
@@ -466,29 +500,7 @@ test('advances target after hit or miss', () => {
 });
 ```
 
-## 12. Post-MVP Technical Roadmap
-
-### Phase 1: Authentication (Post-MVP)
-- Supabase Auth integration
-- User profiles and data isolation
-- Row-level security implementation
-
-### Phase 2: Enhanced Features
-- Multi-user sessions
-- Real-time collaboration
-- Advanced conflict resolution
-
-### Phase 3: Scalability
-- Database optimization
-- Advanced caching strategies
-- Performance monitoring
-
-### Phase 4: Advanced Features
-- Push notifications
-- Advanced analytics
-- Integration APIs
-
-## 13. Development Workflow
+## Development Workflow
 
 ### AI-Assisted Development
 1. **Component Generation**: Use v0.dev for UI components
@@ -496,17 +508,13 @@ test('advances target after hit or miss', () => {
 3. **Testing**: Simple unit tests for core functionality
 4. **Deployment**: Automatic Vercel deployment on git push
 
-### Environment Setup
-```bash
-# Quick start for development
-npm create next-app@latest scoremyclays --typescript --tailwind --app
-cd scoremyclays
-npm install @powersync/web @supabase/supabase-js
-npm install next-pwa
-npm run dev
-```
+### Why This Architecture is AI-Agent Optimized
+- **Ultra-Simple**: Only React useState + TanStack Query - patterns AI knows well
+- **Minimal Dependencies**: Fewer libraries = less complexity for AI to manage
+- **Standard React**: Vanilla React patterns that AI has seen millions of times
+- **Incremental Growth**: Start simple, add complexity only when needed
 
-## 14. Monitoring & Analytics
+## Monitoring & Analytics
 
 ### MVP Monitoring (Simple)
 ```typescript
@@ -528,12 +536,16 @@ export const trackEvent = (event: string, data?: any) => {
 };
 ```
 
-## Conclusion
+## Future Architecture Evolution
 
-This technical specification provides a **simplified, MVP-focused architecture** that prioritizes rapid development, offline functionality, and AI-agent compatibility. The design enables quick validation of the core concept while providing a solid foundation for future enhancements outlined in the [Product Roadmap](./ROADMAP.md).
+### Post-MVP Enhancements
+- **Phase 1**: Supabase Auth integration and user profiles
+- **Phase 2**: Multi-user sessions and real-time collaboration
+- **Phase 3**: Advanced caching strategies and performance optimization
+- **Phase 4**: Push notifications and advanced analytics
 
-The architecture balances simplicity with scalability, ensuring the MVP can be built quickly while supporting the evolution to a comprehensive clay shooting platform.
+This technical architecture provides a **simplified, MVP-focused foundation** that prioritizes rapid development, offline functionality, and AI-agent compatibility. The design enables quick validation of core concepts while providing a solid foundation for future enhancements.
 
 ---
 
-*For business context, see [Service Description](./SERVICE_DESCRIPTION.md). For feature development roadmap, see [Product Roadmap](./ROADMAP.md).*
+*For business context, see [Functional Specification](./FUNCTIONAL_SPECIFICATION.md). For development phases, see [Product Roadmap](./ROADMAP.md).*
