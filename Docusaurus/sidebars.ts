@@ -29,6 +29,7 @@ const sidebars: SidebarsConfig = {
       label: 'Development',
       items: [
         'ROADMAP',
+        'PWA_TESTING_GUIDE',
         'VERCEL_DEPLOYMENT_GUIDE',
       ],
     },

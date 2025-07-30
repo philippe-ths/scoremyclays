@@ -1,0 +1,155 @@
+---
+description: "PWA testing standards and practices for ScoreMyClays clay shooting application"
+alwaysApply: true
+---
+
+# ScoreMyClays Testing Standards
+
+## Testing Architecture Requirements
+
+Follow the three-tier testing strategy:
+1. **Unit Testing (70%)**: Vitest for business logic, utilities, pure functions
+2. **Component Testing (20%)**: React Testing Library + Vitest Browser Mode
+3. **E2E Testing (8%)**: Playwright for user workflows and PWA features
+4. **Visual Regression (2%)**: BrowserBase + Stagehand for AI-enhanced UI testing
+
+## Clay Shooting Domain Testing Priority
+
+### Critical Test Scenarios
+- **Scoring Accuracy**: Validate hit/miss/no-bird calculations
+- **Rapid Input Handling**: Test touch responsiveness <100ms
+- **Offline Functionality**: Ensure PWA works without network
+- **Data Persistence**: Prevent scoring data loss under any condition
+- **Competition Formats**: Test Trap (25-target), Skeet, Sporting Clays
+
+### Performance Requirements
+- **Touch Response**: <50ms latency for scoring interactions
+- **Core Web Vitals**: LCP <2.5s, INP <200ms, CLS <0.1
+- **Battery Optimization**: <5% per hour during active scoring
+- **Cross-Platform**: Consistent behavior iOS/Android/Desktop
+
+## Unit Testing Standards
+
+### Business Logic Focus
+- Test scoring calculations, session management, data validation
+- Mock external dependencies (localStorage, serviceWorker, APIs)
+- Use descriptive test names: `should [expected behavior] when [condition]`
+- Achieve >90% coverage for business logic functions
+
+### Configuration Requirements
+```typescript
+// Required Vitest configuration elements
+test: {
+  environment: 'node', // or 'jsdom' for DOM-dependent code
+  globals: true,
+  coverage: {
+    thresholds: { global: { branches: 80, functions: 80, lines: 80, statements: 80 } }
+  }
+}
+```
+
+## Component Testing Standards
+
+### React Testing Library Integration
+- Use `screen.getByRole()` for accessibility-friendly queries
+- Test user interactions with `@testing-library/user-event`
+- Focus on component behavior, not implementation details
+- Mock PWA APIs (serviceWorker, notifications) appropriately
+
+### Clay Shooting Component Priorities
+- **Scoring Buttons**: Touch responsiveness and debouncing
+- **Session Setup**: Form validation and error handling
+- **Score Display**: Real-time updates and accuracy
+- **Navigation**: State preservation during transitions
+
+## E2E Testing Standards
+
+### Playwright PWA Configuration
+- Enable mobile device emulation for outdoor clay shooting context
+- Test offline functionality with `page.context().setOffline(true)`
+- Validate service worker behavior and cache strategies
+- Use `data-testid` attributes for reliable element selection
+
+### Critical User Workflows
+1. **Complete Scoring Session**: 25-target round with mixed results
+2. **Offline Continuity**: Network interruption during scoring
+3. **PWA Installation**: Installation flow and app behavior
+4. **Cross-Browser Validation**: Chrome, Firefox, Safari compatibility
+
+## Performance Testing Requirements
+
+### Core Web Vitals Validation
+```typescript
+// Required performance test structure
+test('should meet Core Web Vitals on mobile', async ({ page }) => {
+  const metrics = await page.evaluate(() => /* performance measurement */)
+  expect(metrics.lcp).toBeLessThan(2500)
+  expect(metrics.inp).toBeLessThan(200)
+  expect(metrics.cls).toBeLessThan(0.1)
+})
+```
+
+### Clay Shooting Performance Priorities
+- **Scoring Input Response**: <100ms for hit/miss/no-bird recording
+- **Position Navigation**: <200ms for advancing between positions
+- **Session Loading**: <1s for retrieving historical sessions
+- **Offline Performance**: No degradation without network
+
+## Test Data Management
+
+### Clay Shooting Test Scenarios
+- **Perfect Round**: 25/25 hits for calculation validation
+- **Mixed Results**: Realistic hit/miss/no-bird combinations
+- **Edge Cases**: Empty sessions, corrupted data, boundary conditions
+- **Competition Formats**: Discipline-specific scoring rules
+
+### Data Integrity Requirements
+- Test data corruption recovery mechanisms
+- Validate concurrent scoring operations
+- Ensure session data consistency
+- Test localStorage quota handling
+
+## Error Handling and Accessibility
+
+### Outdoor Usability Testing
+- High contrast mode compatibility
+- Touch target size validation (minimum 44x44px)
+- Screen reader compatibility for scoring feedback
+- Keyboard navigation for non-touch interfaces
+
+### Error Scenarios
+- Network connectivity loss during scoring
+- LocalStorage corruption or quota exceeded
+- Invalid user input handling
+- Service worker registration failures
+
+## AI-Enhanced Testing Integration
+
+### Cursor IDE Testing Capabilities
+- Use natural language prompts for test generation
+- Leverage AI for edge case discovery and validation
+- Generate comprehensive test scenarios for clay shooting workflows
+- Use AI for visual regression testing with BrowserBase + Stagehand
+
+### Test Generation Prompts
+Use these patterns for AI-assisted test creation:
+- "Generate Vitest test for [scoring function] with edge cases"
+- "Create Playwright E2E test for offline scoring session"
+- "Write React Testing Library test for [component] with accessibility validation"
+- "Generate performance test for Core Web Vitals compliance"
+
+## Quality Gates and Coverage
+
+### Minimum Requirements
+- **Unit Test Coverage**: >80% for all metrics, >90% for business logic
+- **E2E Coverage**: 100% of critical user paths (scoring, session management)
+- **Performance Compliance**: All Core Web Vitals in "Good" range
+- **Accessibility**: Zero WCAG 2.1 AA violations
+
+### Continuous Integration
+- Run unit tests on every commit
+- Execute E2E tests on pull requests
+- Perform visual regression testing for UI changes
+- Monitor performance regression with automated alerts
+
+Prioritize testing that validates clay shooting accuracy, PWA reliability, and mobile responsiveness over implementation details.
