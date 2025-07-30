@@ -17,12 +17,14 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## Target Market
 
 ### Primary Market: UK Clay Shooting Community
+
 - **60,000 regular UK clay shooters** who generate 96% of shooting activity
 - Focus on **Sporting Clays discipline** (most popular format)
 - **Mobile-first approach** for on-range usage
 - **Recreational and competitive shooters** seeking digital scoring solutions
 
 ### Market Pain Points Addressed
+
 - **Poor connectivity at shooting ranges** requiring offline-first solutions
 - **Lack of simple, reliable digital scoring tools** for clay shooting
 - **Need for immediate score tracking** during shooting sessions
@@ -31,24 +33,27 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## MVP Scope (Absolute Minimum)
 
 ### What's INCLUDED in MVP
+
 ✅ **Mobile-First**: Touch-friendly interface optimized for outdoor use
-✅ **Offline-First**: Must work offline and synchronize with cloud when online 
+✅ **Offline-First**: Must work offline and synchronize with cloud when online
 ✅ **Single Discipline**: Sporting Clays only (10 positions × 10 targets)
 ✅ **Session Setup**: Capture shooting ground name and shooter name
 ✅ **Position Management**: Name each position before shooting
 ✅ **Simple Scoring Interface**:
+
 - Large HIT/MISS buttons (green/red)
 - "No Bird" button (blue) - shot doesn't count, repeat target
 - "Undo" button (gray) - reverts last action
-✅ **Real-time Feedback**:
+  ✅ **Real-time Feedback**:
 - Current shot number display (e.g., "Target 4 of 10")
 - Live position score (e.g., "Position Score: 3/10")
 - Running session totals and percentage
-✅ **Session Completion**: Final scorecard display with breakdown
-✅ **Session History**: List of past sessions grouped by shooting ground
-✅ **Cloud Storage**: Automatic sync via offline-first sync engine
+  ✅ **Session Completion**: Final scorecard display with breakdown
+  ✅ **Session History**: List of past sessions grouped by shooting ground
+  ✅ **Cloud Storage**: Automatic sync via offline-first sync engine
 
 ### What's EXCLUDED from MVP
+
 ❌ User accounts/authentication  
 ❌ Other disciplines (Trap, DTL, Skeet, Compak Sporting)
 ❌ Squad/group scoring  
@@ -62,6 +67,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## User Flow (MVP)
 
 ### Primary User Journey
+
 1. **App Launch** → See home screen with session history
 2. **Session History** → List grouped by shooting ground with dates and scores
 3. **Start New Session** → Enter shooting ground name and shooter name
@@ -74,6 +80,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 10. **Return Home** → Back to session history with new session added
 
 ### Screen Flow Diagram
+
 ```
 [Home: Session History List]
      ↓
@@ -105,6 +112,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## Detailed Functional Requirements
 
 ### 1. Home Screen & Session History
+
 - **Session List**: Display past sessions grouped by shooting ground
 - **Session Summary**: Show date, shooter name, and final score for each session
 - **Quick Access**: Most recent sessions at top of list
@@ -112,19 +120,22 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 - **Sync Status**: Visual indicator of offline/online sync status
 
 ### 2. Session Setup
+
 - **Shooting Ground Input**: Text field for venue name (auto-suggest from history)
 - **Shooter Name Input**: Text field for participant name
 - **Validation**: Ensure both fields are completed before proceeding
 - **Start Session**: Clear call-to-action button
 
 ### 3. Position Management
+
 - **Position Naming**: Text input for each position (e.g., "High Tower", "Rabbit Run")
 - **Position Counter**: Clear indication of current position (1 of 10)
 - **Position Summary**: After completion, show position score and running totals
 - **Navigation**: Easy progression to next position
 
 ### 4. Scoring Interface
-- **Visual Hierarchy**: 
+
+- **Visual Hierarchy**:
   - Current position name (large, prominent)
   - Target counter (e.g., "Target 4 of 10")
   - Live position score (e.g., "3/10")
@@ -140,6 +151,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 - **Error Prevention**: Confirm before significant actions
 
 ### 5. Scorecard & Completion
+
 - **Live Updates**: Running totals update after each position
 - **Position Breakdown**: List showing score for each completed position
 - **Final Summary**: Complete scorecard with:
@@ -149,6 +161,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
   - Session metadata (date, ground, shooter)
 
 ### 6. Data Management
+
 - **Offline-First**: All data written to local storage first
 - **Automatic Sync**: Background synchronization when connectivity available
 - **Data Validation**: Ensure data integrity before storage
@@ -157,6 +170,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## Technical Requirements
 
 ### Platform & Performance
+
 - **Progressive Web App (PWA)**: Native app-like experience
 - **Mobile-First Design**: Optimized for smartphones (375px-768px)
 - **Cross-Platform**: Works on iOS, Android, and web browsers
@@ -165,6 +179,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 - **Battery Efficiency**: Optimized for 2+ hour shooting sessions
 
 ### User Interface Requirements
+
 - **Design Principles**:
   - Ultra-simple: One primary action per screen
   - Large touch targets: Easily accessible with gloves
@@ -177,6 +192,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
   - Support for screen readers
 
 ### Browser Support
+
 - **Primary**: Chrome, Safari, Firefox (modern versions)
 - **Mobile**: iOS Safari, Android Chrome
 - **PWA Features**: Offline capability, app-like experience
@@ -184,6 +200,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## Success Metrics (MVP)
 
 ### Primary Validation Metrics
+
 - **Session Completion Rate**: >80% of started sessions completed
 - **Offline Usage**: >50% of sessions include offline periods
 - **Sync Success Rate**: >95% successful data synchronization
@@ -191,6 +208,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 - **Performance**: &lt;100ms scoring response time consistently
 
 ### User Experience Metrics
+
 - **Ease of Use**: Positive feedback on position-based scoring flow
 - **Reliability**: Zero critical bugs in scoring and sync
 - **Adoption**: 20+ completed sessions by different users
@@ -199,6 +217,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## MVP Assumptions & Constraints
 
 ### Key Assumptions
+
 - Users primarily shoot Sporting Clays in 10-position sessions
 - Mobile phone usage at shooting ranges is common and accepted
 - Simple score tracking is more valuable than complex features for MVP
@@ -206,6 +225,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 - Position-based scoring workflow matches real shooting practices
 
 ### Technical Constraints
+
 - **MVP Simplicity**: No user authentication or advanced features
 - **Single Discipline**: Focus exclusively on Sporting Clays format
 - **Basic UI**: Simple, functional interface over polished design
@@ -214,16 +234,19 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## Risk Management
 
 ### Technical Risks
+
 - **Offline Sync Conflicts**: Mitigated by PowerSync's proven conflict resolution
 - **Battery Drain**: Minimized through simple UI and efficient code
 - **Data Loss**: Prevented by offline-first architecture with local persistence
 
 ### Product Risks
+
 - **Workflow Complexity**: Position-based flow might confuse users
 - **Limited Appeal**: Sporting Clays focus may limit initial adoption
 - **Feature Expectations**: Users may expect more features than MVP provides
 
 ### Mitigation Strategies
+
 - **User Testing**: Validate workflow with real shooters before release
 - **Clear Communication**: Set expectations about MVP scope and future features
 - **Feedback Collection**: Systematic gathering of user input for prioritization
@@ -231,6 +254,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 ## Definition of MVP Success
 
 **MVP is successful if:**
+
 1. ✅ Users can complete full 10-position scorecards without confusion
 2. ✅ Score recording feels fast and accurate in both online and offline modes
 3. ✅ Data reliably syncs to cloud when connectivity is restored
@@ -239,24 +263,7 @@ ScoreMyClays is an **offline-first Progressive Web Application** designed specif
 6. ✅ Performance targets are consistently met across different devices
 7. ✅ Offline-first approach proves valuable to users at shooting ranges
 
-## Future Development Phases
-
-### Phase 1: User Management
-- Authentication and user accounts
-- Personal session history
-- Basic user preferences
-
-### Phase 2: Enhanced Features
-- Multi-user sessions
-- Additional clay shooting disciplines
-- Basic analytics and trends
-
-### Phase 3: Social & Competition
-- Club management features
-- Leaderboards and competitions
-- Social sharing capabilities
-
-*This functional specification intentionally focuses 90% on MVP requirements to enable rapid validation of core concepts. For detailed technical implementation, see [Technical Architecture](./TECHNICAL_ARCHITECTURE.md). For development phases, see [Product Roadmap](./ROADMAP.md).*
+_This functional specification intentionally focuses 90% on MVP requirements to enable rapid validation of core concepts. For detailed technical implementation, see [Technical Architecture](./TECHNICAL_ARCHITECTURE.md). For development phases, see [Product Roadmap](./ROADMAP.md)._
 
 ---
 
