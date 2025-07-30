@@ -1,13 +1,18 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
+import { useScoring } from '@/context/scoring-context';
+import type { SessionSetupForm } from '@/types';
 
 import { SessionSetupModal } from './session-setup-modal';
 
 export function NewSessionButton() {
   const [showModal, setShowModal] = useState(false);
+  const { startNewSession } = useScoring();
+  const router = useRouter();
 
   const handleStartSession = () => {
     setShowModal(true);
@@ -17,13 +22,15 @@ export function NewSessionButton() {
     setShowModal(false);
   };
 
-  const handleSessionStart = (_data: {
-    groundName: string;
-    shooterName: string;
-  }) => {
-    // Handle session start logic here
+  const handleSessionStart = (data: SessionSetupForm) => {
+    // Start new session in scoring context
+    startNewSession(data);
+
+    // Close modal
     setShowModal(false);
-    // TODO: Navigate to scoring page or update app state
+
+    // Navigate to scoring page for position setup
+    router.push('/scoring');
   };
 
   return (
@@ -31,9 +38,12 @@ export function NewSessionButton() {
       <Button
         onClick={handleStartSession}
         size='touch-lg'
-        className='w-full bg-green-600 hover:bg-green-700 text-white font-bold'
+        className='w-full bg-clay-primary hover:bg-clay-primary-light text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center space-x-2'
       >
-        Start New Session
+        <span role='img' aria-label='Target'>
+          🎯
+        </span>
+        <span>Start New Session</span>
       </Button>
 
       <SessionSetupModal
