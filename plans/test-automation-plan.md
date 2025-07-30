@@ -21,7 +21,7 @@
 ## Phase 1: Unit Testing Foundation (E1)
 
 ### Setup Tasks
-- [ ] Install testing dependencies
+- [x] Install testing dependencies
   ```bash
   npm install -D vitest @testing-library/react @testing-library/user-event jsdom
   npm install -D @testing-library/jest-dom @vitest/ui
