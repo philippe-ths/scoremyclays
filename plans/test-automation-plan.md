@@ -101,10 +101,10 @@ This plan implements the formal testing strategy documented in:
   ```
 
 - [ ] Configure Playwright for ScoreMyClays PWA testing
-  - Cross-browser matrix: Chrome, Firefox, Safari (latest 2 versions)
-  - Mobile device emulation: iOS Safari, Android Chrome
+  - Chrome-focused testing: Desktop and Android Chrome
+  - Mobile device emulation: Android Chrome with outdoor visibility
   - PWA-specific capabilities: service worker testing, offline mode
-  - Performance monitoring: Core Web Vitals integration
+  - Performance monitoring: Core Web Vitals integration in Chrome
 
 - [ ] Create standardized E2E test directory structure
   ```
@@ -149,11 +149,11 @@ This plan implements the formal testing strategy documented in:
   - Data persistence validation across offline/online cycles
   - Performance: No degradation in offline mode
 
-- [ ] **Installation Testing** (Cross-platform validation)
+- [ ] **Installation Testing** (Chrome validation)
   - PWA manifest validation with clay shooting context
-  - Installation flow: iOS Safari, Android Chrome, Desktop
+  - Installation flow: Android Chrome and Desktop Chrome
   - Icon and splash screen outdoor visibility optimization
-  - OS integration: home screen behavior, status bar styling
+  - Chrome integration: home screen behavior, status bar styling
 
 - [ ] **Performance Validation** (Formal thresholds)
   - Core Web Vitals: LCP <2.5s, INP <200ms, CLS <0.1, FCP <1.8s
@@ -240,23 +240,23 @@ This plan implements the formal testing strategy documented in:
 
 ### Accessibility Testing
 - [ ] **Outdoor Use Optimization**
-  - High contrast mode testing
+  - High contrast mode testing in Chrome
   - Touch target size validation
   - Screen reader compatibility
   - Voice navigation support
 
-- [ ] **Cross-Platform Compatibility**
-  - iOS Safari testing
-  - Android Chrome testing
-  - Desktop PWA validation
-  - Feature detection fallbacks
+- [ ] **Chrome Compatibility**
+  - Android Chrome mobile testing
+  - Desktop Chrome PWA validation
+  - Feature detection for Chrome capabilities
+  - Chrome DevTools accessibility audit
 
 ## Phase 6: CI/CD Integration (E6)
 
 ### Automated Testing Pipeline
 - [ ] **GitHub Actions Configuration**
-  - Multi-browser test matrix
-  - Device emulation testing
+  - Chrome-focused test matrix (desktop/mobile)
+  - Device emulation testing (Android Chrome)
   - Performance regression detection
   - Visual regression monitoring
 

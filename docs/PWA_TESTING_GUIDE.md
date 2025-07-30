@@ -38,9 +38,9 @@ This document defines the comprehensive testing strategy for the ScoreMyClays Pr
 - **Integration**: Built-in coverage reporting, hot module replacement during development
 
 #### Playwright (E2E Testing)
-- **Justification**: Superior PWA support, cross-browser reliability, mobile device emulation
+- **Justification**: Superior PWA support, Chrome reliability, mobile device emulation
 - **Clay Shooting Context**: Outdoor environment simulation, touch gesture testing
-- **Integration**: Native service worker testing, offline mode simulation
+- **Integration**: Native service worker testing, offline mode simulation in Chrome
 
 #### BrowserBase + Stagehand (Visual Regression)
 - **Justification**: AI-powered element detection, self-healing selectors, cloud scalability
@@ -158,11 +158,11 @@ test.describe('Offline Scoring', () => {
 })
 ```
 
-#### Cross-Browser Matrix
-- **Desktop**: Chrome, Firefox, Safari (latest 2 versions)
-- **Mobile**: iOS Safari, Android Chrome (latest 2 versions)
-- **PWA Mode**: Installed PWA behavior validation
-- **Performance**: Core Web Vitals compliance across all browsers
+#### Chrome-Focused Testing
+- **Desktop**: Chrome (latest stable version)
+- **Mobile**: Android Chrome (latest stable version)
+- **PWA Mode**: Installed PWA behavior validation in Chrome
+- **Performance**: Core Web Vitals compliance in Chrome environment
 
 ### Visual Regression Testing
 
@@ -365,19 +365,18 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        browser: [chromium, firefox, webkit]
         device: [desktop, mobile]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
       - run: npm ci
-      - run: npx playwright install ${{ matrix.browser }}
+      - run: npx playwright install chromium
       - run: npm run build
-      - run: npm run test:e2e:${{ matrix.browser }}:${{ matrix.device }}
+      - run: npm run test:e2e:${{ matrix.device }}
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report-${{ matrix.browser }}-${{ matrix.device }}
+          name: playwright-report-${{ matrix.device }}
           path: playwright-report/
 
   visual-tests:
@@ -408,9 +407,9 @@ jobs:
 
 ### Quality Gates
 - **Test Coverage**: >80% for unit tests, 100% for critical paths
-- **Performance**: All Core Web Vitals in "Good" range
+- **Performance**: All Core Web Vitals in "Good" range in Chrome
 - **Accessibility**: Zero violations for WCAG 2.1 AA
-- **Cross-Browser**: 100% pass rate across supported browsers
+- **Chrome Compatibility**: 100% pass rate on Chrome desktop and mobile
 
 ## Monitoring and Maintenance
 

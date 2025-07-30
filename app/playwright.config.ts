@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * ScoreMyClays PWA Test Configuration
- * Optimized for clay shooting app testing with mobile-first approach
+ * Chrome-focused testing optimized for clay shooting app with mobile-first approach
+ * Simplified to current Chrome versions for reduced complexity and faster execution
  */
 export default defineConfig({
   testDir: './tests',
@@ -47,9 +48,9 @@ export default defineConfig({
     ignoreHTTPSErrors: true,
   },
 
-  /* Project configurations for comprehensive testing */
+  /* Project configurations - Chrome-focused testing */
   projects: [
-    /* Desktop Testing - Development validation */
+    /* Desktop Chrome - Development and PWA validation */
     {
       name: 'Desktop Chrome',
       use: { 
@@ -58,47 +59,19 @@ export default defineConfig({
       },
     },
 
-    /* Mobile Testing - Primary clay shooting use case */
+    /* Mobile Chrome - Primary clay shooting use case */
     {
       name: 'Mobile Chrome',
       use: { 
         ...devices['Pixel 5'],
-        // Outdoor visibility simulation
+        // Outdoor visibility optimization for clay shooting
         forcedColors: 'none',
-      },
-    },
-
-    {
-      name: 'iPhone',
-      use: { 
-        ...devices['iPhone 12'],
-        // iOS PWA specific settings
-        isMobile: true,
         hasTouch: true,
+        isMobile: true,
       },
     },
 
-    {
-      name: 'iPad',
-      use: { 
-        ...devices['iPad Pro'],
-        // Tablet scoring interface
-        viewport: { width: 1024, height: 768 },
-      },
-    },
-
-    /* Cross-browser validation */
-    {
-      name: 'Safari',
-      use: { ...devices['Desktop Safari'] },
-    },
-
-    {
-      name: 'Firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-
-    /* PWA Installation Testing */
+    /* PWA Installation Testing - Chrome only */
     {
       name: 'PWA Installation',
       use: {
@@ -111,7 +84,7 @@ export default defineConfig({
       testMatch: ['**/pwa.spec.ts'],
     },
 
-    /* Offline Testing */
+    /* Offline Testing - Chrome service worker validation */
     {
       name: 'Offline',
       use: {

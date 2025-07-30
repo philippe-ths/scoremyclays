@@ -114,8 +114,8 @@ const PERFORMANCE_REQUIREMENTS = {
 - **Error Boundaries**: Test error states and recovery
 
 ### E2E Test Requirements
-- **Cross-Browser**: Test Chrome, Firefox, Safari (latest 2 versions)
-- **Mobile Devices**: Test iOS Safari, Android Chrome
+- **Chrome-Only**: Test Chrome desktop and Android Chrome mobile
+- **Device Emulation**: Desktop and mobile viewport testing
 - **Offline Testing**: Use `page.context().setOffline(true)`
 - **Real Network**: Test on slow networks, not just fast connections
 
@@ -163,8 +163,8 @@ const REQUIRED_ERROR_TESTS = [
 - **Performance requirements met**: All Core Web Vitals in "Good" range
 
 ### CI/CD Pipeline Requirements
-- **Cross-browser testing**: All supported browsers pass
-- **Mobile device testing**: iOS and Android compatibility
+- **Chrome testing**: Desktop and mobile Chrome compatibility
+- **Device testing**: Android Chrome and desktop Chrome
 - **Accessibility validation**: Zero WCAG 2.1 AA violations
 - **Performance regression**: <5% degradation tolerance
 

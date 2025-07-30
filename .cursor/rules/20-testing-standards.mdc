@@ -74,7 +74,7 @@ test: {
 1. **Complete Scoring Session**: 25-target round with mixed results
 2. **Offline Continuity**: Network interruption during scoring
 3. **PWA Installation**: Installation flow and app behavior
-4. **Cross-Browser Validation**: Chrome, Firefox, Safari compatibility
+4. **Chrome Validation**: Desktop and mobile Chrome compatibility
 
 ## Performance Testing Requirements
 
