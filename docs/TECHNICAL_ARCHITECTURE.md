@@ -13,7 +13,7 @@ ScoreMyClays is built as an **offline-first Progressive Web Application** specif
 ## Core Design Principles
 
 1. **Offline-First**: All critical functions work without internet connectivity
-2. **Mobile-Optimized**: Sub-100ms response times with touch-friendly interface  
+2. **Mobile-Optimized**: Sub-100ms response times with touch-friendly interface
 3. **MVP-Focused**: Ultra-simple architecture for rapid development and validation
 4. **AI-Agent Friendly**: Simple patterns that AI can easily understand and extend
 5. **Progressive Enhancement**: Start simple, add complexity incrementally
@@ -21,8 +21,9 @@ ScoreMyClays is built as an **offline-first Progressive Web Application** specif
 ## Technology Stack
 
 ### MVP Technology Stack (Simplified)
+
 - **Frontend**: Next.js 14+ with App Router and TypeScript
-- **Styling**: Tailwind CSS + shadcn/ui components  
+- **Styling**: Tailwind CSS + shadcn/ui components
 - **State Management**: React useState (keep it simple for MVP)
 - **Database**: Supabase PostgreSQL with Row-Level Security
 - **Offline Sync**: PowerSync SDK for bidirectional synchronization
@@ -31,6 +32,7 @@ ScoreMyClays is built as an **offline-first Progressive Web Application** specif
 - **PWA**: next-pwa for offline capabilities
 
 ### Development Tools
+
 - **UI Generation**: v0.dev for rapid component prototyping
 - **AI Development**: Cursor with Claude for code generation
 - **Testing**: Vitest for unit tests (E2E testing later)
@@ -39,6 +41,7 @@ ScoreMyClays is built as an **offline-first Progressive Web Application** specif
 ## System Architecture
 
 ### High-Level Architecture
+
 ```mermaid
 graph TB
     subgraph "Client (PWA)"
@@ -48,28 +51,29 @@ graph TB
         SQLite[(Local SQLite)]
         SW[Service Worker]
     end
-    
+
     subgraph "Cloud Services"
         Vercel[Vercel Hosting]
         Supabase[(Supabase PostgreSQL)]
         PowerSyncService[PowerSync Service]
     end
-    
+
     UI --> State
     State --> PowerSyncClient
     PowerSyncClient --> SQLite
     PowerSyncClient <--> PowerSyncService
     PowerSyncService <--> Supabase
     UI --> SW
-    
-    classDef mvp fill:#e8f5e8
-    classDef cloud fill:#e1f5fe
-    
+
+    classDef mvp fill:#d4f8d4,stroke:#2d5a2d,stroke-width:2px,color:#1a4c1a
+    classDef cloud fill:#b3e5fc,stroke:#0d47a1,stroke-width:2px,color:#0d47a1
+
     class UI,State,PowerSyncClient,SQLite,SW mvp
     class Vercel,Supabase,PowerSyncService cloud
 ```
 
 ### Data Flow
+
 ```mermaid
 sequenceDiagram
     participant User
@@ -77,19 +81,19 @@ sequenceDiagram
     participant PowerSync
     participant SQLite
     participant Supabase
-    
+
     Note over User,Supabase: Online Scoring
     User->>PWA: Record Shot (HIT/MISS)
     PWA->>PowerSync: Save Score
     PowerSync->>SQLite: Store Locally
     PowerSync->>Supabase: Sync to Cloud
-    
+
     Note over User,Supabase: Offline Scoring
     User->>PWA: Record Shot (Offline)
     PWA->>PowerSync: Save Score
     PowerSync->>SQLite: Store Locally
     Note over PowerSync: Queue for sync
-    
+
     Note over User,Supabase: Return Online
     PowerSync->>Supabase: Sync Queued Data
     Supabase-->>PowerSync: Confirm Sync
@@ -99,6 +103,7 @@ sequenceDiagram
 ## Data Model (MVP)
 
 ### Core Entities
+
 ```typescript
 // MVP Data Types (TypeScript)
 interface Session {
@@ -117,21 +122,22 @@ interface Position {
   id: string;
   sessionId: string;
   positionNumber: number; // 1-10
-  positionName: string;   // e.g., "High Tower"
+  positionName: string; // e.g., "High Tower"
   targets: Target[];
-  score: number;          // hits out of 10
+  score: number; // hits out of 10
 }
 
 interface Target {
   id: string;
   positionId: string;
-  targetNumber: number;   // 1-10 within position
-  result: 'HIT' | 'MISS' | 'NO_BIRD';
+  targetNumber: number; // 1-10 within position
+  result: "HIT" | "MISS" | "NO_BIRD";
   timestamp: Date;
 }
 ```
 
 ### Database Schema
+
 ```sql
 -- PowerSync local SQLite schema
 CREATE TABLE sessions (
@@ -168,37 +174,40 @@ CREATE TABLE targets (
 ## Component Architecture
 
 ### Ultra-Simple State Management
+
 ```typescript
 // App.tsx - Root component with simple state
 function App() {
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [sessionHistory, setSessionHistory] = useState<Session[]>([]);
-  const [currentView, setCurrentView] = useState<'home' | 'session' | 'scoring'>('home');
-  
+  const [currentView, setCurrentView] = useState<
+    "home" | "session" | "scoring"
+  >("home");
+
   // PowerSync hook for offline sync
   const { syncStatus, forceSync } = usePowerSync();
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {currentView === 'home' && (
-        <HomeScreen 
+      {currentView === "home" && (
+        <HomeScreen
           sessionHistory={sessionHistory}
           onStartSession={(session) => {
             setCurrentSession(session);
-            setCurrentView('session');
+            setCurrentView("session");
           }}
         />
       )}
-      {currentView === 'session' && (
+      {currentView === "session" && (
         <SessionScreen
           session={currentSession}
-          onStartScoring={() => setCurrentView('scoring')}
+          onStartScoring={() => setCurrentView("scoring")}
         />
       )}
-      {currentView === 'scoring' && (
+      {currentView === "scoring" && (
         <ScoringScreen
           session={currentSession}
-          onSessionComplete={() => setCurrentView('home')}
+          onSessionComplete={() => setCurrentView("home")}
         />
       )}
     </div>
@@ -207,22 +216,23 @@ function App() {
 ```
 
 ### Key UI Components
+
 ```typescript
 // ScoringScreen.tsx - Main scoring interface
 function ScoringScreen({ session, onSessionComplete }: ScoringProps) {
   const [currentPosition, setCurrentPosition] = useState(1);
   const [currentTarget, setCurrentTarget] = useState(1);
   const [positionScore, setPositionScore] = useState(0);
-  
-  const recordShot = (result: 'HIT' | 'MISS' | 'NO_BIRD') => {
+
+  const recordShot = (result: "HIT" | "MISS" | "NO_BIRD") => {
     // Simple state update - PowerSync handles persistence
-    if (result === 'HIT') setPositionScore(prev => prev + 1);
-    if (result !== 'NO_BIRD') setCurrentTarget(prev => prev + 1);
-    
+    if (result === "HIT") setPositionScore((prev) => prev + 1);
+    if (result !== "NO_BIRD") setCurrentTarget((prev) => prev + 1);
+
     // Save to PowerSync (automatic offline handling)
     saveTarget({ positionId, targetNumber: currentTarget, result });
   };
-  
+
   return (
     <div className="p-6 max-w-md mx-auto">
       <h1 className="text-2xl font-bold">
@@ -230,27 +240,27 @@ function ScoringScreen({ session, onSessionComplete }: ScoringProps) {
       </h1>
       <p className="text-xl">Target {currentTarget} of 10</p>
       <p className="text-lg">Position Score: {positionScore}/10</p>
-      
+
       <div className="grid grid-cols-2 gap-4 mt-6">
-        <button 
-          onClick={() => recordShot('HIT')}
+        <button
+          onClick={() => recordShot("HIT")}
           className="bg-green-500 text-white p-6 rounded-lg text-xl font-bold"
         >
           HIT
         </button>
-        <button 
-          onClick={() => recordShot('MISS')}
+        <button
+          onClick={() => recordShot("MISS")}
           className="bg-red-500 text-white p-6 rounded-lg text-xl font-bold"
         >
           MISS
         </button>
-        <button 
-          onClick={() => recordShot('NO_BIRD')}
+        <button
+          onClick={() => recordShot("NO_BIRD")}
           className="bg-blue-500 text-white p-4 rounded-lg"
         >
           NO BIRD
         </button>
-        <button 
+        <button
           onClick={undoLastShot}
           className="bg-gray-500 text-white p-4 rounded-lg"
         >
@@ -265,40 +275,41 @@ function ScoringScreen({ session, onSessionComplete }: ScoringProps) {
 ## Offline-First Implementation
 
 ### PowerSync Configuration
+
 ```typescript
 // lib/powersync.ts
-import { PowerSyncDatabase } from '@powersync/web';
+import { PowerSyncDatabase } from "@powersync/web";
 
 export const db = new PowerSyncDatabase({
   schema: {
     sessions: {
-      id: 'text',
-      shooting_ground: 'text',
-      shooter_name: 'text',
-      total_score: 'integer',
-      synced: 'integer'
+      id: "text",
+      shooting_ground: "text",
+      shooter_name: "text",
+      total_score: "integer",
+      synced: "integer",
     },
     positions: {
-      id: 'text',
-      session_id: 'text',
-      position_number: 'integer',
-      position_name: 'text',
-      score: 'integer'
+      id: "text",
+      session_id: "text",
+      position_number: "integer",
+      position_name: "text",
+      score: "integer",
     },
     targets: {
-      id: 'text',
-      position_id: 'text',
-      target_number: 'integer',
-      result: 'text'
-    }
+      id: "text",
+      position_id: "text",
+      target_number: "integer",
+      result: "text",
+    },
   },
-  
+
   // Simple sync rules for MVP
   syncRules: {
-    sessions: 'SELECT * FROM sessions',
-    positions: 'SELECT * FROM positions',
-    targets: 'SELECT * FROM targets'
-  }
+    sessions: "SELECT * FROM sessions",
+    positions: "SELECT * FROM positions",
+    targets: "SELECT * FROM targets",
+  },
 });
 
 // Initialize connection
@@ -306,35 +317,41 @@ export const initPowerSync = async () => {
   await db.init();
   await db.connect({
     endpoint: process.env.NEXT_PUBLIC_POWERSYNC_URL!,
-    token: 'anonymous' // MVP uses anonymous access
+    token: "anonymous", // MVP uses anonymous access
   });
 };
 ```
 
 ### Data Operations
+
 ```typescript
 // lib/scoring.ts - Simple data operations
 export const saveSession = async (session: Session) => {
   await db.execute(
-    'INSERT INTO sessions (id, shooting_ground, shooter_name, date) VALUES (?, ?, ?, ?)',
-    [session.id, session.shootingGround, session.shooterName, session.date.toISOString()]
+    "INSERT INTO sessions (id, shooting_ground, shooter_name, date) VALUES (?, ?, ?, ?)",
+    [
+      session.id,
+      session.shootingGround,
+      session.shooterName,
+      session.date.toISOString(),
+    ]
   );
 };
 
 export const saveTarget = async (target: Target) => {
   await db.execute(
-    'INSERT INTO targets (id, position_id, target_number, result) VALUES (?, ?, ?, ?)',
+    "INSERT INTO targets (id, position_id, target_number, result) VALUES (?, ?, ?, ?)",
     [target.id, target.positionId, target.targetNumber, target.result]
   );
-  
+
   // Auto-sync when online (PowerSync handles this automatically)
 };
 
 export const getSessionHistory = async (): Promise<Session[]> => {
-  const result = await db.execute('SELECT * FROM sessions ORDER BY date DESC');
-  return result.rows.map(row => ({
+  const result = await db.execute("SELECT * FROM sessions ORDER BY date DESC");
+  return result.rows.map((row) => ({
     ...row,
-    date: new Date(row.date)
+    date: new Date(row.date),
   }));
 };
 ```
@@ -342,32 +359,30 @@ export const getSessionHistory = async (): Promise<Session[]> => {
 ## PWA Configuration
 
 ### Service Worker (Minimal)
+
 ```typescript
 // public/sw.js - Simple caching strategy
-const CACHE_NAME = 'scoremyclays-v1';
-const ESSENTIAL_URLS = [
-  '/',
-  '/offline',
-  '/manifest.json'
-];
+const CACHE_NAME = "scoremyclays-v1";
+const ESSENTIAL_URLS = ["/", "/offline", "/manifest.json"];
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(ESSENTIAL_URLS))
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ESSENTIAL_URLS))
   );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   // Cache-first strategy for MVP simplicity
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    caches
+      .match(event.request)
+      .then((response) => response || fetch(event.request))
   );
 });
 ```
 
 ### PWA Manifest
+
 ```json
 {
   "name": "ScoreMyClays",
@@ -395,6 +410,7 @@ self.addEventListener('fetch', (event) => {
 ## Performance Requirements
 
 ### MVP Performance Targets
+
 - **Scoring Response Time**: < 100ms for HIT/MISS buttons
 - **App Load Time**: < 3 seconds on 3G connection
 - **Offline Capability**: 100% core functionality available offline
@@ -402,47 +418,50 @@ self.addEventListener('fetch', (event) => {
 - **Battery Usage**: Minimal drain during 2-hour shooting sessions
 
 ### Optimization Strategies
+
 ```typescript
 // Performance optimizations for MVP
 export const ScoringButton = memo(({ onClick, children, className }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`${className} transform transition-transform active:scale-95`}
-    style={{ touchAction: 'manipulation' }} // Eliminates 300ms delay
+    style={{ touchAction: "manipulation" }} // Eliminates 300ms delay
   >
     {children}
   </button>
 ));
 
 // Lazy loading for non-critical screens
-const SessionHistory = lazy(() => import('./SessionHistory'));
-const Analytics = lazy(() => import('./Analytics'));
+const SessionHistory = lazy(() => import("./SessionHistory"));
+const Analytics = lazy(() => import("./Analytics"));
 ```
 
 ## Deployment & Environment Configuration
 
 ### Vercel Configuration
+
 ```typescript
 // next.config.js
-const withPWA = require('next-pwa');
+const withPWA = require("next-pwa");
 
 module.exports = withPWA({
   pwa: {
-    dest: 'public',
-    disable: process.env.NODE_ENV === 'development'
+    dest: "public",
+    disable: process.env.NODE_ENV === "development",
   },
   experimental: {
-    appDir: true
+    appDir: true,
   },
   env: {
     NEXT_PUBLIC_POWERSYNC_URL: process.env.NEXT_PUBLIC_POWERSYNC_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  }
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
 });
 ```
 
 ### Environment Setup
+
 ```bash
 # .env.local (MVP configuration)
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
@@ -460,6 +479,7 @@ npm run dev
 ## Security Implementation
 
 ### MVP Security Approach
+
 ```typescript
 // Simple security for MVP (authentication later)
 export const validateSession = (session: Session): boolean => {
@@ -478,37 +498,40 @@ export const sanitizeInput = (input: string): string => {
 ## Testing Strategy
 
 ### MVP Testing Approach
+
 ```typescript
 // __tests__/scoring.test.ts
-import { render, fireEvent, screen } from '@testing-library/react';
-import ScoringScreen from '../components/ScoringScreen';
+import { render, fireEvent, screen } from "@testing-library/react";
+import ScoringScreen from "../components/ScoringScreen";
 
-test('records hit when HIT button pressed', () => {
+test("records hit when HIT button pressed", () => {
   render(<ScoringScreen session={mockSession} />);
-  
-  fireEvent.click(screen.getByText('HIT'));
-  
-  expect(screen.getByText('Position Score: 1/10')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByText("HIT"));
+
+  expect(screen.getByText("Position Score: 1/10")).toBeInTheDocument();
 });
 
-test('advances target after hit or miss', () => {
+test("advances target after hit or miss", () => {
   render(<ScoringScreen session={mockSession} />);
-  
-  fireEvent.click(screen.getByText('HIT'));
-  
-  expect(screen.getByText('Target 2 of 10')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByText("HIT"));
+
+  expect(screen.getByText("Target 2 of 10")).toBeInTheDocument();
 });
 ```
 
 ## Development Workflow
 
 ### AI-Assisted Development
+
 1. **Component Generation**: Use v0.dev for UI components
 2. **Logic Implementation**: Cursor AI for business logic
 3. **Testing**: Simple unit tests for core functionality
 4. **Deployment**: Automatic Vercel deployment on git push
 
 ### Why This Architecture is AI-Agent Optimized
+
 - **Ultra-Simple**: Only React useState + TanStack Query - patterns AI knows well
 - **Minimal Dependencies**: Fewer libraries = less complexity for AI to manage
 - **Standard React**: Vanilla React patterns that AI has seen millions of times
@@ -517,6 +540,7 @@ test('advances target after hit or miss', () => {
 ## Monitoring & Analytics
 
 ### MVP Monitoring (Simple)
+
 ```typescript
 // Simple logging for MVP
 export const logger = {
@@ -526,7 +550,7 @@ export const logger = {
   error: (message: string, error?: any) => {
     console.error(`[ERROR] ${message}`, error);
     // Vercel automatically captures console.error
-  }
+  },
 };
 
 // Usage analytics (basic)
@@ -539,6 +563,7 @@ export const trackEvent = (event: string, data?: any) => {
 ## Future Architecture Evolution
 
 ### Post-MVP Enhancements
+
 - **Phase 1**: Supabase Auth integration and user profiles
 - **Phase 2**: Multi-user sessions and real-time collaboration
 - **Phase 3**: Advanced caching strategies and performance optimization
@@ -548,4 +573,4 @@ This technical architecture provides a **simplified, MVP-focused foundation** th
 
 ---
 
-*For business context, see [Functional Specification](./FUNCTIONAL_SPECIFICATION.md). For development phases, see [Product Roadmap](./ROADMAP.md).*
+_For business context, see [Functional Specification](./FUNCTIONAL_SPECIFICATION.md). For development phases, see [Product Roadmap](./ROADMAP.md)._

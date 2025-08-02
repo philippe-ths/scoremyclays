@@ -1,4 +1,4 @@
-Please generate a concise context recap of the current chat session for the next AI chat session. Include:
+Please generate a concise context recap of the current chat session for the next AI chat session. Create a new markdown file with filename format session-recap-YYYY-MM-DD-HHhMMmSSs.md containing a bullet-pointed summary that provides complete context when pasted into a new AI chat session. Include:
 
 1. **Overview:** What was this chat session about?
 2. **Current Goal:** Score My Clays MVP (only) as defined in FUNCTIONAL_SPECIFICATION.md
@@ -13,5 +13,3 @@ Please generate a concise context recap of the current chat session for the next
 9. **Important Context:**
    - Always include: /Users/ianmarr/projects/scoremyclays/docs/_ and /Users/ianmarr/projects/scoremyclays/.cursor/_
    - What else should be passed on?
-
-Create a new markdown file with filename format session-recap-YYYY-MM-DD-HHhMMmSSs.md containing a bullet-pointed summary that provides complete context when pasted into a new AI chat session
