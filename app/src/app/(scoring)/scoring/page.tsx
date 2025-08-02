@@ -25,14 +25,9 @@ export default function ScoringPage() {
   // Redirect to home if no session is active
   useEffect(() => {
     if (!state.currentSession) {
-      console.log('⚠️ No current session, redirecting to home in 2 seconds...');
-      // Add delay to see what's happening
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
+      router.push('/');
       return;
     }
-    console.log('✅ Current session exists:', state.currentSession);
   }, [state.currentSession, router]);
 
   // Handle scoring a shot
