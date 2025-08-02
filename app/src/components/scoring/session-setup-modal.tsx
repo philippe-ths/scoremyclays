@@ -27,6 +27,7 @@ export function SessionSetupModal({
     groundName: '',
     shooterName: '',
   });
+  const [submitCount, setSubmitCount] = useState(0);
 
   const validateForm = () => {
     const newErrors = {
@@ -52,6 +53,7 @@ export function SessionSetupModal({
 
     const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitCount(prev => prev + 1); // Visual indicator
     console.log('🔥 Form submitted with data:', formData);
 
     if (!validateForm()) {
@@ -125,7 +127,7 @@ export function SessionSetupModal({
               </div>
               <div>
                 <h2 className='text-xl font-bold text-clay-text-primary'>
-                  New Session
+                  New Session {submitCount > 0 && `(Submitted: ${submitCount})`}
                 </h2>
                 <p className='text-sm text-clay-text-secondary'>
                   Set up your clay shooting session
