@@ -55,6 +55,11 @@ function scoringReducer(
         syncStatus: 'pending',
       };
 
+      console.log('🎯 START_SESSION action:', {
+        payload: action.payload,
+        newSession: session,
+      });
+
       return {
         ...state,
         currentSession: session,
@@ -276,14 +281,16 @@ export function ScoringProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (state.currentSession) {
       try {
+        console.log('💾 Saving session to localStorage:', state.currentSession);
         localStorage.setItem(
           STORAGE_KEYS.CURRENT_SESSION,
           JSON.stringify(state.currentSession)
         );
-      } catch {
-        // Handle error silently or with proper error handling
+      } catch (error) {
+        console.error('❌ Error saving to localStorage:', error);
       }
     } else {
+      console.log('🗑️ Removing session from localStorage');
       localStorage.removeItem(STORAGE_KEYS.CURRENT_SESSION);
     }
   }, [state.currentSession]);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -15,6 +15,10 @@ export function SessionSetupModal({
   onClose,
   onStartSession,
 }: SessionSetupModalProps) {
+  // Test if component is mounting
+  React.useEffect(() => {
+    console.log('🚀 SessionSetupModal mounted, isOpen:', isOpen);
+  }, [isOpen]);
   const [formData, setFormData] = useState({
     groundName: '',
     shooterName: '',
@@ -23,7 +27,6 @@ export function SessionSetupModal({
     groundName: '',
     shooterName: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {
@@ -47,32 +50,28 @@ export function SessionSetupModal({
     return !newErrors.groundName && !newErrors.shooterName;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('🔥 Form submitted with data:', formData);
 
     if (!validateForm()) {
+      console.log('❌ Form validation failed');
       return;
     }
 
-    setIsLoading(true);
+    console.log('✅ Form validation passed');
+    
+    const sessionData = {
+      groundName: formData.groundName.trim(),
+      shooterName: formData.shooterName.trim(),
+    };
+    console.log('🚀 Calling onStartSession with:', sessionData);
+    
+    onStartSession(sessionData);
 
-    try {
-      // Simulate brief loading for better UX
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      onStartSession({
-        groundName: formData.groundName.trim(),
-        shooterName: formData.shooterName.trim(),
-      });
-
-      // Reset form
-      setFormData({ groundName: '', shooterName: '' });
-      setErrors({ groundName: '', shooterName: '' });
-    } catch (error) {
-      console.error('Error starting session:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Reset form
+    setFormData({ groundName: '', shooterName: '' });
+    setErrors({ groundName: '', shooterName: '' });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -91,11 +90,9 @@ export function SessionSetupModal({
   };
 
   const handleClose = () => {
-    if (!isLoading) {
-      setFormData({ groundName: '', shooterName: '' });
-      setErrors({ groundName: '', shooterName: '' });
-      onClose();
-    }
+    setFormData({ groundName: '', shooterName: '' });
+    setErrors({ groundName: '', shooterName: '' });
+    onClose();
   };
 
   if (!isOpen) {
@@ -160,7 +157,7 @@ export function SessionSetupModal({
                     : 'border-clay-border bg-clay-surface-elevated focus:border-clay-primary hover:border-clay-primary/60'
                 }`}
                 autoComplete='organization'
-                disabled={isLoading}
+
               />
               {errors.groundName && (
                 <p className='text-sm text-clay-error font-medium flex items-center space-x-1'>
@@ -191,7 +188,7 @@ export function SessionSetupModal({
                     : 'border-clay-border bg-clay-surface-elevated focus:border-clay-primary hover:border-clay-primary/60'
                 }`}
                 autoComplete='name'
-                disabled={isLoading}
+
               />
               {errors.shooterName && (
                 <p className='text-sm text-clay-error font-medium flex items-center space-x-1'>
@@ -208,20 +205,17 @@ export function SessionSetupModal({
                 variant='outline'
                 size='touch'
                 onClick={handleClose}
-                disabled={isLoading}
+
                 className='w-full sm:w-auto border-2 border-clay-border hover:border-clay-primary/60 hover:bg-clay-surface text-clay-text-primary font-semibold'
               >
                 Cancel
               </Button>
-              <Button
+              <button
                 type='submit'
-                size='touch'
-                loading={isLoading}
-                disabled={isLoading}
-                className='w-full sm:w-auto bg-clay-primary hover:bg-clay-primary-light text-white font-bold shadow-lg hover:shadow-xl transition-all duration-200'
+                className='w-full sm:w-auto h-16 px-6 text-lg font-bold bg-clay-primary hover:bg-clay-primary-light text-white shadow-lg hover:shadow-xl transition-all duration-200 rounded-md'
               >
-                {isLoading ? 'Starting Session...' : 'Start Session 🎯'}
-              </Button>
+                Start Session 🎯
+              </button>
             </div>
           </form>
         </div>

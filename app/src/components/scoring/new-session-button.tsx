@@ -23,13 +23,18 @@ export function NewSessionButton() {
   };
 
   const handleSessionStart = (data: SessionSetupForm) => {
+    console.log('🎯 NewSessionButton: handleSessionStart called with:', data);
+    
     // Start new session in scoring context
+    console.log('📝 Calling startNewSession...');
     startNewSession(data);
 
     // Close modal
+    console.log('❌ Closing modal...');
     setShowModal(false);
 
     // Navigate to scoring page for position setup
+    console.log('🧭 Navigating to /scoring...');
     router.push('/scoring');
   };
 
