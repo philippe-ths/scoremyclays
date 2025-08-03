@@ -4,7 +4,7 @@ on:
   push:
     branches: ['main']
   workflow_run:
-    workflows: ["CI/CD Pipeline"]
+    workflows: ['CI/CD Pipeline']
     types:
       - completed
     branches: ['main']
@@ -20,7 +20,7 @@ jobs:
     if: |
       github.event_name == 'push' || 
       (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,21 +30,21 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: 'app/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        working-directory: ./app
+        working-directory: .
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
-        working-directory: ./app
+        working-directory: .
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
-        working-directory: ./app
+        working-directory: .
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Update deployment status
@@ -56,7 +56,7 @@ jobs:
     name: Deploy Preview
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -66,21 +66,21 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: 'app/package-lock.json'
+          cache-dependency-path: 'package-lock.json'
 
       - name: Install Vercel CLI
         run: npm install --global vercel@latest
 
       - name: Pull Vercel Environment Information
-        working-directory: ./app
+        working-directory: .
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Build Project Artifacts
-        working-directory: ./app
+        working-directory: .
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy Project Artifacts to Vercel
-        working-directory: ./app
+        working-directory: .
         id: deploy
         run: |
           vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }} > deployment-url.txt

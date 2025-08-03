@@ -4,6 +4,20 @@ alwaysApply: true
 
 # Development Principles
 
+## Core Project Principles
+
+1. **DRY (Don't Repeat Yourself)**: Eliminate code duplication by creating reusable functions, components, and configurations
+   - Define logic once and reuse across the codebase
+   - Create shared utilities for common operations
+   - Use consistent patterns and abstractions
+   - Example: `npm run dev:stop` logic used by `npm run dev`
+
+2. **KISS (Keep It Simple, Stupid)**: Favor simple, clear solutions over complex ones
+   - Choose the most straightforward approach that works
+   - Avoid over-engineering and premature optimization
+   - Write code that others can easily understand and maintain
+   - Example: Simple localStorage over complex state management for MVP
+
 ## Code Quality
 
 1. **Clean Code**: Write readable, maintainable code with clear naming
@@ -37,4 +51,3 @@ alwaysApply: true
 5. **Consistent UI**: Follow design system guidelines
 
 *Apply these principles throughout all development work*
-

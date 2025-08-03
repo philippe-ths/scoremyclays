@@ -8,15 +8,15 @@ ScoreMyClays - An independent mobile application for clay pigeon shooting scorin
 
 ## Commands
 
-### Documentation (Docusaurus)
-- `cd website && npm start` - Start Docusaurus development server
-- `cd website && npm run build` - Build documentation for production
-- `cd website && npm run serve` - Serve built documentation locally
-- `cd website && npm run typecheck` - Run TypeScript type checking
+### Documentation
+
+- Documentation is available in the `/docs/` directory as Markdown files
+- All documentation is stored as simple Markdown files for easy access
 
 ## Architecture
 
 The project architecture is not yet established. Update this section as the codebase grows to include:
+
 - Main technology stack
 - Key architectural patterns
 - Important directory structures

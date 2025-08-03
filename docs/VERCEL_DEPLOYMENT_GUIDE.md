@@ -4,20 +4,23 @@
 
 This guide covers the deployment strategy for the **ScoreMyClays Progressive Web Application**. The project has a clear separation:
 
-1. **📚 Documentation Site** - Docusaurus for local development and reference
+1. **📚 Documentation** - Markdown files in `/docs/` for reference
 2. **📱 ScoreMyClays PWA** - Next.js offline-first progressive web app (deployed to Vercel)
 
 ## Current Setup
 
 ### Documentation (Local Only)
-The Docusaurus documentation site is designed for **local development only**:
 
-```bash
-cd Docusaurus
-npm install
-npm start
+The documentation is kept as simple Markdown files for **easy access**:
+
+- Available in `/docs/` directory
+- No build process required
+  npm install
+  npm start
+
 # Opens http://localhost:3000
-```
+
+````
 
 This provides a rich local documentation experience for developers without the complexity of deployment.
 
@@ -52,7 +55,7 @@ cd scoremyclays-app
 # Install PWA dependencies
 npm install next-pwa @powersync/web @supabase/supabase-js
 npm install -D @types/node
-```
+````
 
 ### 2. Configure PWA
 
@@ -60,20 +63,20 @@ Following the technical architecture in `/docs/TECHNICAL_ARCHITECTURE.md`:
 
 ```javascript
 // next.config.js
-const withPWA = require('next-pwa')({
-  dest: 'public',
-  disable: process.env.NODE_ENV === 'development'
+const withPWA = require("next-pwa")({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
 });
 
 module.exports = withPWA({
   experimental: {
-    appDir: true
+    appDir: true,
   },
   env: {
     NEXT_PUBLIC_POWERSYNC_URL: process.env.NEXT_PUBLIC_POWERSYNC_URL,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  }
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  },
 });
 ```
 
@@ -128,6 +131,7 @@ NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your-analytics-id
 ### Setting Up Custom Domain
 
 1. **Add Domain in Vercel Dashboard:**
+
    - Go to Project Settings → Domains
    - Add `app.scoremyclays.com`
 
@@ -142,6 +146,7 @@ NEXT_PUBLIC_VERCEL_ANALYTICS_ID=your-analytics-id
 Based on `/docs/TECHNICAL_ARCHITECTURE.md`, the PWA will include:
 
 ### Core Technologies
+
 - **Next.js 14+** with App Router and TypeScript
 - **Tailwind CSS** + shadcn/ui components
 - **PowerSync SDK** for offline synchronization
@@ -149,12 +154,14 @@ Based on `/docs/TECHNICAL_ARCHITECTURE.md`, the PWA will include:
 - **Service Workers** for offline capability
 
 ### Performance Targets
+
 - **Scoring Response Time**: < 100ms for HIT/MISS buttons
 - **App Load Time**: < 3 seconds on 3G connection
 - **Offline Capability**: 100% core functionality available offline
 - **Sync Time**: < 5 seconds for session sync when online
 
 ### PWA Manifest
+
 ```json
 {
   "name": "ScoreMyClays",
@@ -181,25 +188,24 @@ Based on `/docs/TECHNICAL_ARCHITECTURE.md`, the PWA will include:
 
 ## Current Documentation Workflow
 
-For now, with Docusaurus remaining local:
+For now, with documentation as simple Markdown files:
 
 ### Local Documentation Development
 
 ```bash
-# Start documentation site
-cd Docusaurus
-npm install
-npm start
+# View documentation
+cd docs
+# Simply open any .md file in your preferred editor
 
 # Make documentation changes
-# Edit files in /docs/ directory
+# Edit files directly in /docs/ directory
 # Changes appear immediately in browser
 ```
 
 ### Documentation Maintenance
 
 1. **Edit Documentation**: Modify files in `/docs/` directory
-2. **Preview Locally**: Use `npm start` in Docusaurus directory
+2. **Preview Locally**: Open Markdown files directly in editor or browser
 3. **Version Control**: Commit documentation changes to Git
 4. **Share**: Documentation changes are available to all developers locally
 
@@ -249,14 +255,13 @@ vercel env pull .env.local
 ### Documentation Commands
 
 ```bash
-# Local documentation
-cd Docusaurus && npm start
+# View documentation
+cd docs && ls *.md
 
-# Build documentation (for testing)
-cd Docusaurus && npm run build
+# Open in editor
+code docs/
 
-# Serve built documentation
-cd Docusaurus && npm run serve
+# No build process needed - just edit Markdown files directly
 ```
 
 ## Support
@@ -269,7 +274,8 @@ cd Docusaurus && npm run serve
 
 ---
 
-**Next Steps**: 
-1. Continue developing with local Docusaurus documentation
+**Next Steps**:
+
+1. Continue developing with simple Markdown documentation in `/docs/`
 2. When ready for PWA development, create separate Next.js project
 3. Follow technical architecture specifications in `/docs/TECHNICAL_ARCHITECTURE.md`
