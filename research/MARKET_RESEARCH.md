@@ -92,7 +92,7 @@ The validation process examined the problem statement from multiple analytical f
 
 ### UK Market Analysis
 
-#### Market Size and Structure
+#### Very Optimistic Market Size and Structure (industry promoted)
 
 - Total UK Clay Shooting Participants: Approximately 130,000-180,000 active participants
   - 60,000 regular shooters (Monthly + Club Regulars) drive 96% of activity volume
@@ -102,7 +102,7 @@ The validation process examined the problem statement from multiple analytical f
 - Annual Competitions: 1,500+ registered competitions annually
 - Market Valuation: Industry sources claim the UK clay shooting market is valued at approximately £240-280 million annually (treat with skepticism - likely inflated industry promotion figures)
 
-#### UK-Specific Participation Demographics
+#### Very Optimistic UK-Specific Participation Demographics
 
 - Age Distribution: Primary demographic 35-65 years (68%), growing youth segment 16-34 years (22%)
 - Gender Distribution: 82% male, 18% female (female participation growing at 12% annually)
@@ -119,7 +119,7 @@ The validation process examined the problem statement from multiple analytical f
 - Shooting App Awareness: 65% aware of shooting apps but only 15% currently using them
 - Willingness to Adopt: 73% expressed interest in a comprehensive digital scoring solution
 
-#### UK Pricing Sensitivity Analysis
+#### Optimistic UK Pricing Sensitivity Analysis
 
 - Subscription Willingness (monthly):
   - Competitive shooters: £4-£12
@@ -128,7 +128,7 @@ The validation process examined the problem statement from multiple analytical f
 - Free-to-Premium Conversion: 28% projected conversion rate from free to premium tiers
 - Add-on Purchases: 35% willingness to purchase additional features or services
 
-#### UK-Specific Competitor Landscape
+#### UK-Specific Competitor Landscape (there are more)
 
 - Shooting Hub UK: Primarily community forum with basic score tracking
 - CPSA Shoot: Official CPSA application with limited functionality
@@ -310,9 +310,9 @@ The validation process examined the problem statement from multiple analytical f
 - Limited cellular connectivity at rural shooting locations (significant issue in parts of UK)
 - Resistance to technology from traditional participant demographic
 
-#### 3. Market Size and Growth Potential
+#### 3. Very Optimistic Market Size and Growth Potential (industry promoted)
 
-**UK Market Valuation:**
+**UK Market Valuation :**
 
 - UK clay target sports market estimated at £240-280 million annually (industry promotional figures - likely inflated)
 - Digital solutions specific to shooting sports represent less than 4% of this market
@@ -335,7 +335,7 @@ The validation process examined the problem statement from multiple analytical f
   - Clubs and grounds: £40-£180 monthly subscription based on size
 - Feature priority divergence between segments offers tiered pricing opportunities
 
-## Comprehensive Competitor Analysis
+## Competitor Analysis
 
 ### 1. UK and Global Dedicated Shooting Applications
 

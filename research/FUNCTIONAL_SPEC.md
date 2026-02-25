@@ -211,22 +211,22 @@ ScoreMyClays is a web-based scoring application designed for clay pigeon shootin
 ## 10. Timeline and Milestones
 
 ### Development Phases
-1. **Phase 1 (3 months)**: Core scoring functionality
-2. **Phase 2 (2 months)**: User management and basic analytics
-3. **Phase 3 (2 months)**: Advanced features and optimizations
-4. **Phase 4 (1 month)**: Testing and launch preparation
+1. **Phase 1 **: Core scoring functionality
+2. **Phase 2**: User management and basic analytics
+3. **Phase 3**: Advanced features and optimizations
+4. **Phase 4**: Testing and launch preparation
 
 ### Key Milestones
-- MVP with basic scoring: Month 2
-- Beta release: Month 5
-- Public launch: Month 8
-- First major update: Month 10
+- MVP with basic scoring
+- Beta release
+- First production release
+- First major update
 
 ## 11. Assumptions and Dependencies
 
 ### Assumptions
 - Users have access to smartphones/tablets at shooting ranges
-- Basic internet connectivity available (at least for sync)
+- Internet connectivity available to start a session
 - Users familiar with their shooting discipline rules
 - Standard scoring rules apply (customization in later phases)
 
@@ -251,35 +251,17 @@ ScoreMyClays is a web-based scoring application designed for clay pigeon shootin
 ## 13. Appendices
 
 ### A. Glossary of Terms
-- **Station**: Shooting position in Skeet/Sporting Clays
+- **Position**: Shooting position in Skeet/Sporting Clays
 - **Stand**: Shooting position in Trap/5-Stand
 - **Pull**: Command to release clay target
-- **Report Pair**: Second target launched on report of first shot
-- **True Pair**: Two targets launched simultaneously
+- **On Report**: Second target launched on report of first shot
+- **Simultaneous Pair**: Two targets launched simultaneously
 
 ### B. Scoring Rules Summary
-- **Trap**: 1 point per broken target, 25 possible
-- **Skeet**: 1 point per broken target, 25 possible (with option target)
-- **Sporting Clays**: 1 point per broken target, variable total
-- **5-Stand**: 1 point per broken target, 25 possible
+- **Sporting Clays**: 1 point per broken target
 
 ### C. References
 - NSSA (National Skeet Shooting Association) Rules
 - ATA (Amateur Trapshooting Association) Rules
 - NSCA (National Sporting Clays Association) Rules
 - SCTP (Scholastic Clay Target Program) Guidelines
-
-### D. Research Documents
-- Market Research: `/research/MARKET_RESEARCH.md`
-- Feature Specifications: `/docs/FEATURES.md`
-- Golf App Market Insights: `/research/GOLF_APP_INSIGHTS.md`
-- Feasibility Analysis: `/docs/FEASIBILITY_ANALYSIS.md`
-- Shooter Numbers & Classification: `/research/SHOOTER_NUMBERS.md`
-- Golf Apps Analyzed: `/research/GOLF_APPS_ANALYSED.md`
-- GolfGameBook UI Analysis: `/research/GOLF_APPS/golfgamebook/ui_analysis.md`
-- GolfGameBook Key Features: `/research/GOLF_APPS/golfgamebook/key_features.md`
-- GolfGameBook Gameplay Analysis: `/research/GOLF_APPS/golfgamebook/gameplay_analysis.md`
-- GolfGameBook Detailed UX Review: `/research/GOLF_APPS/golfgamebook/detailed_ux_review.md`
-- ScoreMyClays UX Design Guide: `/docs/DESIGN_GUIDES/scoremyclays_ux_design_guide.md`
-- ScoreMyClays UI Design Guide: `/docs/DESIGN_GUIDES/scoremyclays_ui_design_guide.md`
-- Design System Components: `/docs/DESIGN_GUIDES/design_system_components.md`
