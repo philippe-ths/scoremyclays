@@ -307,7 +307,7 @@ describe("MVP Sporting Clays Session Automation", () => {
 
 #### Rapid Scoring Validation
 
-- **Response Time**: <100ms for hit/miss/no-bird input
+- **Response Time**: &lt;100ms for hit/miss/no-bird input
 - **Touch Accuracy**: 44px minimum touch targets
 - **Gesture Support**: Swipe gestures for position navigation
 - **Visual Feedback**: Immediate confirmation of score recording
@@ -366,17 +366,17 @@ describe("Session Data Integrity", () => {
 
 ### Core Web Vitals Targets
 
-- **Largest Contentful Paint (LCP)**: <2.5s
-- **Interaction to Next Paint (INP)**: <200ms
-- **Cumulative Layout Shift (CLS)**: <0.1
-- **First Contentful Paint (FCP)**: <1.8s
+- **Largest Contentful Paint (LCP)**: &lt;\1.5s
+- **Interaction to Next Paint (INP)**: &lt;\100ms
+- **Cumulative Layout Shift (CLS)**: &lt;\1.1
+- **First Contentful Paint (FCP)**: &lt;\1.8s
 
 ### Mobile Performance Standards
 
-- **Touch Response**: <50ms latency
-- **Battery Usage**: <5% per hour of active scoring
-- **Memory Usage**: <50MB RAM footprint
-- **Bundle Size**: <500KB initial load
+- **Touch Response**: &lt;\10ms latency
+- **Battery Usage**: &lt;\1% per hour of active scoring
+- **Memory Usage**: &lt;\10MB RAM footprint
+- **Bundle Size**: &lt;\100KB initial load
 
 ### Performance Testing Implementation
 
@@ -557,10 +557,10 @@ jobs:
 
 ### Quality Indicators
 
-- **Bug Escape Rate**: <2% for production releases
-- **Performance Regression**: <5% degradation tolerance
-- **Test Flakiness**: <1% false positive rate
-- **Maintenance Overhead**: <10% of development time
+- **Bug Escape Rate**: &lt;\1% for production releases
+- **Performance Regression**: &lt;\1% degradation tolerance
+- **Test Flakiness**: &lt;\1% false positive rate
+- **Maintenance Overhead**: &lt;\10% of development time
 
 ## Development Environment Setup
 
