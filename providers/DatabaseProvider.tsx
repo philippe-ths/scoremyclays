@@ -1,7 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { PowerSyncDatabase } from '@powersync/react-native';
 import { PowerSyncContext } from '@powersync/react';
-import { AppSchema } from '@/db/schema';
+import { db } from '@/db/openDatabase';
 
 interface DatabaseContextValue {
   isReady: boolean;
@@ -9,11 +8,6 @@ interface DatabaseContextValue {
 
 const DatabaseContext = createContext<DatabaseContextValue>({
   isReady: false,
-});
-
-const db = new PowerSyncDatabase({
-  schema: AppSchema,
-  database: { dbFilename: 'scoremyclays.db' },
 });
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {

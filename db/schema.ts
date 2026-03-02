@@ -1,4 +1,4 @@
-import { column, Schema, Table } from '@powersync/react-native';
+import { column, Schema, Table } from '@powersync/common';
 
 const users = new Table({
   display_name: column.text,
