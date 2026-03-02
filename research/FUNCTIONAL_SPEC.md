@@ -211,7 +211,7 @@ ScoreMyClays is a web-based scoring application designed for clay pigeon shootin
 ## 10. Timeline and Milestones
 
 ### Development Phases
-1. **Phase 1 **: Core scoring functionality
+1. **Phase 1**: Core scoring functionality
 2. **Phase 2**: User management and basic analytics
 3. **Phase 3**: Advanced features and optimizations
 4. **Phase 4**: Testing and launch preparation
