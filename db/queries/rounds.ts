@@ -1,39 +1,45 @@
-import type { Round, RoundStatus } from '@/lib/types';
+import type { AbstractPowerSyncDatabase } from '@powersync/common';
+import { RoundStatus, type Round } from '@/lib/types';
 
-// Stub: Create a new round
-export async function createRound(_params: {
-  id: string;
-  created_by: string;
-  ground_name: string;
-  date: string;
-  total_targets: number;
-}): Promise<void> {
-  // TODO: Implement with PowerSync database
-  throw new Error('Not implemented');
+export async function createRound(
+  db: AbstractPowerSyncDatabase,
+  params: {
+    id: string;
+    created_by: string;
+    ground_name: string;
+    date: string;
+    total_targets: number;
+  },
+): Promise<void> {
+  const now = new Date().toISOString();
+  await db.execute(
+    'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [params.id, params.created_by, params.ground_name, params.date, params.total_targets, RoundStatus.IN_PROGRESS, null, now, now],
+  );
 }
 
-// Stub: Get a round by ID
-export async function getRound(_id: string): Promise<Round | null> {
-  throw new Error('Not implemented');
+export async function getRound(db: AbstractPowerSyncDatabase, id: string): Promise<Round | null> {
+  return db.getOptional<Round>('SELECT * FROM rounds WHERE id = ?', [id]);
 }
 
-// Stub: List rounds for a user
-export async function listRounds(_userId: string): Promise<Round[]> {
-  throw new Error('Not implemented');
+export async function listRounds(db: AbstractPowerSyncDatabase, userId: string): Promise<Round[]> {
+  return db.getAll<Round>('SELECT * FROM rounds WHERE created_by = ? ORDER BY created_at DESC', [userId]);
 }
 
-// Stub: Update round status
 export async function updateRoundStatus(
-  _id: string,
-  _status: RoundStatus,
+  db: AbstractPowerSyncDatabase,
+  id: string,
+  status: RoundStatus,
 ): Promise<void> {
-  throw new Error('Not implemented');
+  const now = new Date().toISOString();
+  await db.execute('UPDATE rounds SET status = ?, updated_at = ? WHERE id = ?', [status, now, id]);
 }
 
-// Stub: Update round notes
 export async function updateRoundNotes(
-  _id: string,
-  _notes: string,
+  db: AbstractPowerSyncDatabase,
+  id: string,
+  notes: string,
 ): Promise<void> {
-  throw new Error('Not implemented');
+  const now = new Date().toISOString();
+  await db.execute('UPDATE rounds SET notes = ?, updated_at = ? WHERE id = ?', [notes, now, id]);
 }
