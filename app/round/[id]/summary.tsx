@@ -12,8 +12,9 @@ import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
 import { listStands } from '@/db/queries/stands';
 import { getShooterRoundScore, getResultsForStandAndShooter } from '@/db/queries/scoring';
+import { getClubPositions } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
-import { ShotResult, type Round, type Stand, type ShooterEntry, type PresentationType } from '@/lib/types';
+import { ShotResult, type Round, type Stand, type ShooterEntry, type PresentationType, type ClubPosition } from '@/lib/types';
 
 interface ShooterScore {
   shooter: ShooterEntry;
@@ -26,6 +27,11 @@ interface StandBreakdown {
   results: { shooter: ShooterEntry; kills: number; total: number }[];
 }
 
+interface PositionBreakdown {
+  position: ClubPosition;
+  stands: StandBreakdown[];
+}
+
 export default function RoundSummaryScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -34,7 +40,10 @@ export default function RoundSummaryScreen() {
   const [round, setRound] = useState<Round | null>(null);
   const [shooterScores, setShooterScores] = useState<ShooterScore[]>([]);
   const [standBreakdowns, setStandBreakdowns] = useState<StandBreakdown[]>([]);
+  const [positionBreakdowns, setPositionBreakdowns] = useState<PositionBreakdown[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const isClubRound = !!round?.club_id;
 
   useEffect(() => {
     (async () => {
@@ -67,7 +76,34 @@ export default function RoundSummaryScreen() {
         }
         breakdowns.push({ stand, results });
       }
-      setStandBreakdowns(breakdowns);
+
+      if (r?.club_id) {
+        // Group stands by position for club rounds
+        const positions = await getClubPositions(db, r.club_id);
+        const posMap = new Map(positions.map((p) => [p.id, p]));
+        const grouped = new Map<string, StandBreakdown[]>();
+
+        for (const bd of breakdowns) {
+          const posId = bd.stand.club_position_id;
+          if (posId) {
+            const arr = grouped.get(posId) ?? [];
+            arr.push(bd);
+            grouped.set(posId, arr);
+          }
+        }
+
+        const posBreakdowns: PositionBreakdown[] = [];
+        for (const pos of positions) {
+          const posStands = grouped.get(pos.id);
+          if (posStands && posStands.length > 0) {
+            posBreakdowns.push({ position: pos, stands: posStands });
+          }
+        }
+        setPositionBreakdowns(posBreakdowns);
+      } else {
+        setStandBreakdowns(breakdowns);
+      }
+
       setIsLoading(false);
     })();
   }, [db, roundId]);
@@ -99,23 +135,57 @@ export default function RoundSummaryScreen() {
         </View>
       ))}
 
-      {/* Per-stand breakdown */}
-      <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Stand Breakdown</Text>
-      {standBreakdowns.map((bd) => (
-        <View key={bd.stand.id} style={styles.standCard}>
-          <Text style={styles.standTitle}>
-            Stand {bd.stand.stand_number} · {PRESENTATION_LABELS[bd.stand.presentation as PresentationType]}
-          </Text>
-          {bd.results.map((r) => (
-            <View key={r.shooter.id} style={styles.standResultRow}>
-              <Text style={styles.standShooterName}>{r.shooter.shooter_name}</Text>
-              <Text style={styles.standShooterScore}>
-                {r.kills}/{r.total}
+      {/* Per-stand breakdown (custom rounds) */}
+      {!isClubRound && (
+        <>
+          <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Stand Breakdown</Text>
+          {standBreakdowns.map((bd) => (
+            <View key={bd.stand.id} style={styles.standCard}>
+              <Text style={styles.standTitle}>
+                Stand {bd.stand.stand_number} · {PRESENTATION_LABELS[bd.stand.presentation as PresentationType]}
               </Text>
+              {bd.results.map((r) => (
+                <View key={r.shooter.id} style={styles.standResultRow}>
+                  <Text style={styles.standShooterName}>{r.shooter.shooter_name}</Text>
+                  <Text style={styles.standShooterScore}>
+                    {r.kills}/{r.total}
+                  </Text>
+                </View>
+              ))}
             </View>
           ))}
-        </View>
-      ))}
+        </>
+      )}
+
+      {/* Position-grouped breakdown (club rounds) */}
+      {isClubRound && (
+        <>
+          <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Position Breakdown</Text>
+          {positionBreakdowns.map((pb) => (
+            <View key={pb.position.id} style={styles.positionSection}>
+              <Text style={styles.positionHeader}>
+                Position {pb.position.position_number}
+                {pb.position.name ? ` — ${pb.position.name}` : ''}
+              </Text>
+              {pb.stands.map((bd) => (
+                <View key={bd.stand.id} style={styles.standCard}>
+                  <Text style={styles.standTitle}>
+                    Stand {bd.stand.stand_number} · {PRESENTATION_LABELS[bd.stand.presentation as PresentationType]}
+                  </Text>
+                  {bd.results.map((r) => (
+                    <View key={r.shooter.id} style={styles.standResultRow}>
+                      <Text style={styles.standShooterName}>{r.shooter.shooter_name}</Text>
+                      <Text style={styles.standShooterScore}>
+                        {r.kills}/{r.total}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ))}
+            </View>
+          ))}
+        </>
+      )}
 
       {/* Back to Home */}
       <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/')}>
@@ -221,5 +291,14 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  positionSection: {
+    marginBottom: Spacing.lg,
+  },
+  positionHeader: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: Colors.primary,
+    marginBottom: Spacing.sm,
   },
 });

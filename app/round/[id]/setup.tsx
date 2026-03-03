@@ -12,10 +12,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
+import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
 import { createStand, listStands, deleteStand } from '@/db/queries/stands';
+import { getClubWithDetails } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE, PRESENTATION_LABELS } from '@/lib/constants';
-import { PresentationType, TargetConfig, type Stand, type ShooterEntry } from '@/lib/types';
+import { PresentationType, TargetConfig, type Stand, type ShooterEntry, type Round, type ClubPosition, type ClubStand } from '@/lib/types';
 
 const TARGET_CONFIG_LABELS: Record<TargetConfig, string> = {
   [TargetConfig.SINGLE]: 'Single',
@@ -24,21 +26,39 @@ const TARGET_CONFIG_LABELS: Record<TargetConfig, string> = {
   [TargetConfig.FOLLOWING_PAIR]: 'Following Pair',
 };
 
+type PositionWithStands = ClubPosition & { stands: ClubStand[] };
+
 export default function RoundSetupScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const db = usePowerSync();
   const { user } = useAuth();
 
+  const [round, setRound] = useState<Round | null>(null);
   const [stands, setStands] = useState<Stand[]>([]);
   const [shooters, setShooters] = useState<ShooterEntry[]>([]);
   const [squadId, setSquadId] = useState<string | null>(null);
   const [newShooterName, setNewShooterName] = useState('');
+  const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
+
+  const isClubRound = !!round?.club_id;
 
   const reload = useCallback(async () => {
     if (!roundId) return;
-    const s = await listStands(db, roundId);
-    setStands(s);
+    const r = await getRound(db, roundId);
+    setRound(r);
+
+    // Load club positions if club round
+    if (r?.club_id) {
+      const clubData = await getClubWithDetails(db, r.club_id);
+      if (clubData) {
+        setClubPositions(clubData.positions);
+      }
+    } else {
+      const s = await listStands(db, roundId);
+      setStands(s);
+    }
+
     const squad = await getSquadByRound(db, roundId);
     if (squad) {
       setSquadId(squad.id);
@@ -103,7 +123,7 @@ export default function RoundSetupScreen() {
   }
 
   function handleStartScoring() {
-    if (stands.length === 0) {
+    if (!isClubRound && stands.length === 0) {
       Alert.alert('Add stands', 'Add at least one stand before scoring.');
       return;
     }
@@ -116,26 +136,50 @@ export default function RoundSetupScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      {/* Stands Section */}
-      <Text style={styles.sectionTitle}>Stands</Text>
+      {/* Club Positions Preview (read-only for club rounds) */}
+      {isClubRound && (
+        <>
+          <Text style={styles.sectionTitle}>Positions</Text>
+          {clubPositions.map((position) => (
+            <View key={position.id} style={styles.card}>
+              <Text style={styles.cardTitle}>
+                Position {position.position_number}
+                {position.name ? ` — ${position.name}` : ''}
+              </Text>
+              {position.stands.map((stand) => (
+                <Text key={stand.id} style={styles.cardDetail}>
+                  Stand {stand.stand_number} · {TARGET_CONFIG_LABELS[stand.target_config as TargetConfig] ?? stand.target_config} · {PRESENTATION_LABELS[stand.presentation as PresentationType] ?? stand.presentation} · {stand.num_targets} targets
+                </Text>
+              ))}
+            </View>
+          ))}
+        </>
+      )}
 
-      {stands.map((stand) => (
-        <View key={stand.id} style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>Stand {stand.stand_number}</Text>
-            <TouchableOpacity onPress={() => handleDeleteStand(stand.id)}>
-              <Text style={styles.deleteText}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.cardDetail}>
-            {TARGET_CONFIG_LABELS[stand.target_config as TargetConfig]} · {PRESENTATION_LABELS[stand.presentation as PresentationType]} · {stand.num_targets} targets
-          </Text>
-        </View>
-      ))}
+      {/* Stands Section (custom rounds only) */}
+      {!isClubRound && (
+        <>
+          <Text style={styles.sectionTitle}>Stands</Text>
 
-      <TouchableOpacity style={styles.addBtn} onPress={handleAddStand}>
-        <Text style={styles.addBtnText}>+ Add Stand</Text>
-      </TouchableOpacity>
+          {stands.map((stand) => (
+            <View key={stand.id} style={styles.card}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>Stand {stand.stand_number}</Text>
+                <TouchableOpacity onPress={() => handleDeleteStand(stand.id)}>
+                  <Text style={styles.deleteText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.cardDetail}>
+                {TARGET_CONFIG_LABELS[stand.target_config as TargetConfig]} · {PRESENTATION_LABELS[stand.presentation as PresentationType]} · {stand.num_targets} targets
+              </Text>
+            </View>
+          ))}
+
+          <TouchableOpacity style={styles.addBtn} onPress={handleAddStand}>
+            <Text style={styles.addBtnText}>+ Add Stand</Text>
+          </TouchableOpacity>
+        </>
+      )}
 
       {/* Squad Section */}
       <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Squad</Text>

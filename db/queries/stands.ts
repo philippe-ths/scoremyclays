@@ -11,11 +11,13 @@ export async function createStand(
     presentation: PresentationType;
     presentation_notes: string | null;
     num_targets: number;
+    club_stand_id?: string | null;
+    club_position_id?: string | null;
   },
 ): Promise<void> {
   await db.execute(
-    'INSERT INTO stands (id, round_id, stand_number, target_config, presentation, presentation_notes, num_targets) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [params.id, params.round_id, params.stand_number, params.target_config, params.presentation, params.presentation_notes, params.num_targets],
+    'INSERT INTO stands (id, round_id, stand_number, target_config, presentation, presentation_notes, num_targets, club_stand_id, club_position_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [params.id, params.round_id, params.stand_number, params.target_config, params.presentation, params.presentation_notes, params.num_targets, params.club_stand_id ?? null, params.club_position_id ?? null],
   );
 }
 

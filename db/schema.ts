@@ -13,6 +13,7 @@ const rounds = new Table({
   total_targets: column.integer,
   status: column.text,
   notes: column.text,
+  club_id: column.text,
   created_at: column.text,
   updated_at: column.text,
 });
@@ -39,6 +40,8 @@ const stands = new Table(
     presentation: column.text,
     presentation_notes: column.text,
     num_targets: column.integer,
+    club_stand_id: column.text,
+    club_position_id: column.text,
   },
   { indexes: { by_round: ['round_id'] } }
 );
@@ -57,6 +60,36 @@ const target_results = new Table(
   { indexes: { by_stand: ['stand_id'], by_shooter: ['shooter_entry_id'] } }
 );
 
+const clubs = new Table({
+  name: column.text,
+  description: column.text,
+  created_by: column.text,
+  created_at: column.text,
+});
+
+const club_positions = new Table(
+  {
+    club_id: column.text,
+    position_number: column.integer,
+    name: column.text,
+    created_at: column.text,
+  },
+  { indexes: { by_club: ['club_id'] } }
+);
+
+const club_stands = new Table(
+  {
+    club_position_id: column.text,
+    stand_number: column.integer,
+    target_config: column.text,
+    presentation: column.text,
+    presentation_notes: column.text,
+    num_targets: column.integer,
+    created_at: column.text,
+  },
+  { indexes: { by_position: ['club_position_id'] } }
+);
+
 export const AppSchema = new Schema({
   users,
   rounds,
@@ -64,6 +97,9 @@ export const AppSchema = new Schema({
   shooter_entries,
   stands,
   target_results,
+  clubs,
+  club_positions,
+  club_stands,
 });
 
 export type Database = (typeof AppSchema)['types'];

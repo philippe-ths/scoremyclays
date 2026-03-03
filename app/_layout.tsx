@@ -32,6 +32,7 @@ function AppContent() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="clubs/[id]/index" options={{ title: 'Club Details' }} />
         <Stack.Screen name="round/[id]/setup" options={{ title: 'Round Setup' }} />
         <Stack.Screen name="round/[id]/score" options={{ title: 'Scoring' }} />
         <Stack.Screen name="round/[id]/summary" options={{ title: 'Summary' }} />

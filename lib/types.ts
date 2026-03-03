@@ -55,6 +55,7 @@ export interface Round {
   total_targets: number;
   status: RoundStatus;
   notes: string | null;
+  club_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -80,6 +81,35 @@ export interface Stand {
   presentation: PresentationType;
   presentation_notes: string | null;
   num_targets: number;
+  club_stand_id: string | null;
+  club_position_id: string | null;
+}
+
+export interface Club {
+  id: string;
+  name: string;
+  description: string | null;
+  created_by: string;
+  created_at: string;
+}
+
+export interface ClubPosition {
+  id: string;
+  club_id: string;
+  position_number: number;
+  name: string | null;
+  created_at: string;
+}
+
+export interface ClubStand {
+  id: string;
+  club_position_id: string;
+  stand_number: number;
+  target_config: TargetConfig;
+  presentation: PresentationType;
+  presentation_notes: string | null;
+  num_targets: number;
+  created_at: string;
 }
 
 export interface TargetResultRecord {
