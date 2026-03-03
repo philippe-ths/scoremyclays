@@ -16,17 +16,9 @@ import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
 import { createStand, listStands, deleteStand } from '@/db/queries/stands';
 import { getClubWithDetails } from '@/db/queries/clubs';
-import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE, PRESENTATION_LABELS } from '@/lib/constants';
-import { PresentationType, TargetConfig, type Stand, type ShooterEntry, type Round, type ClubPosition, type ClubStand } from '@/lib/types';
-
-const TARGET_CONFIG_LABELS: Record<TargetConfig, string> = {
-  [TargetConfig.SINGLE]: 'Single',
-  [TargetConfig.REPORT_PAIR]: 'Report Pair',
-  [TargetConfig.SIMULTANEOUS_PAIR]: 'Sim Pair',
-  [TargetConfig.FOLLOWING_PAIR]: 'Following Pair',
-};
-
-type PositionWithStands = ClubPosition & { stands: ClubStand[] };
+import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
+import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
+import { PresentationType, TargetConfig, type Stand, type ShooterEntry, type Round, type PositionWithStands } from '@/lib/types';
 
 export default function RoundSetupScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
@@ -143,12 +135,11 @@ export default function RoundSetupScreen() {
           {clubPositions.map((position) => (
             <View key={position.id} style={styles.card}>
               <Text style={styles.cardTitle}>
-                Position {position.position_number}
-                {position.name ? ` — ${position.name}` : ''}
+                {formatPositionTitle(position)}
               </Text>
               {position.stands.map((stand) => (
                 <Text key={stand.id} style={styles.cardDetail}>
-                  Stand {stand.stand_number} · {TARGET_CONFIG_LABELS[stand.target_config as TargetConfig] ?? stand.target_config} · {PRESENTATION_LABELS[stand.presentation as PresentationType] ?? stand.presentation} · {stand.num_targets} targets
+                  Stand {stand.stand_number} · {formatStandDetail(stand)}
                 </Text>
               ))}
             </View>
@@ -170,7 +161,7 @@ export default function RoundSetupScreen() {
                 </TouchableOpacity>
               </View>
               <Text style={styles.cardDetail}>
-                {TARGET_CONFIG_LABELS[stand.target_config as TargetConfig]} · {PRESENTATION_LABELS[stand.presentation as PresentationType]} · {stand.num_targets} targets
+                {formatStandDetail(stand)}
               </Text>
             </View>
           ))}

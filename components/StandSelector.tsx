@@ -4,15 +4,9 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
-import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
-import type { ClubStand, PresentationType } from '@/lib/types';
-
-const TARGET_CONFIG_LABELS: Record<string, string> = {
-  SINGLE: 'Single',
-  REPORT_PAIR: 'Report Pair',
-  SIMULTANEOUS_PAIR: 'Sim Pair',
-  FOLLOWING_PAIR: 'Following Pair',
-};
+import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { formatStandDetail } from '@/lib/formatting';
+import type { ClubStand } from '@/lib/types';
 
 interface StandSelectorProps {
   positionName: string;
@@ -55,7 +49,7 @@ export default function StandSelector({
                 )}
               </View>
               <Text style={styles.standDetail}>
-                {TARGET_CONFIG_LABELS[stand.target_config] ?? stand.target_config} · {PRESENTATION_LABELS[stand.presentation as PresentationType] ?? stand.presentation} · {stand.num_targets} targets
+                {formatStandDetail(stand)}
               </Text>
             </TouchableOpacity>
           );

@@ -9,17 +9,10 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { getClubWithDetails } from '@/db/queries/clubs';
-import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
-import type { Club, ClubPosition, ClubStand, PresentationType, TargetConfig } from '@/lib/types';
-
-const TARGET_CONFIG_LABELS: Record<string, string> = {
-  SINGLE: 'Single',
-  REPORT_PAIR: 'Report Pair',
-  SIMULTANEOUS_PAIR: 'Sim Pair',
-  FOLLOWING_PAIR: 'Following Pair',
-};
-
-type PositionWithStands = ClubPosition & { stands: ClubStand[] };
+import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
+import LoadingPlaceholder from '@/components/LoadingPlaceholder';
+import type { Club, PositionWithStands } from '@/lib/types';
 
 export default function ClubDetailScreen() {
   const { id: clubId } = useLocalSearchParams<{ id: string }>();
@@ -49,19 +42,11 @@ export default function ClubDetailScreen() {
   }
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+    return <LoadingPlaceholder />;
   }
 
   if (!club) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.loadingText}>Club not found</Text>
-      </View>
-    );
+    return <LoadingPlaceholder message="Club not found" />;
   }
 
   return (
@@ -78,14 +63,13 @@ export default function ClubDetailScreen() {
       {positions.map((position) => (
         <View key={position.id} style={styles.positionCard}>
           <Text style={styles.positionTitle}>
-            Position {position.position_number}
-            {position.name ? ` — ${position.name}` : ''}
+            {formatPositionTitle(position)}
           </Text>
 
           {position.stands.map((stand) => (
             <View key={stand.id} style={styles.standRow}>
               <Text style={styles.standDetail}>
-                Stand {stand.stand_number} · {TARGET_CONFIG_LABELS[stand.target_config] ?? stand.target_config} · {PRESENTATION_LABELS[stand.presentation as PresentationType] ?? stand.presentation} · {stand.num_targets} targets
+                Stand {stand.stand_number} · {formatStandDetail(stand)}
               </Text>
             </View>
           ))}
@@ -115,15 +99,6 @@ const styles = StyleSheet.create({
   container: {
     padding: Spacing.lg,
     paddingBottom: Spacing.xxl,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: FontSize.lg,
-    color: Colors.textSecondary,
   },
   clubName: {
     fontSize: FontSize['2xl'],

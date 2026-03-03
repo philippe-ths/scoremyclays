@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { listClubs } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import type { Club } from '@/lib/types';
 
 export default function ClubsScreen() {
@@ -63,9 +64,7 @@ export default function ClubsScreen() {
         returnKeyType="search"
       />
       {isLoading ? (
-        <View style={styles.centered}>
-          <Text style={styles.emptyText}>Loading...</Text>
-        </View>
+        <LoadingPlaceholder />
       ) : clubs.length === 0 ? (
         <View style={styles.centered}>
           <Text style={styles.emptyText}>

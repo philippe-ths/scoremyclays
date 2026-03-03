@@ -14,6 +14,7 @@ import { listStands } from '@/db/queries/stands';
 import { getShooterRoundScore, getResultsForStandAndShooter } from '@/db/queries/scoring';
 import { getClubPositions } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
+import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import { ShotResult, type Round, type Stand, type ShooterEntry, type PresentationType, type ClubPosition } from '@/lib/types';
 
 interface ShooterScore {
@@ -109,11 +110,7 @@ export default function RoundSummaryScreen() {
   }, [db, roundId]);
 
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.loadingText}>Loading summary...</Text>
-      </View>
-    );
+    return <LoadingPlaceholder message="Loading summary..." />;
   }
 
   return (
@@ -203,15 +200,6 @@ const styles = StyleSheet.create({
   container: {
     padding: Spacing.lg,
     paddingBottom: Spacing.xxl,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: FontSize.lg,
-    color: Colors.textSecondary,
   },
   header: {
     alignItems: 'center',

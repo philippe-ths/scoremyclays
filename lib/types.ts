@@ -112,6 +112,10 @@ export interface ClubStand {
   created_at: string;
 }
 
+// --- Composite types ---
+
+export type PositionWithStands = ClubPosition & { stands: ClubStand[] };
+
 export interface TargetResultRecord {
   id: string;
   stand_id: string;

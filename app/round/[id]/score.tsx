@@ -18,6 +18,7 @@ import { recordTargetResult, getResultsForStandAndShooter } from '@/db/queries/s
 import { updateRoundStatus } from '@/db/queries/rounds';
 import { getClubWithDetails } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
+import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import PositionPicker, { type PositionStatus } from '@/components/PositionPicker';
 import StandSelector from '@/components/StandSelector';
 import {
@@ -28,8 +29,8 @@ import {
   type ShooterEntry,
   type PresentationType,
   type Round,
-  type ClubPosition,
   type ClubStand,
+  type PositionWithStands,
 } from '@/lib/types';
 
 // Graceful haptics: no-op if not available (web)
@@ -44,7 +45,6 @@ function birdsPerTarget(config: TargetConfig): number {
 }
 
 type ClubPhase = 'position-picker' | 'stand-selector' | 'scoring';
-type PositionWithStands = ClubPosition & { stands: ClubStand[] };
 
 export default function ScoringScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
@@ -329,11 +329,7 @@ export default function ScoringScreen() {
 
   // --- Loading state ---
   if (isLoading) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+    return <LoadingPlaceholder />;
   }
 
   // --- Club mode: position picker ---
@@ -364,11 +360,7 @@ export default function ScoringScreen() {
 
   // --- Scoring UI (both modes) ---
   if (!currentStand || !currentShooter) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.loadingText}>Loading...</Text>
-      </View>
-    );
+    return <LoadingPlaceholder />;
   }
 
   return (
@@ -470,15 +462,6 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
     backgroundColor: Colors.bgPrimary,
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: FontSize.lg,
-    color: Colors.textSecondary,
   },
   topBar: {
     flexDirection: 'row',

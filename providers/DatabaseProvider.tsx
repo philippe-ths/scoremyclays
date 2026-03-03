@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { PowerSyncContext } from '@powersync/react';
 import { db } from '@/db/openDatabase';
+import { seedClubs } from '@/db/seed-clubs';
 
 interface DatabaseContextValue {
   isReady: boolean;
@@ -14,7 +15,10 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    db.init().then(() => setIsReady(true));
+    db.init().then(async () => {
+      await seedClubs(db);
+      setIsReady(true);
+    });
   }, []);
 
   return (

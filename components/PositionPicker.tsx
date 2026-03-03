@@ -6,9 +6,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
-import type { ClubPosition, ClubStand, Stand, PresentationType } from '@/lib/types';
-
-type PositionWithStands = ClubPosition & { stands: ClubStand[] };
+import type { ClubPosition, ClubStand, Stand, PresentationType, PositionWithStands } from '@/lib/types';
 
 export type PositionStatus = 'not-started' | 'in-progress' | 'completed';
 
