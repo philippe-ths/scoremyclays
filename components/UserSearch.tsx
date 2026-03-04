@@ -11,7 +11,7 @@ import {
 import { usePowerSync } from '@powersync/react';
 import { Colors } from '@/lib/constants';
 import type { User } from '@/lib/types';
-import { searchUsersByDisplayName, searchUserByExactUserId } from '@/db/queries/users';
+import { searchUsersByDisplayName, searchUsersByUserId } from '@/db/queries/users';
 
 interface UserSearchProps {
   onSelectUser: (user: User) => void;
@@ -48,14 +48,12 @@ export function UserSearch({ onSelectUser, excludeUserId, currentUserInternalId 
     try {
       let foundUsers: User[] = [];
 
-      // If query starts with @, search for exact user_id match
+      // If query starts with @, search for partial user_id match
       if (query.startsWith('@')) {
         const userIdHandle = query.slice(1);
-        const user = await searchUserByExactUserId(db, userIdHandle);
-        if (user) {
-          foundUsers = [user];
-        } else {
-          setMessage(`No user found with User ID: @${userIdHandle}`);
+        foundUsers = await searchUsersByUserId(db, userIdHandle);
+        if (foundUsers.length === 0) {
+          setMessage(`No user found matching @${userIdHandle}`);
         }
       } else {
         // Search by display name (only discoverable users)

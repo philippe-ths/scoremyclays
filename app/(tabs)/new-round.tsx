@@ -12,8 +12,6 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
-import { createRound } from '@/db/queries/rounds';
-import { createSquad, addShooterEntry } from '@/db/queries/squads';
 import { listClubs, getClub } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import type { Club } from '@/lib/types';
@@ -93,24 +91,19 @@ export default function NewRoundScreen() {
       const squadId = Crypto.randomUUID();
       const shooterEntryId = Crypto.randomUUID();
 
-      await createRound(db, {
-        id: roundId,
-        created_by: user.id,
-        ground_name: trimmed,
-        date: today,
-        total_targets: totalTargets,
-        club_id: selectedClub?.id ?? null,
-      });
-
-      await createSquad(db, { id: squadId, round_id: roundId });
-
-      await addShooterEntry(db, {
-        id: shooterEntryId,
-        squad_id: squadId,
-        round_id: roundId,
-        user_id: user.id,
-        shooter_name: user.display_name,
-        position_in_squad: 1,
+      await db.writeTransaction(async (tx) => {
+        await tx.execute(
+          'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [roundId, user.id, trimmed, today, totalTargets, 'IN_PROGRESS', null, selectedClub?.id ?? null, new Date().toISOString(), new Date().toISOString()],
+        );
+        await tx.execute(
+          'INSERT INTO squads (id, round_id) VALUES (?, ?)',
+          [squadId, roundId],
+        );
+        await tx.execute(
+          'INSERT INTO shooter_entries (id, squad_id, round_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?, ?)',
+          [shooterEntryId, squadId, roundId, user.id, user.display_name, 1],
+        );
       });
 
       setGroundName('');

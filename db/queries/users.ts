@@ -39,16 +39,17 @@ export async function searchUsersByDisplayName(
 }
 
 /**
- * Search user by exact user_id match (works regardless of discoverable setting)
+ * Search users by partial user_id match (works regardless of discoverable setting)
  * This allows users to be found by their handle even if they're not discoverable
  */
-export async function searchUserByExactUserId(
+export async function searchUsersByUserId(
   db: AbstractPowerSyncDatabase,
   userIdHandle: string,
-): Promise<User | null> {
-  return db.getOptional<User>(
-    'SELECT * FROM users WHERE LOWER(user_id) = LOWER(?)',
-    [userIdHandle],
+): Promise<User[]> {
+  const pattern = `%${userIdHandle}%`;
+  return db.getAll<User>(
+    'SELECT * FROM users WHERE LOWER(user_id) LIKE LOWER(?) ORDER BY user_id',
+    [pattern],
   );
 }
 
