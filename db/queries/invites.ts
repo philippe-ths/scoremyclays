@@ -11,13 +11,14 @@ export async function createInvite(
     id: string;
     round_id: string;
     inviter_id: string; // User.id
-    invitee_user_id: string; // User.user_id
+    invitee_id: string; // User.id (UUID)
+    invitee_user_id: string; // User.user_id (handle)
   },
 ): Promise<void> {
   const now = new Date().toISOString();
   await db.execute(
-    'INSERT INTO invites (id, round_id, inviter_id, invitee_user_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [params.id, params.round_id, params.inviter_id, params.invitee_user_id, InviteStatus.PENDING, now],
+    'INSERT INTO invites (id, round_id, inviter_id, invitee_id, invitee_user_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [params.id, params.round_id, params.inviter_id, params.invitee_id, params.invitee_user_id, InviteStatus.PENDING, now],
   );
 }
 

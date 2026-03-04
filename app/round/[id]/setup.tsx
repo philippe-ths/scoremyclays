@@ -115,6 +115,7 @@ export default function RoundSetupScreen() {
           id: existing.id,
           round_id: roundId,
           inviter_id: user.id,
+          invitee_id: selectedUser.id,
           invitee_user_id: selectedUser.user_id!,
         });
       }
@@ -127,6 +128,7 @@ export default function RoundSetupScreen() {
         id: Crypto.randomUUID(),
         round_id: roundId,
         inviter_id: user.id,
+        invitee_id: selectedUser.id,
         invitee_user_id: selectedUser.user_id!,
       });
 

@@ -41,11 +41,7 @@ bucket_definitions:
   # Without this, the invitee can't accept because they don't have the
   # squad data locally. Once accepted, shared_rounds takes over.
   invited_rounds:
-    parameters:
-      SELECT i.round_id
-      FROM invites i
-      INNER JOIN users u ON u.user_id = i.invitee_user_id
-      WHERE u.id = request.user_id() AND i.status = 'PENDING'
+    parameters: SELECT round_id FROM invites WHERE invitee_id = request.user_id() AND status = 'PENDING'
     data:
       - SELECT * FROM rounds WHERE id = bucket.round_id
       - SELECT * FROM squads WHERE round_id = bucket.round_id

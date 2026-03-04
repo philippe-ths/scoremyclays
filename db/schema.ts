@@ -101,11 +101,12 @@ const invites = new Table(
   {
     round_id: column.text,
     inviter_id: column.text, // User.id of the person sending the invite
-    invitee_user_id: column.text, // User.user_id of the person being invited
+    invitee_id: column.text, // User.id (UUID) of the person being invited
+    invitee_user_id: column.text, // User.user_id (handle) of the person being invited
     status: column.text, // PENDING, ACCEPTED, DECLINED
     created_at: column.text,
   },
-  { indexes: { by_round: ['round_id'], by_invitee: ['invitee_user_id'], by_inviter: ['inviter_id'] } }
+  { indexes: { by_round: ['round_id'], by_invitee: ['invitee_user_id'], by_invitee_id: ['invitee_id'], by_inviter: ['inviter_id'] } }
 );
 
 export const AppSchema = new Schema({

@@ -143,7 +143,8 @@ export interface Invite {
   id: string;
   round_id: string;
   inviter_id: string; // User.id
-  invitee_user_id: string; // User.user_id
+  invitee_id: string; // User.id (UUID) of invitee
+  invitee_user_id: string; // User.user_id (handle) of invitee
   status: InviteStatus;
   created_at: string;
 }
