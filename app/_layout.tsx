@@ -33,7 +33,6 @@ function AppContent() {
             <Stack.Screen 
               name="auth/login" 
               options={{ 
-                animationEnabled: false,
                 headerShown: false,
               }} 
             />
@@ -56,7 +55,6 @@ function AppContent() {
             name="auth/profile-setup" 
             options={{ 
               headerShown: false,
-              animationEnabled: false,
             }} 
           />
         ) : (
