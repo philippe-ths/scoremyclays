@@ -8,7 +8,6 @@ import type { AuthSession } from '@supabase/supabase-js';
 
 export interface AuthContextValue {
   user: User | null;
-  session: AuthSession | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   profileComplete: boolean; // true if user_id is set
@@ -19,7 +18,6 @@ export interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue>({
   user: null,
-  session: null,
   isLoading: true,
   isAuthenticated: false,
   profileComplete: false,
@@ -34,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // Initialize auth state and listen to changes
   useEffect(() => {
@@ -53,7 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       } catch (error) {
-        console.error('Error fetching session:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error during session fetch';
+        console.error('Error fetching session:', errorMessage);
+        setAuthError(errorMessage);
       } finally {
         if (mounted) {
           setIsLoading(false);
@@ -85,6 +86,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    * Creates a local User record if it doesn't exist
    */
   async function syncUserWithDatabase(userId: string, email: string | null) {
+    if (!db) {
+      console.warn('Database not available, skipping user sync');
+      return;
+    }
+    
     try {
       // Check if user exists in local database
       const existing = await db.getOptional<User>(
@@ -128,7 +134,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(newUser);
       }
     } catch (error) {
-      console.error('Error syncing user with database:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error syncing user';
+      console.error('Error syncing user with database:', errorMessage);
+      setAuthError(errorMessage);
     }
   }
 
@@ -138,11 +146,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Sign up failed');
       // Auth state listener will handle the rest
     } catch (error) {
-      console.error('Sign up error:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Sign up failed';
+      console.error('Sign up error:', errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -152,29 +161,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       });
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Sign in failed');
       // Auth state listener will handle the rest
     } catch (error) {
-      console.error('Sign in error:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Sign in failed';
+      console.error('Sign in error:', errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      if (error) throw new Error(error.message || 'Sign out failed');
       setUser(null);
       setSession(null);
     } catch (error) {
-      console.error('Sign out error:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Sign out failed';
+      console.error('Sign out error:', errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
   const value: AuthContextValue = {
     user,
-    session,
     isLoading,
     isAuthenticated: !!session,
     profileComplete: !!user?.user_id,
