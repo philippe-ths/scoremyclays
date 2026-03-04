@@ -16,9 +16,12 @@ import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
 import { createStand, listStands, deleteStand } from '@/db/queries/stands';
 import { getClubWithDetails } from '@/db/queries/clubs';
+import { createInvite, listOutgoingInvitesForRound, checkDuplicateInvite } from '@/db/queries/invites';
+import { getUserByUserId } from '@/db/queries/users';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
-import { PresentationType, TargetConfig, type Stand, type ShooterEntry, type Round, type PositionWithStands } from '@/lib/types';
+import { PresentationType, TargetConfig, InviteStatus, type Stand, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
+import { UserSearch } from '@/components/UserSearch';
 
 export default function RoundSetupScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
@@ -32,6 +35,7 @@ export default function RoundSetupScreen() {
   const [squadId, setSquadId] = useState<string | null>(null);
   const [newShooterName, setNewShooterName] = useState('');
   const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; invitee_user_id: string; status: string }>>([]);
 
   const isClubRound = !!round?.club_id;
 
@@ -57,6 +61,17 @@ export default function RoundSetupScreen() {
       const entries = await listShooterEntries(db, squad.id);
       setShooters(entries);
     }
+
+    // Load pending invites sent from this round
+    if (user && r) {
+      try {
+        const invites = await listOutgoingInvitesForRound(db, roundId, user.id);
+        const pending = invites.filter(i => i.status === InviteStatus.PENDING);
+        setPendingInvites(pending);
+      } catch (err) {
+        console.error('Error loading invites:', err);
+      }
+    }
   }, [db, roundId]);
 
   useEffect(() => {
@@ -81,6 +96,46 @@ export default function RoundSetupScreen() {
   async function handleDeleteStand(standId: string) {
     await deleteStand(db, standId);
     await reload();
+  }
+
+  async function handleSelectUserForInvite(selectedUser: User) {
+    if (!user || !roundId) return;
+
+    // Check if already invited or participant
+    const existing = await checkDuplicateInvite(db, roundId, selectedUser.user_id!);
+    if (existing) {
+      if (existing.status === InviteStatus.PENDING) {
+        Alert.alert('Already invited', 'You have already invited this user to this round.');
+      } else if (existing.status === InviteStatus.ACCEPTED) {
+        Alert.alert('Already participant', 'This user is already a participant in this round.');
+      } else {
+        Alert.alert('Re-inviting', 'Sending a new invite to this user.');
+        // Update declined invite back to PENDING
+        await createInvite(db, {
+          id: existing.id,
+          round_id: roundId,
+          inviter_id: user.id,
+          invitee_user_id: selectedUser.user_id!,
+        });
+      }
+      return;
+    }
+
+    // Create invite
+    try {
+      await createInvite(db, {
+        id: Crypto.randomUUID(),
+        round_id: roundId,
+        inviter_id: user.id,
+        invitee_user_id: selectedUser.user_id!,
+      });
+
+      Alert.alert('Invited!', `${selectedUser.display_name} has been invited to the round.`);
+      await reload();
+    } catch (err) {
+      Alert.alert('Error', 'Failed to send invite');
+      console.error('Error sending invite:', err);
+    }
   }
 
   async function handleAddShooter() {
@@ -178,10 +233,15 @@ export default function RoundSetupScreen() {
       {shooters.map((entry) => (
         <View key={entry.id} style={styles.card}>
           <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>
-              {entry.position_in_squad}. {entry.shooter_name}
-              {entry.user_id === user?.id ? ' (You)' : ''}
-            </Text>
+            <View>
+              <Text style={styles.cardTitle}>
+                {entry.position_in_squad}. {entry.shooter_name}
+                {entry.user_id === user?.id ? ' (You)' : ''}
+              </Text>
+              {entry.user_id && (
+                <Text style={styles.userIdBadge}>Linked user</Text>
+              )}
+            </View>
             <TouchableOpacity onPress={() => handleRemoveShooter(entry.id)}>
               <Text style={styles.deleteText}>Remove</Text>
             </TouchableOpacity>
@@ -189,12 +249,37 @@ export default function RoundSetupScreen() {
         </View>
       ))}
 
+      {/* Pending Invites */}
+      {pendingInvites.length > 0 && (
+        <>
+          <Text style={[styles.label, { marginTop: Spacing.md, marginBottom: Spacing.sm }]}>
+            Pending Invites ({pendingInvites.length})
+          </Text>
+          {pendingInvites.map((invite) => (
+            <View key={invite.id} style={styles.pendingInviteCard}>
+              <Text style={styles.pendingInviteText}>
+                Waiting for @{invite.invitee_user_id} to accept...
+              </Text>
+            </View>
+          ))}
+        </>
+      )}
+
+      {/* Invite Users Section */}
+      <View style={[styles.section, { marginTop: Spacing.lg, marginBottom: Spacing.md }]}>
+        <Text style={styles.label}>Invite Users</Text>
+        <UserSearch
+          onSelectUser={handleSelectUserForInvite}
+          currentUserInternalId={user?.id}
+        />
+      </View>
+
       <View style={styles.addShooterRow}>
         <TextInput
           style={styles.shooterInput}
           value={newShooterName}
           onChangeText={setNewShooterName}
-          placeholder="Shooter name"
+          placeholder="Or add shooter by name"
           placeholderTextColor={Colors.textMuted}
           returnKeyType="done"
           onSubmitEditing={handleAddShooter}
@@ -305,5 +390,33 @@ const styles = StyleSheet.create({
     fontSize: FontSize.xl,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  userIdBadge: {
+    fontSize: FontSize.xs,
+    color: Colors.primary,
+    fontWeight: '600',
+    marginTop: Spacing.xs,
+  },
+  pendingInviteCard: {
+    backgroundColor: '#FEF3C7',
+    borderColor: '#FBBF24',
+    borderLeftWidth: 3,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.sm,
+  },
+  pendingInviteText: {
+    fontSize: FontSize.sm,
+    color: '#78350F',
+    fontWeight: '500',
+  },
+  section: {
+    gap: Spacing.md,
+  },
+  label: {
+    fontSize: FontSize.base,
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
 });

@@ -13,6 +13,7 @@
   "dependencies": {
     "@powersync/react-native": "^1.30.2",
     "@powersync/web": "^1.34.0",
+    "@react-native-async-storage/async-storage": "^3.0.1",
     "@react-navigation/native": "^7.1.28",
     "@supabase/supabase-js": "^2.49.4",
     "expo": "~55.0.4",

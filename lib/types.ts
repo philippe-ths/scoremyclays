@@ -38,13 +38,24 @@ export enum ShotResult {
   NO_SHOT = 'NO_SHOT',
 }
 
+export enum InviteStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  DECLINED = 'DECLINED',
+}
+
 // --- Entity interfaces ---
 
 export interface User {
   id: string;
   display_name: string;
   email: string | null;
+  user_id: string | null; // unique handle for invites, immutable, null until profile setup complete
+  discoverable: number; // 0 or 1, controls display name search visibility
+  favourite_club_ids: string; // JSON array stored as text
+  gear: string; // JSON array stored as text
   created_at: string;
+  updated_at: string;
 }
 
 export interface Round {
@@ -125,5 +136,14 @@ export interface TargetResultRecord {
   result: ShotResult;
   recorded_by: string;
   device_id: string;
+  created_at: string;
+}
+
+export interface Invite {
+  id: string;
+  round_id: string;
+  inviter_id: string; // User.id
+  invitee_user_id: string; // User.user_id
+  status: InviteStatus;
   created_at: string;
 }

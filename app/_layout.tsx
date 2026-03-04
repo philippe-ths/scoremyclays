@@ -9,16 +9,12 @@ import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 
 export { ErrorBoundary } from 'expo-router';
 
-export const unstable_settings = {
-  initialRouteName: '(tabs)',
-};
-
 SplashScreen.preventAutoHideAsync();
 
 function AppContent() {
   const colorScheme = useColorScheme();
   const { isReady } = useDatabase();
-  const { isLoading } = useAuth();
+  const { isLoading, isAuthenticated, profileComplete } = useAuth();
 
   if (!isReady || isLoading) {
     return (
@@ -30,12 +26,51 @@ function AppContent() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="clubs/[id]/index" options={{ title: 'Club Details' }} />
-        <Stack.Screen name="round/[id]/setup" options={{ title: 'Round Setup' }} />
-        <Stack.Screen name="round/[id]/score" options={{ title: 'Scoring' }} />
-        <Stack.Screen name="round/[id]/summary" options={{ title: 'Summary' }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        {!isAuthenticated ? (
+          // Auth Stack - shown when not logged in
+          <>
+            <Stack.Screen 
+              name="auth/login" 
+              options={{ 
+                animationEnabled: false,
+                headerShown: false,
+              }} 
+            />
+            <Stack.Screen 
+              name="auth/signup" 
+              options={{ 
+                headerShown: false,
+              }} 
+            />
+            <Stack.Screen 
+              name="auth/profile-setup" 
+              options={{ 
+                headerShown: false,
+              }} 
+            />
+          </>
+        ) : !profileComplete ? (
+          // Profile Setup Screen - shown when logged in but profile incomplete
+          <Stack.Screen 
+            name="auth/profile-setup" 
+            options={{ 
+              headerShown: false,
+              animationEnabled: false,
+            }} 
+          />
+        ) : (
+          // App Stack - shown when authenticated and profile complete
+          <>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="clubs/[id]/index" options={{ title: 'Club Details' }} />
+            <Stack.Screen name="round/[id]/setup" options={{ title: 'Round Setup' }} />
+            <Stack.Screen name="round/[id]/score" options={{ title: 'Scoring' }} />
+            <Stack.Screen name="round/[id]/summary" options={{ title: 'Summary' }} />
+            <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile' }} />
+            <Stack.Screen name="invites/index" options={{ title: 'Invites' }} />
+          </>
+        )}
       </Stack>
     </ThemeProvider>
   );

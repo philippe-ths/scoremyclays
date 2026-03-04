@@ -3,7 +3,12 @@ import { column, Schema, Table } from '@powersync/common';
 const users = new Table({
   display_name: column.text,
   email: column.text,
+  user_id: column.text, // unique handle for invites, immutable
+  discoverable: column.integer, // boolean: 0 or 1, controls display name search visibility
+  favourite_club_ids: column.text, // JSON array stored as text
+  gear: column.text, // JSON array stored as text
   created_at: column.text,
+  updated_at: column.text,
 });
 
 const rounds = new Table({
@@ -90,6 +95,17 @@ const club_stands = new Table(
   { indexes: { by_position: ['club_position_id'] } }
 );
 
+const invites = new Table(
+  {
+    round_id: column.text,
+    inviter_id: column.text, // User.id of the person sending the invite
+    invitee_user_id: column.text, // User.user_id of the person being invited
+    status: column.text, // PENDING, ACCEPTED, DECLINED
+    created_at: column.text,
+  },
+  { indexes: { by_round: ['round_id'], by_invitee: ['invitee_user_id'], by_inviter: ['inviter_id'] } }
+);
+
 export const AppSchema = new Schema({
   users,
   rounds,
@@ -100,6 +116,7 @@ export const AppSchema = new Schema({
   clubs,
   club_positions,
   club_stands,
+  invites,
 });
 
 export type Database = (typeof AppSchema)['types'];
