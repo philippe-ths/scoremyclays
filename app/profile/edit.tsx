@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
+  Platform,
   SafeAreaView,
   ScrollView,
   Switch,
@@ -20,7 +20,7 @@ import { updateUserProfile } from '@/db/queries/users';
 
 export default function EditProfileScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const db = usePowerSync();
 
   const [displayName, setDisplayName] = useState('');
@@ -78,13 +78,11 @@ export default function EditProfileScreen() {
         gear: JSON.stringify(gear),
       });
 
-      Alert.alert('Success', 'Profile updated successfully', [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
+      await refreshUser();
+      router.back();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';
       setError(errorMessage);
-      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }

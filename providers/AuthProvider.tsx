@@ -14,6 +14,7 @@ export interface AuthContextValue {
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextValue>({
   signUp: async () => {},
   signIn: async () => {},
   signOut: async () => {},
+  refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -85,8 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isReady]);
 
   /**
-   * Sync Supabase auth user with local database User table
-   * Creates a local User record if it doesn't exist
+   * Sync Supabase auth user with local database User table.
+   * If the local record is missing (e.g. cache cleared), fetches profile
+   * from Supabase remote before falling back to a blank record.
    */
   async function syncUserWithDatabase(userId: string, email: string | null) {
     if (!db) {
@@ -103,39 +106,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (existing) {
         setUser(existing);
-      } else {
-        // Create new user record
-        const now = new Date().toISOString();
-        const newUser: User = {
-          id: userId,
-          display_name: '',
-          email,
-          user_id: null, // Will be set during profile setup
-          discoverable: 0, // Default to private
-          favourite_club_ids: '[]',
-          gear: '[]',
-          created_at: now,
-          updated_at: now,
-        };
-
-        await db.execute(
-          `INSERT INTO users (id, display_name, email, user_id, discoverable, favourite_club_ids, gear, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [
-            newUser.id,
-            newUser.display_name,
-            newUser.email,
-            newUser.user_id,
-            newUser.discoverable,
-            newUser.favourite_club_ids,
-            newUser.gear,
-            newUser.created_at,
-            newUser.updated_at,
-          ]
-        );
-
-        setUser(newUser);
+        return;
       }
+
+      // Not found locally — try fetching from Supabase remote
+      let remoteProfile: Partial<User> | null = null;
+      try {
+        const { data } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .maybeSingle();
+        if (data) {
+          remoteProfile = data;
+        }
+      } catch (fetchErr) {
+        console.warn('Could not fetch remote profile, creating blank record:', fetchErr);
+      }
+
+      const now = new Date().toISOString();
+      const newUser: User = {
+        id: userId,
+        display_name: remoteProfile?.display_name || '',
+        email: remoteProfile?.email ?? email,
+        user_id: remoteProfile?.user_id ?? null,
+        discoverable: remoteProfile?.discoverable ?? 0,
+        favourite_club_ids: remoteProfile?.favourite_club_ids ?? '[]',
+        gear: remoteProfile?.gear ?? '[]',
+        created_at: remoteProfile?.created_at ?? now,
+        updated_at: remoteProfile?.updated_at ?? now,
+      };
+
+      await db.execute(
+        `INSERT INTO users (id, display_name, email, user_id, discoverable, favourite_club_ids, gear, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          newUser.id,
+          newUser.display_name,
+          newUser.email,
+          newUser.user_id,
+          newUser.discoverable,
+          newUser.favourite_club_ids,
+          newUser.gear,
+          newUser.created_at,
+          newUser.updated_at,
+        ]
+      );
+
+      setUser(newUser);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error syncing user';
       console.error('Error syncing user with database:', errorMessage);
@@ -186,6 +204,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshUser = async () => {
+    if (!user?.id || !db) return;
+    try {
+      const updated = await db.getOptional<User>(
+        'SELECT * FROM users WHERE id = ?',
+        [user.id]
+      );
+      if (updated) setUser(updated);
+    } catch (error) {
+      console.error('Error refreshing user:', error instanceof Error ? error.message : error);
+    }
+  };
+
   const value: AuthContextValue = {
     user,
     isLoading,
@@ -194,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signIn,
     signOut,
+    refreshUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

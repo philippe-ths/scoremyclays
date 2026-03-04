@@ -22,6 +22,7 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   const validateForm = (): boolean => {
     if (!email.trim()) {
@@ -62,7 +63,7 @@ export default function SignupScreen() {
 
     try {
       await signUp(email, password);
-      // Auth state listener will handle navigation to profile setup
+      setSignupSuccess(true);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign up failed. Please try again.';
       setError(errorMessage);
@@ -75,6 +76,32 @@ export default function SignupScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        {signupSuccess ? (
+          <>
+            {/* Success Message */}
+            <View style={styles.header}>
+              <Text style={styles.title}>Check Your Email</Text>
+              <Text style={styles.subtitle}>
+                We've sent a confirmation link to{'\n'}
+                <Text style={{ fontWeight: '600' }}>{email}</Text>
+              </Text>
+            </View>
+
+            <View style={styles.infoContainer}>
+              <Text style={styles.infoText}>
+                Click the link in the email to verify your account, then come back here to log in.
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.button, { marginTop: 24 }]}
+              onPress={() => router.replace('/auth/login')}
+            >
+              <Text style={styles.buttonText}>Go to Login</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          <>
         {/* Header */}
         <View style={styles.header}>
           <Text style={styles.title}>Create Account</Text>
@@ -158,6 +185,8 @@ export default function SignupScreen() {
             <Text style={styles.link}>Log in</Text>
           </TouchableOpacity>
         </View>
+          </>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

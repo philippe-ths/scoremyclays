@@ -5,6 +5,7 @@ import {
   View,
   ScrollView,
   TouchableOpacity,
+  Platform,
   Alert,
   SafeAreaView,
   ActivityIndicator,
@@ -63,25 +64,35 @@ export default function ProfileScreen() {
     .map(id => clubs[id])
     .filter(Boolean);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Log Out',
-      'Are you sure you want to log out?',
-      [
-        { text: 'Cancel', onPress: () => {} },
-        {
-          text: 'Log Out',
-          onPress: async () => {
-            try {
-              await signOut();
-            } catch (err) {
-              Alert.alert('Error', 'Failed to log out');
-            }
+  const handleLogout = async () => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to log out?')) {
+        try {
+          await signOut();
+        } catch (err) {
+          console.error('Failed to log out:', err);
+        }
+      }
+    } else {
+      Alert.alert(
+        'Log Out',
+        'Are you sure you want to log out?',
+        [
+          { text: 'Cancel' },
+          {
+            text: 'Log Out',
+            onPress: async () => {
+              try {
+                await signOut();
+              } catch (err) {
+                Alert.alert('Error', 'Failed to log out');
+              }
+            },
+            style: 'destructive',
           },
-          style: 'destructive',
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   return (

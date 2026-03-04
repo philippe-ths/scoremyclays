@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Platform,
   Alert,
   SafeAreaView,
   ScrollView,
@@ -18,7 +19,7 @@ import type { Club } from '@/lib/types';
 import { updateUserProfile, isUserIdAvailable } from '@/db/queries/users';
 
 export default function ProfileSetupScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, refreshUser } = useAuth();
   const db = usePowerSync();
   
   const [displayName, setDisplayName] = useState('');
@@ -126,7 +127,8 @@ export default function ProfileSetupScreen() {
         favourite_club_ids: JSON.stringify(selectedClubIds),
         gear: JSON.stringify(gear),
       });
-      // Auth state will update and trigger navigation
+      // Refresh auth user state so profileComplete becomes true
+      await refreshUser();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to complete profile';
       setError(errorMessage);
@@ -326,25 +328,35 @@ export default function ProfileSetupScreen() {
           {/* Logout Button */}
           <TouchableOpacity
             style={styles.logoutButton}
-            onPress={() => {
-              Alert.alert(
-                'Log Out',
-                'Are you sure you want to log out?',
-                [
-                  { text: 'Cancel', onPress: () => {} },
-                  {
-                    text: 'Log Out',
-                    onPress: async () => {
-                      try {
-                        await signOut();
-                      } catch (err) {
-                        Alert.alert('Error', 'Failed to log out');
-                      }
+            onPress={async () => {
+              if (Platform.OS === 'web') {
+                if (window.confirm('Are you sure you want to log out?')) {
+                  try {
+                    await signOut();
+                  } catch (err) {
+                    console.error('Failed to log out:', err);
+                  }
+                }
+              } else {
+                Alert.alert(
+                  'Log Out',
+                  'Are you sure you want to log out?',
+                  [
+                    { text: 'Cancel' },
+                    {
+                      text: 'Log Out',
+                      onPress: async () => {
+                        try {
+                          await signOut();
+                        } catch (err) {
+                          Alert.alert('Error', 'Failed to log out');
+                        }
+                      },
+                      style: 'destructive',
                     },
-                    style: 'destructive',
-                  },
-                ]
-              );
+                  ]
+                );
+              }
             }}
             disabled={loading}
           >
