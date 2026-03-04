@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { View, Text } from 'react-native';
 import { PowerSyncContext } from '@powersync/react';
 import { db } from '@/db/openDatabase';
-import { seedClubs } from '@/db/seed-clubs';
 import { SupabaseConnector } from '@/lib/powersync-connector';
 import { supabase } from '@/lib/supabase';
 
@@ -44,7 +43,6 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         await db.init();
-        await seedClubs(db);
         initComplete = true;
         if (mounted) setIsReady(true);
 
