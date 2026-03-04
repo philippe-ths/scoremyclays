@@ -10,19 +10,25 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { listRounds } from '@/db/queries/rounds';
+import { listIncomingInvitesForUser } from '@/db/queries/invites';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
-import { RoundStatus, type Round } from '@/lib/types';
+import { RoundStatus, InviteStatus, type Round } from '@/lib/types';
 
 export default function HomeScreen() {
   const db = usePowerSync();
   const { user } = useAuth();
   const router = useRouter();
   const [recent, setRecent] = useState<Round[]>([]);
+  const [pendingInviteCount, setPendingInviteCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
       listRounds(db, user.id).then((all) => setRecent(all.slice(0, 5)));
+      if (user.user_id) {
+        listIncomingInvitesForUser(db, user.user_id, InviteStatus.PENDING)
+          .then((invites) => setPendingInviteCount(invites.length));
+      }
     }, [db, user]),
   );
 
@@ -44,6 +50,17 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.newRoundBtn} onPress={() => router.push('/new-round')}>
         <Text style={styles.newRoundBtnText}>+ New Round</Text>
       </TouchableOpacity>
+
+      {pendingInviteCount > 0 && (
+        <TouchableOpacity
+          style={styles.inviteBanner}
+          onPress={() => router.push('/invites')}
+        >
+          <Text style={styles.inviteBannerText}>
+            You have {pendingInviteCount} pending invite{pendingInviteCount > 1 ? 's' : ''}
+          </Text>
+        </TouchableOpacity>
+      )}
 
       <Text style={styles.sectionTitle}>Recent Rounds</Text>
 
@@ -108,6 +125,19 @@ const styles = StyleSheet.create({
     fontSize: FontSize.lg,
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  inviteBanner: {
+    backgroundColor: Colors.hit,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    marginBottom: Spacing.lg,
+    alignItems: 'center',
+  },
+  inviteBannerText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: FontSize.base,
   },
   sectionTitle: {
     fontSize: FontSize.lg,

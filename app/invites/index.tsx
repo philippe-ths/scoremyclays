@@ -31,7 +31,7 @@ export default function InvitesScreen() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [inviteDetails, setInviteDetails] = useState<Record<string, { inviter: User; round: Round }>>({});
+  const [inviteDetails, setInviteDetails] = useState<Record<string, { inviter: User | null; round: Round | null }>>({});
 
   // Load invites
   const loadInvites = useCallback(async () => {
@@ -46,7 +46,7 @@ export default function InvitesScreen() {
       setInvites(pendingInvites);
 
       // Load inviter and round details for each invite
-      const details: Record<string, { inviter: User; round: Round }> = {};
+      const details: Record<string, { inviter: User | null; round: Round | null }> = {};
       for (const invite of pendingInvites) {
         try {
           const inviter = await getUserById(db, invite.inviter_id);
@@ -55,9 +55,7 @@ export default function InvitesScreen() {
             [invite.round_id]
           );
 
-          if (inviter && round) {
-            details[invite.id] = { inviter, round };
-          }
+          details[invite.id] = { inviter: inviter ?? null, round: round ?? null };
         } catch (err) {
           console.error('Error loading invite details:', err);
         }
@@ -105,13 +103,13 @@ export default function InvitesScreen() {
       );
       const nextPosition = (maxPosition?.max_pos || 0) + 1;
 
-      // Create shooter entry with user_id link
+      // Create shooter entry with user's UUID (not handle) so sync rules match
       await addShooterEntry(db, {
         id: Crypto.randomUUID(),
         squad_id: squad.id,
         round_id: invite.round_id,
-        user_id: invite.invitee_user_id,
-        shooter_name: inviteDetails[invite.id]?.inviter.display_name || 'Unknown',
+        user_id: user!.id,
+        shooter_name: user!.display_name || 'Unknown',
         position_in_squad: nextPosition,
       });
 
@@ -175,29 +173,34 @@ export default function InvitesScreen() {
         }
         renderItem={({ item }) => {
           const detail = inviteDetails[item.id];
-          if (!detail) return null;
-
-          const { inviter, round } = detail;
+          const inviter = detail?.inviter;
+          const round = detail?.round;
 
           return (
             <View style={styles.inviteCard}>
               <View style={styles.inviteHeader}>
                 <View style={styles.inviterInfo}>
                   <Text style={styles.inviteTitle}>
-                    {inviter.display_name} (@{inviter.user_id}) invited you to a round
+                    {inviter
+                      ? `${inviter.display_name} (@${inviter.user_id}) invited you to a round`
+                      : 'You have been invited to a round'}
                   </Text>
-                  <Text style={styles.roundInfo}>
-                    {round.ground_name} • {new Date(round.date).toLocaleDateString()}
-                  </Text>
+                  {round && (
+                    <Text style={styles.roundInfo}>
+                      {round.ground_name} • {new Date(round.date).toLocaleDateString()}
+                    </Text>
+                  )}
                 </View>
               </View>
 
-              <View style={styles.roundDetails}>
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailLabel}>Targets:</Text>
-                  <Text style={styles.detailValue}>{round.total_targets}</Text>
+              {round && (
+                <View style={styles.roundDetails}>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Targets:</Text>
+                    <Text style={styles.detailValue}>{round.total_targets}</Text>
+                  </View>
                 </View>
-              </View>
+              )}
 
               <View style={styles.buttonRow}>
                 <TouchableOpacity

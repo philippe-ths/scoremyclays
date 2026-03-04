@@ -24,7 +24,13 @@ export async function getRound(db: AbstractPowerSyncDatabase, id: string): Promi
 }
 
 export async function listRounds(db: AbstractPowerSyncDatabase, userId: string): Promise<Round[]> {
-  return db.getAll<Round>('SELECT * FROM rounds WHERE created_by = ? ORDER BY created_at DESC', [userId]);
+  return db.getAll<Round>(
+    `SELECT DISTINCT r.* FROM rounds r
+     LEFT JOIN shooter_entries se ON se.round_id = r.id
+     WHERE r.created_by = ? OR se.user_id = ?
+     ORDER BY r.created_at DESC`,
+    [userId, userId],
+  );
 }
 
 export async function updateRoundStatus(
