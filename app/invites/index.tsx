@@ -109,6 +109,7 @@ export default function InvitesScreen() {
       await addShooterEntry(db, {
         id: Crypto.randomUUID(),
         squad_id: squad.id,
+        round_id: invite.round_id,
         user_id: invite.invitee_user_id,
         shooter_name: inviteDetails[invite.id]?.inviter.display_name || 'Unknown',
         position_in_squad: nextPosition,

@@ -6,6 +6,7 @@ export async function recordTargetResult(
   params: {
     id: string;
     stand_id: string;
+    round_id: string;
     shooter_entry_id: string;
     target_number: number;
     bird_number: number;
@@ -16,8 +17,8 @@ export async function recordTargetResult(
 ): Promise<void> {
   const now = new Date().toISOString();
   await db.execute(
-    'INSERT INTO target_results (id, stand_id, shooter_entry_id, target_number, bird_number, result, recorded_by, device_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [params.id, params.stand_id, params.shooter_entry_id, params.target_number, params.bird_number, params.result, params.recorded_by, params.device_id, now],
+    'INSERT INTO target_results (id, stand_id, round_id, shooter_entry_id, target_number, bird_number, result, recorded_by, device_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [params.id, params.stand_id, params.round_id, params.shooter_entry_id, params.target_number, params.bird_number, params.result, params.recorded_by, params.device_id, now],
   );
 }
 

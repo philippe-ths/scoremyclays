@@ -152,6 +152,7 @@ export default function RoundSetupScreen() {
     await addShooterEntry(db, {
       id: Crypto.randomUUID(),
       squad_id: squadId,
+      round_id: roundId!,
       user_id: null,
       shooter_name: name,
       position_in_squad: shooters.length + 1,

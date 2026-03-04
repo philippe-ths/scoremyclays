@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { usePowerSync } from '@powersync/react';
-import * as Crypto from 'expo-crypto';
 import type { User } from '@/lib/types';
 import { useDatabase } from './DatabaseProvider';
 import { supabase } from '@/lib/supabase';
@@ -38,45 +37,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state and listen to changes
   useEffect(() => {
-    if (!isReady || !db) {
-      console.log('Waiting for database to be ready...');
+    if (!isReady) {
+      return;
+    }
+    if (!db) {
       return;
     }
 
     let mounted = true;
 
-    (async () => {
-      try {
-        // Get current session
-        const { data } = await supabase.auth.getSession();
-        if (mounted) {
-          setSession(data.session);
-          if (data.session?.user) {
-            // Fetch or create local user record
-            await syncUserWithDatabase(data.session.user.id, data.session.user.email || null);
-          }
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error during session fetch';
-        console.error('Error fetching session:', errorMessage);
-        setAuthError(errorMessage);
-      } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
-      }
-    })();
-
-    // Set up auth state listener
+    // Set up auth state listener — also fires INITIAL_SESSION for the current session
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (mounted) {
-        setSession(newSession);
-        if (newSession?.user && event !== 'SIGNED_OUT') {
-          // Sync user with database on sign in/refresh
-          await syncUserWithDatabase(newSession.user.id, newSession.user.email || null);
-        } else if (event === 'SIGNED_OUT') {
-          setUser(null);
-        }
+      if (!mounted) return;
+      setSession(newSession);
+
+      if (newSession?.user && event !== 'SIGNED_OUT') {
+        await syncUserWithDatabase(newSession.user.id, newSession.user.email || null);
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+
+      // Mark loading done after initial session event
+      if (event === 'INITIAL_SESSION') {
+        setIsLoading(false);
       }
     });
 
@@ -88,8 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /**
    * Sync Supabase auth user with local database User table.
-   * If the local record is missing (e.g. cache cleared), fetches profile
-   * from Supabase remote before falling back to a blank record.
+   * If PowerSync has already synced the profile, use it.
+   * Otherwise create a blank record — PowerSync will merge remote data once sync completes.
    */
   async function syncUserWithDatabase(userId: string, email: string | null) {
     if (!db) {
@@ -98,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     
     try {
-      // Check if user exists in local database
+      // Check if user exists in local database (may have been synced by PowerSync)
       const existing = await db.getOptional<User>(
         'SELECT * FROM users WHERE id = ?',
         [userId]
@@ -109,32 +92,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Not found locally — try fetching from Supabase remote
-      let remoteProfile: Partial<User> | null = null;
-      try {
-        const { data } = await supabase
-          .from('users')
-          .select('*')
-          .eq('id', userId)
-          .maybeSingle();
-        if (data) {
-          remoteProfile = data;
-        }
-      } catch (fetchErr) {
-        console.warn('Could not fetch remote profile, creating blank record:', fetchErr);
-      }
-
+      // Not found locally yet — create a record.
+      // PowerSync will upload this to Supabase, and if a remote record
+      // already exists, the upsert in uploadData will merge it.
       const now = new Date().toISOString();
       const newUser: User = {
         id: userId,
-        display_name: remoteProfile?.display_name || '',
-        email: remoteProfile?.email ?? email,
-        user_id: remoteProfile?.user_id ?? null,
-        discoverable: remoteProfile?.discoverable ?? 0,
-        favourite_club_ids: remoteProfile?.favourite_club_ids ?? '[]',
-        gear: remoteProfile?.gear ?? '[]',
-        created_at: remoteProfile?.created_at ?? now,
-        updated_at: remoteProfile?.updated_at ?? now,
+        display_name: '',
+        email,
+        user_id: null,
+        discoverable: 0,
+        favourite_club_ids: '[]',
+        gear: '[]',
+        created_at: now,
+        updated_at: now,
       };
 
       await db.execute(

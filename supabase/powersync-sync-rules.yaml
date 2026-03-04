@@ -1,0 +1,57 @@
+-- =============================================================
+-- PowerSync Sync Rules
+-- Paste this into the PowerSync Cloud dashboard under Sync Rules
+-- =============================================================
+-- Documentation: https://docs.powersync.com/usage/sync-rules
+-- =============================================================
+
+bucket_definitions:
+  # --- User profile (own record) ---
+  user_profile:
+    parameters: SELECT request.user_id() as user_id
+    data:
+      - SELECT * FROM users WHERE id = bucket.user_id
+
+  # --- Discoverable users (global, for invite search) ---
+  discoverable_users:
+    data:
+      - SELECT * FROM users WHERE discoverable = 1
+
+  # --- Rounds created by user (all child data via round_id) ---
+  my_rounds:
+    parameters: SELECT id as round_id FROM rounds WHERE created_by = request.user_id()
+    data:
+      - SELECT * FROM rounds WHERE id = bucket.round_id
+      - SELECT * FROM squads WHERE round_id = bucket.round_id
+      - SELECT * FROM shooter_entries WHERE round_id = bucket.round_id
+      - SELECT * FROM stands WHERE round_id = bucket.round_id
+      - SELECT * FROM target_results WHERE round_id = bucket.round_id
+
+  # --- Shared rounds (user is a shooter, via denormalized round_id) ---
+  shared_rounds:
+    parameters: SELECT round_id FROM shooter_entries WHERE user_id = request.user_id()
+    data:
+      - SELECT * FROM rounds WHERE id = bucket.round_id
+      - SELECT * FROM squads WHERE round_id = bucket.round_id
+      - SELECT * FROM shooter_entries WHERE round_id = bucket.round_id
+      - SELECT * FROM stands WHERE round_id = bucket.round_id
+      - SELECT * FROM target_results WHERE round_id = bucket.round_id
+
+  # --- Invites sent by user ---
+  sent_invites:
+    parameters: SELECT request.user_id() as user_id
+    data:
+      - SELECT * FROM invites WHERE inviter_id = bucket.user_id
+
+  # --- Invites received by user (via handle) ---
+  received_invites:
+    parameters: SELECT user_id as handle FROM users WHERE id = request.user_id()
+    data:
+      - SELECT * FROM invites WHERE invitee_user_id = bucket.handle
+
+  # --- Reference data (global, synced to all) ---
+  reference_data:
+    data:
+      - SELECT * FROM clubs
+      - SELECT * FROM club_positions
+      - SELECT * FROM club_stands

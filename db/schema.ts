@@ -30,11 +30,12 @@ const squads = new Table({
 const shooter_entries = new Table(
   {
     squad_id: column.text,
+    round_id: column.text,
     user_id: column.text,
     shooter_name: column.text,
     position_in_squad: column.integer,
   },
-  { indexes: { by_squad: ['squad_id'] } }
+  { indexes: { by_squad: ['squad_id'], by_round: ['round_id'] } }
 );
 
 const stands = new Table(
@@ -54,6 +55,7 @@ const stands = new Table(
 const target_results = new Table(
   {
     stand_id: column.text,
+    round_id: column.text,
     shooter_entry_id: column.text,
     target_number: column.integer,
     bird_number: column.integer,
@@ -62,7 +64,7 @@ const target_results = new Table(
     device_id: column.text,
     created_at: column.text,
   },
-  { indexes: { by_stand: ['stand_id'], by_shooter: ['shooter_entry_id'] } }
+  { indexes: { by_stand: ['stand_id'], by_round: ['round_id'], by_shooter: ['shooter_entry_id'] } }
 );
 
 const clubs = new Table({

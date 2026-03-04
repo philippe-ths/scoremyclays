@@ -171,6 +171,7 @@ export default function ScoringScreen() {
       await recordTargetResult(db, {
         id: Crypto.randomUUID(),
         stand_id: currentStand.id,
+        round_id: roundId!,
         shooter_entry_id: currentShooter.id,
         target_number: targetNum,
         bird_number: birdNum,

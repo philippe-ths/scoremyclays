@@ -107,6 +107,7 @@ export default function NewRoundScreen() {
       await addShooterEntry(db, {
         id: shooterEntryId,
         squad_id: squadId,
+        round_id: roundId,
         user_id: user.id,
         shooter_name: user.display_name,
         position_in_squad: 1,

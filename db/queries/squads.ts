@@ -20,14 +20,15 @@ export async function addShooterEntry(
   params: {
     id: string;
     squad_id: string;
+    round_id: string;
     user_id: string | null;
     shooter_name: string;
     position_in_squad: number;
   },
 ): Promise<void> {
   await db.execute(
-    'INSERT INTO shooter_entries (id, squad_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?)',
-    [params.id, params.squad_id, params.user_id, params.shooter_name, params.position_in_squad],
+    'INSERT INTO shooter_entries (id, squad_id, round_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?, ?)',
+    [params.id, params.squad_id, params.round_id, params.user_id, params.shooter_name, params.position_in_squad],
   );
 }
 
