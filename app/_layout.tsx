@@ -3,11 +3,51 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { ActivityIndicator, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { DatabaseProvider, useDatabase } from '@/providers/DatabaseProvider';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 
-export { ErrorBoundary } from 'expo-router';
+// Custom error boundary to handle Symbol serialization issues
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => void }) {
+  const errorMessage = error instanceof Error ? error.message : String(error);
+  
+  return (
+    <View style={styles.errorContainer}>
+      <Text style={styles.errorTitle}>Something went wrong</Text>
+      <Text style={styles.errorMessage}>{errorMessage}</Text>
+      <Text style={styles.errorHint}>
+        Try refreshing the page or check your internet connection.
+      </Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#000',
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 10,
+  },
+  errorMessage: {
+    fontSize: 16,
+    color: '#ff6b6b',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  errorHint: {
+    fontSize: 14,
+    color: '#888',
+    textAlign: 'center',
+  },
+});
 
 SplashScreen.preventAutoHideAsync();
 

@@ -36,7 +36,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Initialize auth state and listen to changes
   useEffect(() => {
-    if (!isReady) return;
+    if (!isReady || !db) {
+      console.log('Waiting for database to be ready...');
+      return;
+    }
 
     let mounted = true;
 
