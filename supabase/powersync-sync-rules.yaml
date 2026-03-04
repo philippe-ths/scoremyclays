@@ -37,6 +37,21 @@ bucket_definitions:
       - SELECT * FROM stands WHERE round_id = bucket.round_id
       - SELECT * FROM target_results WHERE round_id = bucket.round_id
 
+  # --- Rounds the user has been invited to (breaks the accept catch-22) ---
+  # Without this, the invitee can't accept because they don't have the
+  # squad data locally. Once accepted, shared_rounds takes over.
+  invited_rounds:
+    parameters:
+      SELECT i.round_id
+      FROM invites i
+      INNER JOIN users u ON u.user_id = i.invitee_user_id
+      WHERE u.id = request.user_id() AND i.status = 'PENDING'
+    data:
+      - SELECT * FROM rounds WHERE id = bucket.round_id
+      - SELECT * FROM squads WHERE round_id = bucket.round_id
+      - SELECT * FROM shooter_entries WHERE round_id = bucket.round_id
+      - SELECT * FROM stands WHERE round_id = bucket.round_id
+
   # --- Invites sent by user ---
   sent_invites:
     parameters: SELECT request.user_id() as user_id
