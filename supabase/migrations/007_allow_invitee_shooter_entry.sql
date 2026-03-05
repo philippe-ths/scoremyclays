@@ -35,7 +35,28 @@ CREATE POLICY shooter_entries_insert_as_invitee ON public.shooter_entries
     AND public.has_pending_invite(round_id, auth.uid()::text)
   );
 
--- 3. Simpler invites update policy using invitee_id (UUID) directly
+-- 3. SELECT + UPDATE policies for invitees on shooter_entries
+--    PostgREST upsert (INSERT ON CONFLICT DO UPDATE) requires
+--    SELECT and UPDATE policies in addition to INSERT.
+CREATE POLICY shooter_entries_select_as_invitee ON public.shooter_entries
+  FOR SELECT
+  USING (
+    user_id = auth.uid()::text
+    AND public.has_pending_invite(round_id, auth.uid()::text)
+  );
+
+CREATE POLICY shooter_entries_update_as_invitee ON public.shooter_entries
+  FOR UPDATE
+  USING (
+    user_id = auth.uid()::text
+    AND public.has_pending_invite(round_id, auth.uid()::text)
+  )
+  WITH CHECK (
+    user_id = auth.uid()::text
+    AND public.has_pending_invite(round_id, auth.uid()::text)
+  );
+
+-- 4. Simpler invites update policy using invitee_id (UUID) directly
 --    The existing invites_invitee_update uses a cross-table lookup
 --    via user_id handle, which may fail in some RLS contexts.
 CREATE POLICY invites_invitee_update_by_id ON public.invites
