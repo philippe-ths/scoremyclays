@@ -10,7 +10,9 @@
 -- Also add a simpler invites update policy using invitee_id.
 -- =============================================================
 
--- 1. SECURITY DEFINER: check if user has a pending invite for this round
+-- 1. SECURITY DEFINER: check if user has an invite for this round
+--    Checks ANY status (not just PENDING) because the invite PATCH
+--    may arrive before the shooter_entry PUT in the same upload cycle.
 CREATE OR REPLACE FUNCTION public.has_pending_invite(rid text, uid text)
 RETURNS boolean
 LANGUAGE sql
@@ -22,7 +24,6 @@ AS $$
     SELECT 1 FROM invites
     WHERE round_id = rid
       AND invitee_id = uid
-      AND status = 'PENDING'
   );
 $$;
 
