@@ -9,8 +9,10 @@ import {
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
+  Platform,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { Colors } from '@/lib/constants';
@@ -27,6 +29,7 @@ import { addShooterEntry, getSquadByRound } from '@/db/queries/squads';
 export default function InvitesScreen() {
   const { user } = useAuth();
   const db = usePowerSync();
+  const router = useRouter();
 
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +84,8 @@ export default function InvitesScreen() {
       // Get the squad for this round
       const squad = await getSquadByRound(db, invite.round_id);
       if (!squad) {
-        Alert.alert('Error', 'Could not find squad for this round');
+        if (Platform.OS === 'web') window.alert('Could not find squad for this round');
+        else Alert.alert('Error', 'Could not find squad for this round');
         return;
       }
 
@@ -92,7 +96,8 @@ export default function InvitesScreen() {
       );
 
       if (shooterCount && shooterCount.count >= 6) {
-        Alert.alert('Error', 'This squad is full (max 6 shooters)');
+        if (Platform.OS === 'web') window.alert('This squad is full (max 6 shooters)');
+        else Alert.alert('Error', 'This squad is full (max 6 shooters)');
         return;
       }
 
@@ -116,23 +121,58 @@ export default function InvitesScreen() {
       // Update invite status
       await updateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
 
-      Alert.alert('Success', 'You have joined the round!', [
-        { text: 'OK', onPress: () => loadInvites() },
-      ]);
+      if (Platform.OS === 'web') {
+        window.alert('You have joined the round!');
+        router.push(`/round/${invite.round_id}/summary` as any);
+      } else {
+        Alert.alert('Success', 'You have joined the round!', [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              loadInvites();
+              router.push(`/round/${invite.round_id}/summary` as any);
+            } 
+          },
+        ]);
+      }
     } catch (err) {
       console.error('Error accepting invite:', err);
-      Alert.alert('Error', 'Failed to accept invite');
+      if (Platform.OS === 'web') window.alert('Failed to accept invite');
+      else Alert.alert('Error', 'Failed to accept invite');
     }
   };
 
   const handleDeclineInvite = async (inviteId: string) => {
     try {
       await updateInviteStatus(db, inviteId, InviteStatus.DECLINED);
-      Alert.alert('Success', 'Invite declined');
+      if (Platform.OS === 'web') window.alert('Invite declined');
+      else Alert.alert('Success', 'Invite declined');
       loadInvites();
     } catch (err) {
       console.error('Error declining invite:', err);
-      Alert.alert('Error', 'Failed to decline invite');
+      if (Platform.OS === 'web') window.alert('Failed to decline invite');
+      else Alert.alert('Error', 'Failed to decline invite');
+    }
+  };
+
+  const confirmDecline = (inviteId: string) => {
+    if (Platform.OS === 'web') {
+      if (window.confirm('Are you sure you want to decline this invite?')) {
+        handleDeclineInvite(inviteId);
+      }
+    } else {
+      Alert.alert(
+        'Decline Invite',
+        'Are you sure you want to decline this invite?',
+        [
+          { text: 'Cancel', onPress: () => {} },
+          {
+            text: 'Decline',
+            onPress: () => handleDeclineInvite(inviteId),
+            style: 'destructive',
+          },
+        ]
+      );
     }
   };
 
@@ -211,20 +251,7 @@ export default function InvitesScreen() {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.declineButton}
-                  onPress={() => {
-                    Alert.alert(
-                      'Decline Invite',
-                      'Are you sure you want to decline this invite?',
-                      [
-                        { text: 'Cancel', onPress: () => {} },
-                        {
-                          text: 'Decline',
-                          onPress: () => handleDeclineInvite(item.id),
-                          style: 'destructive',
-                        },
-                      ]
-                    );
-                  }}
+                  onPress={() => confirmDecline(item.id)}
                 >
                   <Text style={styles.declineButtonText}>Decline</Text>
                 </TouchableOpacity>

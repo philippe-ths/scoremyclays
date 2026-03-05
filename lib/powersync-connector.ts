@@ -8,6 +8,12 @@ const powerSyncUrl = process.env.EXPO_PUBLIC_POWERSYNC_URL ?? '';
 export class SupabaseConnector implements PowerSyncBackendConnector {
   /** Cache the current session so fetchCredentials doesn't need to call getSession() */
   currentSession: AuthSession | null = null;
+  private errorListeners = new Set<(error: Error) => void>();
+
+  public addErrorListener(listener: (error: Error) => void) {
+    this.errorListeners.add(listener);
+    return () => this.errorListeners.delete(listener);
+  }
 
   async fetchCredentials(): Promise<PowerSyncCredentials | null> {
     // Use cached session to avoid deadlock when called from onAuthStateChange
@@ -65,7 +71,11 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
         // Non-retryable errors (RLS violations, constraint errors):
         // log and continue so the transaction can be completed.
         // Rethrowing would block the entire CRUD queue forever.
-        console.error(`Upload error (skipping): ${error instanceof Error ? error.message : error}`);
+        const err = error instanceof Error ? error : new Error(String(error));
+        console.error(`Upload error (skipping): ${err.message}`);
+        for (const listener of this.errorListeners) {
+          listener(err);
+        }
       }
     }
 

@@ -13,7 +13,7 @@ const DatabaseContext = createContext<DatabaseContextValue>({
   isReady: false,
 });
 
-const connector = new SupabaseConnector();
+export const connector = new SupabaseConnector();
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
   const [isReady, setIsReady] = useState(false);
