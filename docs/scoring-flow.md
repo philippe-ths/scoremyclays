@@ -98,15 +98,18 @@ If the app is closed and reopened during a round, the scoring screen reloads exi
 
 It then positions the state machine at the next unrecorded bird so scoring can continue where it left off.
 
-## Conflict Resolution
+## Offline Conflict Detection & Resolution
 
-When multiple devices record results for the same round (e.g., two scorers), conflicts are resolved by:
+Any squad member can score for any shooter. If two devices later sync overlapping records for the same shot, the client detects that duplicate `(shooter_entry_id, target_number, bird_number)` combination and treats it as a conflict.
 
-1. The designated scorer's records take priority (the user who created the round).
-2. If neither record is from the designated scorer, the earlier `created_at` timestamp wins.
-3. Conflicts are logged but not surfaced to the user unless data loss would occur.
+The app handles conflicts in four stages:
 
-This is implemented in the PowerSync conflict handler and relies on the `recorded_by` and `device_id` fields on each `TargetResult`.
+1. **Deduplication during active scoring:** `getResultsForStandAndShooter` orders rows by `created_at` and keeps only the first record for each target and bird so the scorer can continue without the state machine skipping ahead.
+2. **Conflict-aware totals:** `getShooterRoundScore` flags shooters with duplicates and suppresses their rolled-up totals until the duplicates are resolved.
+3. **UI warnings:** The scoring screen shows a `Sync Issue` warning for the active shooter, and the summary screen marks conflicted shooters explicitly.
+4. **Organizer resolution:** The round creator can open the conflict-resolution screen, choose the winning record for each duplicated shot, and delete the losing rows from `target_results`.
+
+This workflow relies on the `recorded_by`, `device_id`, and `created_at` fields on each `TargetResult` row.
 
 ## Haptic Feedback
 

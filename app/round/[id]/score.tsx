@@ -10,11 +10,12 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/providers/AuthProvider';
 import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
 import { listStands, createStand } from '@/db/queries/stands';
-import { recordTargetResult, getResultsForStandAndShooter } from '@/db/queries/scoring';
+import { recordTargetResult, getResultsForStandAndShooter, getRoundConflicts, type ConflictedShotGroup } from '@/db/queries/scoring';
 import { updateRoundStatus } from '@/db/queries/rounds';
 import { getClubWithDetails } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
@@ -56,6 +57,7 @@ export default function ScoringScreen() {
   const [round, setRound] = useState<Round | null>(null);
   const [shooters, setShooters] = useState<ShooterEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [conflicts, setConflicts] = useState<ConflictedShotGroup[]>([]);
   const deviceId = useMemo(() => `web-${user?.id?.slice(0, 8) ?? 'anon'}`, [user]);
 
   // Custom mode state (sequential)
@@ -122,6 +124,10 @@ export default function ScoringScreen() {
         const s = await listStands(db, roundId);
         setStands(s);
       }
+
+      // Load conflicts for this round
+      const c = await getRoundConflicts(db, roundId);
+      setConflicts(c);
 
       setIsLoading(false);
     })();
@@ -364,13 +370,22 @@ export default function ScoringScreen() {
     return <LoadingPlaceholder />;
   }
 
+  const shooterHasConflict = conflicts.some(c => c.shooter_entry_id === currentShooter.id);
+
   return (
     <View style={styles.root}>
       {/* Top bar: score + progress */}
       <View style={styles.topBar}>
         <View style={styles.scoreBox}>
           <Text style={styles.scoreLabel}>Score</Text>
-          <Text style={styles.scoreValue}>{killCount}/{totalRecorded}</Text>
+          {shooterHasConflict ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+              <Ionicons name="warning" size={16} color="#EAB308" />
+              <Text style={[styles.scoreValue, { fontSize: FontSize.sm, color: '#EAB308', marginLeft: 4, marginTop: 0 }]}>Sync Issue</Text>
+            </View>
+          ) : (
+            <Text style={styles.scoreValue}>{killCount}/{totalRecorded}</Text>
+          )}
         </View>
         <View style={styles.progressBox}>
           <Text style={styles.progressLabel}>

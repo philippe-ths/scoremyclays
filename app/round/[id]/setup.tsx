@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import {
   StyleSheet,
   Text,
@@ -8,15 +9,14 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { usePowerSync } from '@powersync/react';
+import { usePowerSync, useQuery } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
 import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
 import { createStand, listStands, deleteStand } from '@/db/queries/stands';
 import { getClubWithDetails } from '@/db/queries/clubs';
-import { createInvite, listOutgoingInvitesForRound, checkDuplicateInvite } from '@/db/queries/invites';
+import { createInvite, checkDuplicateInvite } from '@/db/queries/invites';
 import { getUserByUserId } from '@/db/queries/users';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
@@ -35,7 +35,13 @@ export default function RoundSetupScreen() {
   const [squadId, setSquadId] = useState<string | null>(null);
   const [newShooterName, setNewShooterName] = useState('');
   const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
-  const [pendingInvites, setPendingInvites] = useState<Array<{ id: string; invitee_user_id: string; status: string }>>([]);
+
+  // Reactively watch pending invites — auto-updates when sync changes the invites table
+  const { data: pendingInviteRows } = useQuery<{ id: string; invitee_user_id: string; status: string }>(
+    'SELECT id, invitee_user_id, status FROM invites WHERE round_id = ? AND inviter_id = ? AND status = ?',
+    [roundId ?? '', user?.id ?? '', InviteStatus.PENDING],
+  );
+  const pendingInvites = pendingInviteRows ?? [];
 
   const isClubRound = !!round?.club_id;
 
@@ -61,22 +67,13 @@ export default function RoundSetupScreen() {
       const entries = await listShooterEntries(db, squad.id);
       setShooters(entries);
     }
-
-    // Load pending invites sent from this round
-    if (user && r) {
-      try {
-        const invites = await listOutgoingInvitesForRound(db, roundId, user.id);
-        const pending = invites.filter(i => i.status === InviteStatus.PENDING);
-        setPendingInvites(pending);
-      } catch (err) {
-        console.error('Error loading invites:', err);
-      }
-    }
   }, [db, roundId]);
 
-  useEffect(() => {
-    reload();
-  }, [reload]);
+  useFocusEffect(
+    useCallback(() => {
+      reload();
+    }, [reload]),
+  );
 
   async function handleAddStand() {
     if (!roundId) return;
