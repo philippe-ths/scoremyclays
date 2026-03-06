@@ -25,13 +25,12 @@ npx powersync-web copy-assets --output public
 
 ## Environment Variables
 
-For guest mode (the current default), no environment variables are needed. All data stays on-device.
-
-When Supabase sync is enabled, create a `.env` file:
+For basic guest mode (the default view without logging in), no environment variables are needed to test basic UX, but to test user invites or synchronized data, a `.env` file is required:
 
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+EXPO_PUBLIC_POWERSYNC_URL=https://your-instance.powersync.journeyapps.com
 ```
 
 ## Running the App

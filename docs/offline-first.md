@@ -35,9 +35,9 @@ Every entity (rounds, stands, shooters, target results) is assigned a UUID gener
 
 ### Current State
 
-The app currently operates in **local-only mode**. The `SyncProvider` exists but is hardcoded to `status: 'offline'`. PowerSync sync to Supabase is not yet wired up — it will be enabled in a future milestone when Supabase infrastructure is configured.
+The app operates seamlessly offline, while simultaneously utilizing full **PowerSync multi-device synchronization** whenever authenticated users are online. 
 
-Guest mode (the current default) keeps all data on-device with no sync. When account creation is enabled, users who sign in will have their data synced via PowerSync.
+Guest mode (the current default) keeps all data strictly on-device with no sync. When an account is created and the user signs in, their data is synchronized securely with Supabase via PowerSync routing rules. `SyncProvider` actively surfaces global connection or row-level-security (RLS) data flow errors through UI banners.
 
 ## Platform Split
 
@@ -93,12 +93,15 @@ When multiple devices record scores for the same round simultaneously, conflicts
 
 This relies on the `recorded_by` and `device_id` fields on every `TargetResult` row.
 
-## Future: Sync Enablement
+## Sync Implementation
 
-When Supabase infrastructure is configured, enabling sync will involve:
+Sync is fully enabled for authenticated users using a combination of Supabase Row Level Security (RLS) policies and PowerSync Sync Rules.
 
-1. Configure Supabase project with PostgreSQL schema mirroring the local schema
-2. Enable Row Level Security (RLS) — users can only access their own rounds and rounds where they appear as a shooter
-3. Configure PowerSync sync rules scoped to the authenticated user
-4. Wire up `SyncProvider` to report real sync status (offline / syncing / synced)
-5. Implement guest-to-account upgrade path (associate local data with new account)
+1. **Supabase RLS**: Users can only access their own rounds, rounds where they appear as a shooter, and read-only global data, enforced at the database level by migrated policies.
+2. **PowerSync Rules**: Located in `supabase/powersync-sync-rules.yaml`, data is partitioned client-side so users only download their respective slices (e.g. `my_rounds`, `shared_rounds`, `invited_rounds`), avoiding downloading the entire application DB.
+3. **Component State**: `SyncProvider` actively reports the user's sync state (`offline`, `syncing`, `synced`) through built-in listeners, and handles error boundary alerts.
+4. **App-Level Upload Skips**: Reference global tables (like `clubs`, `club_positions`) bypass the sync queue explicitly so users don't stall their own `target_results` attempting to overwrite admin content.
+
+### Future Enhancements
+
+1. Implement guest-to-account upgrade path (associate local data with a newly created account natively).

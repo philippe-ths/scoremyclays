@@ -1,37 +1,586 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  Alert,
+  Platform,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { usePowerSync } from '@powersync/react';
+import * as Crypto from 'expo-crypto';
+import { useAuth } from '@/providers/AuthProvider';
+import { getRound } from '@/db/queries/rounds';
+import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
+import { listStands, createStand } from '@/db/queries/stands';
+import { recordTargetResult, getResultsForStandAndShooter } from '@/db/queries/scoring';
+import { updateRoundStatus } from '@/db/queries/rounds';
+import { getClubWithDetails } from '@/db/queries/clubs';
+import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
+import LoadingPlaceholder from '@/components/LoadingPlaceholder';
+import PositionPicker, { type PositionStatus } from '@/components/PositionPicker';
+import StandSelector from '@/components/StandSelector';
+import {
+  ShotResult,
+  RoundStatus,
+  TargetConfig,
+  type Stand,
+  type ShooterEntry,
+  type PresentationType,
+  type Round,
+  type ClubStand,
+  type PositionWithStands,
+} from '@/lib/types';
+
+// Graceful haptics: no-op if not available (web)
+let triggerHaptic = () => {};
+try {
+  const Haptics = require('expo-haptics');
+  triggerHaptic = () => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+} catch {}
+
+function birdsPerTarget(config: TargetConfig): number {
+  return config === TargetConfig.SINGLE ? 1 : 2;
+}
+
+type ClubPhase = 'position-picker' | 'stand-selector' | 'scoring';
 
 export default function ScoringScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id: roundId } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const db = usePowerSync();
+  const { user } = useAuth();
+
+  // Shared state
+  const [round, setRound] = useState<Round | null>(null);
+  const [shooters, setShooters] = useState<ShooterEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const deviceId = useMemo(() => `web-${user?.id?.slice(0, 8) ?? 'anon'}`, [user]);
+
+  // Custom mode state (sequential)
+  const [stands, setStands] = useState<Stand[]>([]);
+  const [standIdx, setStandIdx] = useState(0);
+
+  // Club mode state
+  const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
+  const [clubPhase, setClubPhase] = useState<ClubPhase>('position-picker');
+  const [selectedPosition, setSelectedPosition] = useState<PositionWithStands | null>(null);
+  const [currentClubStand, setCurrentClubStand] = useState<Stand | null>(null);
+  /** Map of club_stand_id → round stand_id for stands already created this round */
+  const [createdStandMap, setCreatedStandMap] = useState<Map<string, string>>(new Map());
+  /** Set of club_stand_ids that have been fully completed */
+  const [completedClubStandIds, setCompletedClubStandIds] = useState<Set<string>>(new Set());
+
+  // Scoring state (shared)
+  const [shooterIdx, setShooterIdx] = useState(0);
+  const [targetNum, setTargetNum] = useState(1);
+  const [birdNum, setBirdNum] = useState(1);
+  const [killCount, setKillCount] = useState(0);
+  const [totalRecorded, setTotalRecorded] = useState(0);
+
+  const isClubRound = !!round?.club_id;
+  const currentStand = isClubRound ? currentClubStand : (stands[standIdx] ?? null);
+  const currentShooter = shooters[shooterIdx] ?? null;
+  const maxBirds = currentStand ? birdsPerTarget(currentStand.target_config as TargetConfig) : 1;
+
+  // Initial data load
+  useEffect(() => {
+    (async () => {
+      if (!roundId) return;
+      const r = await getRound(db, roundId);
+      setRound(r);
+
+      const squad = await getSquadByRound(db, roundId);
+      if (squad) {
+        const entries = await listShooterEntries(db, squad.id);
+        setShooters(entries);
+      }
+
+      if (r?.club_id) {
+        // Club mode: load positions and check for already-created stands
+        const clubData = await getClubWithDetails(db, r.club_id);
+        if (clubData) {
+          setClubPositions(clubData.positions);
+        }
+        // Load existing stands (for resume)
+        const existingStands = await listStands(db, roundId);
+        const standMap = new Map<string, string>();
+        const completedIds = new Set<string>();
+        for (const s of existingStands) {
+          if (s.club_stand_id) {
+            standMap.set(s.club_stand_id, s.id);
+          }
+        }
+        setCreatedStandMap(standMap);
+        // Check which stands are fully completed by checking scorer results
+        // (simplified: a stand is "completed" if results exist for all shooters)
+        // We'll refine this when entering the stand
+        setCompletedClubStandIds(completedIds);
+      } else {
+        // Custom mode: load pre-created stands
+        const s = await listStands(db, roundId);
+        setStands(s);
+      }
+
+      setIsLoading(false);
+    })();
+  }, [db, roundId]);
+
+  // Load existing results when stand/shooter changes to resume mid-round
+  useEffect(() => {
+    if (!currentStand || !currentShooter) return;
+    (async () => {
+      const existing = await getResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
+      if (existing.length > 0) {
+        const lastResult = existing[existing.length - 1];
+        const kills = existing.filter((r) => r.result === ShotResult.KILL).length;
+        setKillCount(kills);
+        setTotalRecorded(existing.length);
+        const nextTarget = lastResult.target_number;
+        const nextBird = lastResult.bird_number;
+        if (nextBird < maxBirds) {
+          setTargetNum(nextTarget);
+          setBirdNum(nextBird + 1);
+        } else if (nextTarget < (currentStand.num_targets ?? 0)) {
+          setTargetNum(nextTarget + 1);
+          setBirdNum(1);
+        }
+      } else {
+        setKillCount(0);
+        setTotalRecorded(0);
+        setTargetNum(1);
+        setBirdNum(1);
+      }
+    })();
+  }, [currentStand?.id, currentShooter?.id]);
+
+  const standComplete = currentStand
+    ? targetNum > (currentStand.num_targets ?? 0)
+    : false;
+
+  const isLastStand = standIdx === stands.length - 1;
+  const isLastShooter = shooterIdx === shooters.length - 1;
+
+  // --- Scoring handler (shared) ---
+  const handleScore = useCallback(
+    async (result: ShotResult) => {
+      if (!currentStand || !currentShooter || !user || standComplete) return;
+      triggerHaptic();
+
+      await recordTargetResult(db, {
+        id: Crypto.randomUUID(),
+        stand_id: currentStand.id,
+        round_id: roundId!,
+        shooter_entry_id: currentShooter.id,
+        target_number: targetNum,
+        bird_number: birdNum,
+        result,
+        recorded_by: user.id,
+        device_id: deviceId,
+      });
+
+      if (result === ShotResult.KILL) setKillCount((c) => c + 1);
+      setTotalRecorded((c) => c + 1);
+
+      if (birdNum < maxBirds) {
+        setBirdNum((b) => b + 1);
+      } else if (targetNum < (currentStand.num_targets ?? 0)) {
+        setTargetNum((t) => t + 1);
+        setBirdNum(1);
+      } else {
+        setTargetNum(targetNum + 1);
+      }
+    },
+    [currentStand, currentShooter, user, targetNum, birdNum, maxBirds, standComplete, db, deviceId],
+  );
+
+  // --- Custom mode navigation ---
+  function handleNextShooter() {
+    if (!isLastShooter) {
+      setShooterIdx((i) => i + 1);
+      setTargetNum(1);
+      setBirdNum(1);
+      setKillCount(0);
+      setTotalRecorded(0);
+    } else {
+      handleNextStand();
+    }
+  }
+
+  function handleNextStand() {
+    if (!isLastStand) {
+      setStandIdx((i) => i + 1);
+      setShooterIdx(0);
+      setTargetNum(1);
+      setBirdNum(1);
+      setKillCount(0);
+      setTotalRecorded(0);
+    } else {
+      handleFinish();
+    }
+  }
+
+  // --- Club mode navigation ---
+  function handleSelectPosition(position: PositionWithStands) {
+    setSelectedPosition(position);
+    setClubPhase('stand-selector');
+  }
+
+  async function handleSelectClubStand(clubStand: ClubStand) {
+    if (!roundId) return;
+
+    let standId = createdStandMap.get(clubStand.id);
+
+    // Create the round stand from club template if it doesn't exist yet
+    if (!standId) {
+      standId = Crypto.randomUUID();
+      await createStand(db, {
+        id: standId,
+        round_id: roundId,
+        stand_number: clubStand.stand_number,
+        target_config: clubStand.target_config,
+        presentation: clubStand.presentation,
+        presentation_notes: clubStand.presentation_notes,
+        num_targets: clubStand.num_targets,
+        club_stand_id: clubStand.id,
+        club_position_id: clubStand.club_position_id,
+      });
+      setCreatedStandMap((prev) => {
+        const next = new Map(prev);
+        next.set(clubStand.id, standId!);
+        return next;
+      });
+    }
+
+    // Load the created stand as the current stand
+    const stand: Stand = {
+      id: standId,
+      round_id: roundId,
+      stand_number: clubStand.stand_number,
+      target_config: clubStand.target_config,
+      presentation: clubStand.presentation,
+      presentation_notes: clubStand.presentation_notes,
+      num_targets: clubStand.num_targets,
+      club_stand_id: clubStand.id,
+      club_position_id: clubStand.club_position_id,
+    };
+
+    setCurrentClubStand(stand);
+    setShooterIdx(0);
+    setTargetNum(1);
+    setBirdNum(1);
+    setKillCount(0);
+    setTotalRecorded(0);
+    setClubPhase('scoring');
+  }
+
+  function handleClubStandComplete() {
+    // Mark this club stand as completed
+    if (currentClubStand?.club_stand_id) {
+      setCompletedClubStandIds((prev) => {
+        const next = new Set(prev);
+        next.add(currentClubStand.club_stand_id!);
+        return next;
+      });
+    }
+    // Return to position picker
+    setCurrentClubStand(null);
+    setSelectedPosition(null);
+    setClubPhase('position-picker');
+  }
+
+  function handleClubNextShooter() {
+    if (!isLastShooter) {
+      setShooterIdx((i) => i + 1);
+      setTargetNum(1);
+      setBirdNum(1);
+      setKillCount(0);
+      setTotalRecorded(0);
+    } else {
+      // All shooters done at this stand
+      handleClubStandComplete();
+    }
+  }
+
+  // --- Shared ---
+  async function handleFinish() {
+    if (!roundId) return;
+    await updateRoundStatus(db, roundId, RoundStatus.COMPLETED);
+    router.replace(`/round/${roundId}/summary`);
+  }
+
+  // Compute position statuses for PositionPicker
+  const positionStatuses = useMemo(() => {
+    const statuses: Record<string, PositionStatus> = {};
+    for (const pos of clubPositions) {
+      const allStandIds = pos.stands.map((s) => s.id);
+      const allCompleted = allStandIds.length > 0 && allStandIds.every((id) => completedClubStandIds.has(id));
+      const anyStarted = allStandIds.some((id) => createdStandMap.has(id));
+      if (allCompleted) {
+        statuses[pos.id] = 'completed';
+      } else if (anyStarted) {
+        statuses[pos.id] = 'in-progress';
+      } else {
+        statuses[pos.id] = 'not-started';
+      }
+    }
+    return statuses;
+  }, [clubPositions, completedClubStandIds, createdStandMap]);
+
+  // --- Loading state ---
+  if (isLoading) {
+    return <LoadingPlaceholder />;
+  }
+
+  // --- Club mode: position picker ---
+  if (isClubRound && clubPhase === 'position-picker') {
+    return (
+      <PositionPicker
+        positions={clubPositions}
+        positionStatuses={positionStatuses}
+        onSelectPosition={handleSelectPosition}
+        onFinishRound={handleFinish}
+      />
+    );
+  }
+
+  // --- Club mode: stand selector ---
+  if (isClubRound && clubPhase === 'stand-selector' && selectedPosition) {
+    const posLabel = `Position ${selectedPosition.position_number}${selectedPosition.name ? ` — ${selectedPosition.name}` : ''}`;
+    return (
+      <StandSelector
+        positionName={posLabel}
+        stands={selectedPosition.stands}
+        completedStandIds={completedClubStandIds}
+        onSelectStand={handleSelectClubStand}
+        onBack={() => setClubPhase('position-picker')}
+      />
+    );
+  }
+
+  // --- Scoring UI (both modes) ---
+  if (!currentStand || !currentShooter) {
+    return <LoadingPlaceholder />;
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Scoring</Text>
-      <Text style={styles.subtitle}>Record kills and losses</Text>
-      <Text style={styles.id}>Round: {id}</Text>
+    <View style={styles.root}>
+      {/* Top bar: score + progress */}
+      <View style={styles.topBar}>
+        <View style={styles.scoreBox}>
+          <Text style={styles.scoreLabel}>Score</Text>
+          <Text style={styles.scoreValue}>{killCount}/{totalRecorded}</Text>
+        </View>
+        <View style={styles.progressBox}>
+          <Text style={styles.progressLabel}>
+            Stand {currentStand.stand_number}{!isClubRound ? `/${stands.length}` : ''}
+          </Text>
+          <Text style={styles.progressDetail}>
+            {PRESENTATION_LABELS[currentStand.presentation as PresentationType]}
+          </Text>
+        </View>
+        <View style={styles.shooterBox}>
+          <Text style={styles.shooterLabel}>{currentShooter.shooter_name}</Text>
+          <Text style={styles.shooterDetail}>
+            Shooter {shooterIdx + 1}/{shooters.length}
+          </Text>
+        </View>
+      </View>
+
+      {/* Target info */}
+      <View style={styles.targetInfo}>
+        {!standComplete && (
+          <Text style={styles.targetText}>
+            Target {targetNum} of {currentStand.num_targets}
+            {maxBirds > 1 ? ` · Bird ${birdNum}` : ''}
+          </Text>
+        )}
+      </View>
+
+      {/* Main scoring area */}
+      <View style={styles.scoringArea}>
+        {standComplete ? (
+          <View style={styles.completedOverlay}>
+            <Text style={styles.completedText}>Stand Complete!</Text>
+            <Text style={styles.completedScore}>
+              {killCount}/{totalRecorded}
+            </Text>
+            {isClubRound ? (
+              <TouchableOpacity
+                style={styles.nextBtn}
+                onPress={isLastShooter ? handleClubStandComplete : handleClubNextShooter}
+              >
+                <Text style={styles.nextBtnText}>
+                  {isLastShooter ? 'Choose Next Position' : 'Next Shooter'}
+                </Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.nextBtn}
+                onPress={isLastShooter && isLastStand ? handleFinish : handleNextShooter}
+              >
+                <Text style={styles.nextBtnText}>
+                  {isLastShooter && isLastStand
+                    ? 'Finish Round'
+                    : isLastShooter
+                      ? 'Next Stand'
+                      : 'Next Shooter'}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <View style={styles.buttonsContainer}>
+            <TouchableOpacity
+              style={[styles.scoreBtn, styles.killBtn]}
+              onPress={() => handleScore(ShotResult.KILL)}
+            >
+              <Text style={styles.scoreBtnText}>KILL</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.scoreBtn, styles.lossBtn]}
+              onPress={() => handleScore(ShotResult.LOSS)}
+            >
+              <Text style={styles.scoreBtnText}>LOSS</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.scoreBtn, styles.noShotBtn]}
+              onPress={() => handleScore(ShotResult.NO_SHOT)}
+            >
+              <Text style={styles.noShotBtnText}>NO SHOT</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  root: {
+    flex: 1,
+    backgroundColor: Colors.bgPrimary,
+  },
+  topBar: {
+    flexDirection: 'row',
+    paddingHorizontal: Spacing.md,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.bgSecondary,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.border,
+  },
+  scoreBox: {
     flex: 1,
     alignItems: 'center',
+  },
+  scoreLabel: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    textTransform: 'uppercase',
+  },
+  scoreValue: {
+    fontSize: FontSize['2xl'],
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  progressBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  progressLabel: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  progressDetail: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+  },
+  shooterBox: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  shooterLabel: {
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  shooterDetail: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+  },
+  targetInfo: {
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+  },
+  targetText: {
+    fontSize: FontSize.xl,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  scoringArea: {
+    flex: 1,
     justifyContent: 'center',
+    paddingHorizontal: Spacing.lg,
+    paddingBottom: Spacing.xxl,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  buttonsContainer: {
+    gap: Spacing.md,
   },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 8,
-    color: '#6B7280',
+  scoreBtn: {
+    height: 80,
+    borderRadius: BorderRadius.lg,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  id: {
-    fontSize: 12,
-    marginTop: 16,
-    color: '#9CA3AF',
-    fontFamily: 'monospace',
+  killBtn: {
+    backgroundColor: Colors.hit,
+  },
+  lossBtn: {
+    backgroundColor: Colors.miss,
+  },
+  noShotBtn: {
+    backgroundColor: Colors.bgTertiary,
+    borderWidth: 1,
+    borderColor: Colors.border,
+  },
+  scoreBtnText: {
+    fontSize: FontSize['3xl'],
+    fontWeight: '800',
+    color: '#FFFFFF',
+  },
+  noShotBtnText: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: Colors.textSecondary,
+  },
+  completedOverlay: {
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  completedText: {
+    fontSize: FontSize['2xl'],
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  completedScore: {
+    fontSize: FontSize['5xl'],
+    fontWeight: '800',
+    color: Colors.hit,
+  },
+  nextBtn: {
+    backgroundColor: Colors.primary,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.md,
+  },
+  nextBtnText: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

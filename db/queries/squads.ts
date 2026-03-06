@@ -1,37 +1,50 @@
+import type { AbstractPowerSyncDatabase } from '@powersync/common';
 import type { Squad, ShooterEntry } from '@/lib/types';
 
-// Stub: Create a squad for a round
-export async function createSquad(_params: {
-  id: string;
-  round_id: string;
-}): Promise<void> {
-  throw new Error('Not implemented');
+export async function createSquad(
+  db: AbstractPowerSyncDatabase,
+  params: { id: string; round_id: string },
+): Promise<void> {
+  await db.execute('INSERT INTO squads (id, round_id) VALUES (?, ?)', [params.id, params.round_id]);
 }
 
-// Stub: Get squad by round ID
-export async function getSquadByRound(_roundId: string): Promise<Squad | null> {
-  throw new Error('Not implemented');
+export async function getSquadByRound(
+  db: AbstractPowerSyncDatabase,
+  roundId: string,
+): Promise<Squad | null> {
+  return db.getOptional<Squad>('SELECT * FROM squads WHERE round_id = ?', [roundId]);
 }
 
-// Stub: Add a shooter to a squad
-export async function addShooterEntry(_params: {
-  id: string;
-  squad_id: string;
-  user_id: string | null;
-  shooter_name: string;
-  position_in_squad: number;
-}): Promise<void> {
-  throw new Error('Not implemented');
+export async function addShooterEntry(
+  db: AbstractPowerSyncDatabase,
+  params: {
+    id: string;
+    squad_id: string;
+    round_id: string;
+    user_id: string | null;
+    shooter_name: string;
+    position_in_squad: number;
+  },
+): Promise<void> {
+  await db.execute(
+    'INSERT INTO shooter_entries (id, squad_id, round_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?, ?)',
+    [params.id, params.squad_id, params.round_id, params.user_id, params.shooter_name, params.position_in_squad],
+  );
 }
 
-// Stub: List shooters in a squad
 export async function listShooterEntries(
-  _squadId: string,
+  db: AbstractPowerSyncDatabase,
+  squadId: string,
 ): Promise<ShooterEntry[]> {
-  throw new Error('Not implemented');
+  return db.getAll<ShooterEntry>(
+    'SELECT * FROM shooter_entries WHERE squad_id = ? ORDER BY position_in_squad',
+    [squadId],
+  );
 }
 
-// Stub: Remove a shooter from a squad
-export async function removeShooterEntry(_id: string): Promise<void> {
-  throw new Error('Not implemented');
+export async function removeShooterEntry(
+  db: AbstractPowerSyncDatabase,
+  id: string,
+): Promise<void> {
+  await db.execute('DELETE FROM shooter_entries WHERE id = ?', [id]);
 }

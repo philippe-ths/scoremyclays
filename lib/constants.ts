@@ -1,4 +1,4 @@
-import { PresentationType } from './types';
+import { PresentationType, TargetConfig } from './types';
 
 // --- App limits ---
 
@@ -78,6 +78,15 @@ export const PRESENTATION_LABELS: Record<PresentationType, string> = {
   [PresentationType.BATTUE]: 'Battue',
   [PresentationType.CHANDELLE]: 'Chandelle',
   [PresentationType.SPRINGING]: 'Springing',
+};
+
+// --- Target config display labels ---
+
+export const TARGET_CONFIG_LABELS: Record<TargetConfig, string> = {
+  [TargetConfig.SINGLE]: 'Single',
+  [TargetConfig.REPORT_PAIR]: 'Report Pair',
+  [TargetConfig.SIMULTANEOUS_PAIR]: 'Sim Pair',
+  [TargetConfig.FOLLOWING_PAIR]: 'Following Pair',
 };
 
 export const PRESENTATION_DESCRIPTIONS: Record<PresentationType, string> = {
