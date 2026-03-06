@@ -88,9 +88,9 @@ lib/              Utilities, constants, and types
   constants.ts    Colours, spacing, presentation labels
   supabase.ts     Supabase client configuration
 providers/        React context providers
-  DatabaseProvider.tsx
-  AuthProvider.tsx
-  SyncProvider.tsx
+  DatabaseProvider.tsx  ← PowerSync init
+  AuthProvider.tsx      ← Supabase auth state UI syncing
+  SyncProvider.tsx      ← Manages sync UI (status & errors)
 ```
 
 ## Build Configuration
