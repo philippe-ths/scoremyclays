@@ -7,10 +7,12 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "postinstall": "npx powersync-web copy-assets --output public"
   },
   "dependencies": {
     "@powersync/react-native": "^1.30.2",
+    "@powersync/web": "^1.34.0",
     "@react-navigation/native": "^7.1.28",
     "@supabase/supabase-js": "^2.49.4",
     "expo": "~55.0.4",

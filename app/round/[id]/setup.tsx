@@ -1,37 +1,274 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  TextInput,
+  Alert,
+} from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { usePowerSync } from '@powersync/react';
+import * as Crypto from 'expo-crypto';
+import { useAuth } from '@/providers/AuthProvider';
+import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
+import { createStand, listStands, deleteStand } from '@/db/queries/stands';
+import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE, PRESENTATION_LABELS } from '@/lib/constants';
+import { PresentationType, TargetConfig, type Stand, type ShooterEntry } from '@/lib/types';
+
+const TARGET_CONFIG_LABELS: Record<TargetConfig, string> = {
+  [TargetConfig.SINGLE]: 'Single',
+  [TargetConfig.REPORT_PAIR]: 'Report Pair',
+  [TargetConfig.SIMULTANEOUS_PAIR]: 'Sim Pair',
+  [TargetConfig.FOLLOWING_PAIR]: 'Following Pair',
+};
 
 export default function RoundSetupScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id: roundId } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const db = usePowerSync();
+  const { user } = useAuth();
+
+  const [stands, setStands] = useState<Stand[]>([]);
+  const [shooters, setShooters] = useState<ShooterEntry[]>([]);
+  const [squadId, setSquadId] = useState<string | null>(null);
+  const [newShooterName, setNewShooterName] = useState('');
+
+  const reload = useCallback(async () => {
+    if (!roundId) return;
+    const s = await listStands(db, roundId);
+    setStands(s);
+    const squad = await getSquadByRound(db, roundId);
+    if (squad) {
+      setSquadId(squad.id);
+      const entries = await listShooterEntries(db, squad.id);
+      setShooters(entries);
+    }
+  }, [db, roundId]);
+
+  useEffect(() => {
+    reload();
+  }, [reload]);
+
+  async function handleAddStand() {
+    if (!roundId) return;
+    const nextNumber = stands.length + 1;
+    await createStand(db, {
+      id: Crypto.randomUUID(),
+      round_id: roundId,
+      stand_number: nextNumber,
+      target_config: TargetConfig.SINGLE,
+      presentation: PresentationType.CROSSER,
+      presentation_notes: null,
+      num_targets: 10,
+    });
+    await reload();
+  }
+
+  async function handleDeleteStand(standId: string) {
+    await deleteStand(db, standId);
+    await reload();
+  }
+
+  async function handleAddShooter() {
+    if (!squadId || !user) return;
+    const name = newShooterName.trim();
+    if (!name) {
+      Alert.alert('Name required', 'Enter the shooter\'s name.');
+      return;
+    }
+    if (shooters.length >= MAX_SQUAD_SIZE) {
+      Alert.alert('Squad full', `Maximum ${MAX_SQUAD_SIZE} shooters per squad.`);
+      return;
+    }
+    await addShooterEntry(db, {
+      id: Crypto.randomUUID(),
+      squad_id: squadId,
+      user_id: null,
+      shooter_name: name,
+      position_in_squad: shooters.length + 1,
+    });
+    setNewShooterName('');
+    await reload();
+  }
+
+  async function handleRemoveShooter(entryId: string) {
+    if (shooters.length <= 1) {
+      Alert.alert('Cannot remove', 'At least one shooter is required.');
+      return;
+    }
+    await removeShooterEntry(db, entryId);
+    await reload();
+  }
+
+  function handleStartScoring() {
+    if (stands.length === 0) {
+      Alert.alert('Add stands', 'Add at least one stand before scoring.');
+      return;
+    }
+    if (shooters.length === 0) {
+      Alert.alert('Add shooters', 'At least one shooter is required.');
+      return;
+    }
+    router.push(`/round/${roundId}/score`);
+  }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Round Setup</Text>
-      <Text style={styles.subtitle}>Configure stands and squad</Text>
-      <Text style={styles.id}>Round: {id}</Text>
-    </View>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+      {/* Stands Section */}
+      <Text style={styles.sectionTitle}>Stands</Text>
+
+      {stands.map((stand) => (
+        <View key={stand.id} style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Stand {stand.stand_number}</Text>
+            <TouchableOpacity onPress={() => handleDeleteStand(stand.id)}>
+              <Text style={styles.deleteText}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.cardDetail}>
+            {TARGET_CONFIG_LABELS[stand.target_config as TargetConfig]} · {PRESENTATION_LABELS[stand.presentation as PresentationType]} · {stand.num_targets} targets
+          </Text>
+        </View>
+      ))}
+
+      <TouchableOpacity style={styles.addBtn} onPress={handleAddStand}>
+        <Text style={styles.addBtnText}>+ Add Stand</Text>
+      </TouchableOpacity>
+
+      {/* Squad Section */}
+      <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Squad</Text>
+
+      {shooters.map((entry) => (
+        <View key={entry.id} style={styles.card}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>
+              {entry.position_in_squad}. {entry.shooter_name}
+              {entry.user_id === user?.id ? ' (You)' : ''}
+            </Text>
+            <TouchableOpacity onPress={() => handleRemoveShooter(entry.id)}>
+              <Text style={styles.deleteText}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+
+      <View style={styles.addShooterRow}>
+        <TextInput
+          style={styles.shooterInput}
+          value={newShooterName}
+          onChangeText={setNewShooterName}
+          placeholder="Shooter name"
+          placeholderTextColor={Colors.textMuted}
+          returnKeyType="done"
+          onSubmitEditing={handleAddShooter}
+        />
+        <TouchableOpacity style={styles.addShooterBtn} onPress={handleAddShooter}>
+          <Text style={styles.addShooterBtnText}>Add</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Start Button */}
+      <TouchableOpacity style={styles.startBtn} onPress={handleStartScoring}>
+        <Text style={styles.startBtnText}>Start Scoring</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scroll: {
     flex: 1,
+    backgroundColor: Colors.bgPrimary,
+  },
+  container: {
+    padding: Spacing.lg,
+    paddingBottom: Spacing.xxl,
+  },
+  sectionTitle: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+    marginBottom: Spacing.md,
+  },
+  card: {
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    backgroundColor: Colors.bgSecondary,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: FontSize.base,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  cardDetail: {
+    fontSize: FontSize.sm,
+    color: Colors.textSecondary,
+    marginTop: Spacing.xs,
+  },
+  deleteText: {
+    fontSize: FontSize.sm,
+    color: Colors.miss,
+  },
+  addBtn: {
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    borderRadius: BorderRadius.md,
+    borderStyle: 'dashed',
+    paddingVertical: Spacing.md,
+    alignItems: 'center',
+    marginTop: Spacing.xs,
+  },
+  addBtnText: {
+    color: Colors.primary,
+    fontSize: FontSize.base,
+    fontWeight: '600',
+  },
+  addShooterRow: {
+    flexDirection: 'row',
+    gap: Spacing.sm,
+    marginTop: Spacing.xs,
+  },
+  shooterInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: BorderRadius.md,
+    padding: Spacing.md,
+    fontSize: FontSize.base,
+    color: Colors.textPrimary,
+    backgroundColor: Colors.bgSecondary,
+  },
+  addShooterBtn: {
+    backgroundColor: Colors.primary,
+    borderRadius: BorderRadius.md,
+    paddingHorizontal: Spacing.lg,
     justifyContent: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  addShooterBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: FontSize.base,
   },
-  subtitle: {
-    fontSize: 16,
-    marginTop: 8,
-    color: '#6B7280',
+  startBtn: {
+    marginTop: Spacing.xl,
+    backgroundColor: Colors.hit,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
   },
-  id: {
-    fontSize: 12,
-    marginTop: 16,
-    color: '#9CA3AF',
-    fontFamily: 'monospace',
+  startBtnText: {
+    fontSize: FontSize.xl,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
 });

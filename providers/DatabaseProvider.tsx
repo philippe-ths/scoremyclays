@@ -1,4 +1,6 @@
-import { createContext, useContext, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { PowerSyncContext } from '@powersync/react';
+import { db } from '@/db/openDatabase';
 
 interface DatabaseContextValue {
   isReady: boolean;
@@ -9,14 +11,17 @@ const DatabaseContext = createContext<DatabaseContextValue>({
 });
 
 export function DatabaseProvider({ children }: { children: ReactNode }) {
-  // TODO: Initialize PowerSync database with AppSchema
-  const value: DatabaseContextValue = {
-    isReady: false,
-  };
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    db.init().then(() => setIsReady(true));
+  }, []);
 
   return (
-    <DatabaseContext.Provider value={value}>
-      {children}
+    <DatabaseContext.Provider value={{ isReady }}>
+      <PowerSyncContext.Provider value={db}>
+        {children}
+      </PowerSyncContext.Provider>
     </DatabaseContext.Provider>
   );
 }
