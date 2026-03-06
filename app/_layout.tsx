@@ -75,6 +75,7 @@ function AppContent() {
         <Stack.Screen name="clubs/[id]/index" options={{ title: 'Club Details', headerShown: true }} />
         <Stack.Screen name="round/[id]/setup" options={{ title: 'Round Setup', headerShown: true }} />
         <Stack.Screen name="round/[id]/score" options={{ title: 'Scoring', headerShown: true }} />
+        <Stack.Screen name="round/[id]/conflicts" options={{ title: 'Resolve Conflicts', headerShown: true }} />
         <Stack.Screen name="round/[id]/summary" options={{ title: 'Summary', headerShown: true }} />
         <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile', headerShown: true }} />
         <Stack.Screen name="invites/index" options={{ title: 'Invites', headerShown: true }} />

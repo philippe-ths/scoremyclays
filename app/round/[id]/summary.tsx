@@ -13,14 +13,17 @@ import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
 import { listStands } from '@/db/queries/stands';
 import { getShooterRoundScore, getResultsForStandAndShooter } from '@/db/queries/scoring';
 import { getClubPositions } from '@/db/queries/clubs';
+import { useAuth } from '@/providers/AuthProvider';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
-import { ShotResult, type Round, type Stand, type ShooterEntry, type PresentationType, type ClubPosition } from '@/lib/types';
+import { ShotResult, RoundStatus, type Round, type Stand, type ShooterEntry, type PresentationType, type ClubPosition } from '@/lib/types';
 
 interface ShooterScore {
   shooter: ShooterEntry;
   kills: number;
   total: number;
+  hasConflicts: boolean;
 }
 
 interface StandBreakdown {
@@ -37,6 +40,7 @@ export default function RoundSummaryScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const db = usePowerSync();
+  const { user } = useAuth();
 
   const [round, setRound] = useState<Round | null>(null);
   const [shooterScores, setShooterScores] = useState<ShooterScore[]>([]);
@@ -62,7 +66,7 @@ export default function RoundSummaryScreen() {
       const scores: ShooterScore[] = [];
       for (const shooter of shooters) {
         const score = await getShooterRoundScore(db, roundId, shooter.id);
-        scores.push({ shooter, kills: score.kills, total: score.total });
+        scores.push({ shooter, kills: score.kills, total: score.total, hasConflicts: score.hasConflicts });
       }
       setShooterScores(scores);
 
@@ -122,13 +126,32 @@ export default function RoundSummaryScreen() {
       </View>
 
       {/* Overall scores */}
-      <Text style={styles.sectionTitle}>Scores</Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md }}>
+        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Scores</Text>
+        {shooterScores.some(s => s.hasConflicts) && user?.id === round?.created_by && (
+          <TouchableOpacity 
+            style={styles.resolveBtn} 
+            onPress={() => router.push(`/round/${roundId}/conflicts`)}
+          >
+            <Ionicons name="warning" size={16} color="#FFF" style={{ marginRight: 4 }} />
+            <Text style={styles.resolveBtnText}>Resolve Conflicts</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+      
       {shooterScores.map((s) => (
         <View key={s.shooter.id} style={styles.scoreRow}>
           <Text style={styles.shooterName}>{s.shooter.shooter_name}</Text>
-          <Text style={styles.shooterScore}>
-            {s.kills} / {s.total}
-          </Text>
+          {s.hasConflicts ? (
+             <View style={styles.conflictBadge}>
+               <Ionicons name="warning" size={16} color="#EAB308" />
+               <Text style={styles.conflictText}>Conflicted</Text>
+             </View>
+          ) : (
+            <Text style={styles.shooterScore}>
+              {s.kills} / {s.total}
+            </Text>
+          )}
         </View>
       ))}
 
@@ -182,6 +205,16 @@ export default function RoundSummaryScreen() {
             </View>
           ))}
         </>
+      )}
+
+      {/* Continue Scoring (visible to all squad members when round is in progress) */}
+      {round?.status === RoundStatus.IN_PROGRESS && (
+        <TouchableOpacity
+          style={styles.scoringBtn}
+          onPress={() => router.push(`/round/${roundId}/score`)}
+        >
+          <Text style={styles.homeBtnText}>Continue Scoring</Text>
+        </TouchableOpacity>
       )}
 
       {/* Back to Home */}
@@ -240,6 +273,35 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.hit,
   },
+  resolveBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#EAB308',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+  },
+  resolveBtnText: {
+    color: '#FFF',
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+  },
+  conflictBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef9c3',
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.sm,
+    borderWidth: 1,
+    borderColor: '#EAB308',
+  },
+  conflictText: {
+    color: '#a16207',
+    fontSize: FontSize.sm,
+    fontWeight: '600',
+    marginLeft: 4,
+  },
   standCard: {
     borderWidth: 1,
     borderColor: Colors.border,
@@ -268,9 +330,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: Colors.textPrimary,
   },
-  homeBtn: {
+  scoringBtn: {
     marginTop: Spacing.xl,
     backgroundColor: Colors.primary,
+    paddingVertical: Spacing.lg,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+  },
+  homeBtn: {
+    marginTop: Spacing.md,
+    backgroundColor: Colors.textSecondary,
     paddingVertical: Spacing.md,
     borderRadius: BorderRadius.md,
     alignItems: 'center',

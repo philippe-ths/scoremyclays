@@ -16,13 +16,13 @@ import { useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { Colors } from '@/lib/constants';
-import type { Invite, User, Round } from '@/lib/types';
-import { InviteStatus } from '@/lib/types';
+import { InviteStatus, RoundStatus, type Invite, type User, type Round } from '@/lib/types';
 import {
   listIncomingInvitesForUser,
   updateInviteStatus,
 } from '@/db/queries/invites';
 import { getUserById } from '@/db/queries/users';
+import { getRound } from '@/db/queries/rounds';
 import * as Crypto from 'expo-crypto';
 import { addShooterEntry, getSquadByRound } from '@/db/queries/squads';
 
@@ -121,16 +121,22 @@ export default function InvitesScreen() {
       // Update invite status
       await updateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
 
+      // Route based on round status: in-progress → scoring, completed → summary
+      const round = await getRound(db, invite.round_id);
+      const destination = round?.status === RoundStatus.IN_PROGRESS
+        ? `/round/${invite.round_id}/score`
+        : `/round/${invite.round_id}/summary`;
+
       if (Platform.OS === 'web') {
         window.alert('You have joined the round!');
-        router.push(`/round/${invite.round_id}/summary` as any);
+        router.push(destination as any);
       } else {
         Alert.alert('Success', 'You have joined the round!', [
           { 
             text: 'OK', 
             onPress: () => {
               loadInvites();
-              router.push(`/round/${invite.round_id}/summary` as any);
+              router.push(destination as any);
             } 
           },
         ]);
