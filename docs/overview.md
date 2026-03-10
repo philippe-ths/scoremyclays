@@ -74,7 +74,7 @@ The MVP delivers:
 
 ### Not in MVP
 
-Analytics, social features, leaderboards, weather tracking, subscriptions, web portal, push notifications, and guest-to-account data migration are all planned for future releases.
+Analytics, social features, leaderboards, weather tracking, subscriptions, web portal, and push notifications are all planned for future releases.
 
 ## Target Users
 
