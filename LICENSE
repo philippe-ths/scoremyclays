@@ -1,0 +1,127 @@
+PROPRIETARY SOFTWARE LICENCE
+
+Copyright (c) 2026 Thanks Len Group Limited ("the Author"). All rights reserved.
+
+1. DEFINITIONS
+
+"Software" means the source code, object code, documentation, and configuration
+files, and all other materials in this repository, excluding any third-party
+components governed by their own licences as identified in NOTICES or within
+individual files ("Third-Party Components").
+
+"Derivative Work" means any work that is based on, incorporates, translates,
+adapts, or is otherwise derived from the Software or any substantial portion
+thereof.
+
+"Use" means to copy, install, execute, access, transmit, distribute, sublicense,
+modify, or otherwise exploit the Software or any Derivative Work, whether in
+whole or in part, directly or indirectly, for any purpose whatsoever.
+
+"Commercial Use" means any Use intended for, or directed toward, commercial
+advantage, monetary compensation, or any other form of economic benefit,
+whether direct or indirect.
+
+"Licensee" means any natural person or legal entity exercising rights under
+a written licence granted by the Author pursuant to Section 3.
+
+2. RESERVATION OF RIGHTS
+
+2.1  The Author retains all copyright, moral rights, database rights, trade
+     secret rights, and all other intellectual property rights in and to the
+     Software, worldwide and in perpetuity.
+
+2.2  No rights in the Software are granted by virtue of its publication in
+     a public repository. Public visibility does not constitute a licence.
+
+2.3  Any Use of the Software not expressly authorised under Section 3 or 4
+     is prohibited.
+
+3. PROHIBITED ACTS
+
+Without a written licence executed by the Author, no person or entity may:
+
+  (a) copy, reproduce, or store the Software or any part thereof beyond what
+      is incidentally performed by a browser or version-control client solely
+      for the purpose of viewing this repository;
+
+  (b) use the Software, in whole or in part, for any purpose, including
+      personal, academic, research, or Commercial Use;
+
+  (c) create, distribute, or publish any Derivative Work;
+
+  (d) sublicence, sell, rent, lease, transfer, or otherwise convey any rights
+      in the Software to any third party;
+
+  (e) incorporate the Software, in whole or in part, into any other product,
+      service, or Software;
+
+  (f) reverse-engineer, decompile, or disassemble the Software except to the
+      extent that applicable law expressly prohibits such restriction.
+
+4. PERMITTED VIEWING
+
+Solely for the purpose of evaluating whether to seek a licence, you may view
+and read the Software as presented in this repository. This permission does
+not extend to copying, forking, downloading (beyond browser caching), or any
+other act described in Section 3.
+
+5. LICENCE GRANTS AND ROYALTIES
+
+5.1  Any Use not covered by Section 4 requires a separate written licence
+     agreement signed by the Author.
+
+5.2  Licence agreements shall specify, at a minimum:
+
+       (a) the scope of permitted Use;
+       (b) the territory and duration of the Licence;
+       (c) a royalty rate, minimum payment, or other consideration payable
+           to the Author, the terms of payment, and audit rights;
+       (d) any attribution or branding requirements.
+
+5.3  To enquire about a licence, contact: Ian Marr, ian.marr@gmail.com.
+
+6. THIRD-PARTY COMPONENTS
+
+Third-Party Components are subject to their respective licences. Nothing in
+this Licence limits your rights under, or grants you rights that supersede,
+those licences. In the event of conflict, the applicable Third-Party Component
+licence governs for that component only.
+
+7. NO WARRANTY
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT. THE AUTHOR MAKES NO
+REPRESENTATION THAT THE SOFTWARE IS FREE OF ERRORS OR THAT ITS USE WILL BE
+UNINTERRUPTED.
+
+8. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE AUTHOR SHALL NOT BE
+LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+CONSEQUENTIAL DAMAGES ARISING OUT OF OR RELATING TO THIS LICENCE OR THE
+SOFTWARE, HOWEVER CAUSED AND UNDER ANY THEORY OF LIABILITY, EVEN IF ADVISED
+OF THE POSSIBILITY OF SUCH DAMAGE.
+
+9. GENERAL
+
+9.1  Governing Law. This Licence shall be governed by and construed in
+     accordance with the laws of England and Wales, without regard to its
+     conflict-of-law provisions.
+
+9.2  Severability. If any provision of this Licence is held unenforceable or
+     invalid, then the remaining provisions shall continue in full force.
+
+9.3  No Waiver. Failure to enforce any provision shall not constitute a
+     waiver of future enforcement of that or any other provision.
+
+9.4  Entire Agreement. This Licence, together with any written licence
+     agreement executed pursuant to Section 5 constitutes the entire
+     agreement between the parties with respect to the Software and supersedes
+     all prior representations, agreements, or understandings.
+
+9.5  Modifications. The Author reserves the right to publish revised versions
+     of this Licence. Each version of the Software will be governed by the
+     Licence in effect at the time of its publication unless otherwise stated.
+
+END OF LICENCE
