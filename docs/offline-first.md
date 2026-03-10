@@ -37,7 +37,7 @@ Every entity (rounds, stands, shooters, target results) is assigned a UUID gener
 
 The app operates seamlessly offline, while simultaneously utilizing full **PowerSync multi-device synchronization** whenever authenticated users are online. 
 
-Guest mode (the current default) keeps all data strictly on-device with no sync. When an account is created and the user signs in, their data is synchronized securely with Supabase via PowerSync routing rules. `SyncProvider` actively surfaces global connection or row-level-security (RLS) data flow errors through UI banners.
+The app requires authentication via Supabase. Once signed in, data is synchronized securely with Supabase via PowerSync routing rules. `SyncProvider` actively surfaces global connection or row-level-security (RLS) data flow errors through UI banners.
 
 ## Platform Split
 
@@ -85,13 +85,14 @@ These files are gitignored (they're build artifacts derived from `node_modules`)
 
 ## Conflict Resolution
 
-When multiple devices record scores for the same round simultaneously, conflicts are resolved by the PowerSync conflict handler:
+When multiple devices record scores for the same round simultaneously, duplicate `(shooter_entry_id, target_number, bird_number)` combinations may sync to the same device. The app handles conflicts in four stages:
 
-1. **Designated scorer wins** — records from the user who created the round take priority
-2. **Earlier timestamp wins** — if neither record is from the designated scorer, the earlier `created_at` timestamp is used
-3. **Logged, not surfaced** — conflicts are logged for debugging but not shown to the user unless data loss would occur
+1. **Deduplication during active scoring**: `getResultsForStandAndShooter` orders rows by `created_at` and keeps only the first record for each target and bird, so the scorer can continue without the state machine skipping ahead.
+2. **Conflict-aware totals**: `getShooterRoundScore` flags shooters with duplicates and suppresses their rolled-up totals until the duplicates are resolved.
+3. **UI warnings**: The scoring screen shows a "Sync Issue" warning for the active shooter, and the summary screen marks conflicted shooters explicitly.
+4. **Organizer resolution**: The round creator can open the conflict-resolution screen (`/round/[id]/conflicts`), choose the winning record for each duplicated shot, and delete the losing rows from `target_results`.
 
-This relies on the `recorded_by` and `device_id` fields on every `TargetResult` row.
+This relies on the `recorded_by`, `device_id`, and `created_at` fields on every `TargetResult` row.
 
 ## Sync Implementation
 
@@ -100,7 +101,7 @@ Sync is fully enabled for authenticated users using a combination of Supabase Ro
 1. **Supabase RLS**: Users can only access their own rounds, rounds where they appear as a shooter, and read-only global data, enforced at the database level by migrated policies.
 2. **PowerSync Rules**: Located in `supabase/powersync-sync-rules.yaml`, data is partitioned client-side so users only download their respective slices (e.g. `my_rounds`, `shared_rounds`, `invited_rounds`), avoiding downloading the entire application DB.
 3. **Component State**: `SyncProvider` actively reports the user's sync state (`offline`, `syncing`, `synced`) through built-in listeners, and handles error boundary alerts.
-4. **App-Level Upload Skips**: Reference global tables (like `clubs`, `club_positions`) bypass the sync queue explicitly so users don't stall their own `target_results` attempting to overwrite admin content.
+4. **App-Level Upload Skips**: Reference tables (`clubs`, `club_positions`, `club_stands`) bypass the sync upload queue explicitly — these are read-only data seeded via Supabase migrations. This prevents users from stalling their own `target_results` uploads attempting to overwrite admin-managed content.
 
 ### Future Enhancements
 

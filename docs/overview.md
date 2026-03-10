@@ -22,6 +22,9 @@ A shooter (or a designated scorer) uses the app to record the result of every ta
 | **Presentation** | The type of target flight (Crosser, Driven, Teal, Rabbit, etc.) |
 | **Squad** | A group of 1–6 shooters taking a round together |
 | **Scorer** | The person recording results on their device |
+| **Club** | A shooting ground with pre-configured positions and stands |
+| **Position** | A group of stands within a club layout (e.g., "Position 1" with 3 stands) |
+| **Invite** | An invitation from one user to another to join a round's squad |
 
 ### Target Configurations
 
@@ -40,22 +43,38 @@ For pairs, each bird within the pair is tracked separately with its own Kill/Los
 
 Sporting clays use 13 standard presentation types: Crosser, Driven, Incoming, Going Away, Quartering Away, Quartering Towards, Teal, Dropping, Looper, Rabbit, Battue, Chandelle, and Springing. Each describes the trajectory and behaviour of the clay target.
 
+### Round Types
+
+The app supports two ways to create a round:
+
+| Type | Description |
+|------|-------------|
+| **Custom** | User manually creates stands with presentation type, target config, and target count |
+| **Club-based** | User selects a club; stands are pre-configured from the club's position and stand data |
+
+Club-based rounds link to reference data (clubs, positions, stands) seeded in the database. Custom rounds are fully user-defined.
+
 ## MVP Scope
 
 The MVP delivers:
 
 - Create a round offline — set up stands, presentations, and target counts
-- Add shooters to a squad by name (no account required)
+- Create a round from a club's pre-configured layout
+- Add shooters to a squad by name or by inviting registered users
 - Record Kill/Loss/No Shot for each target with a single tap
 - Running score totals visible during scoring
 - View completed rounds and historical scores
-- Guest mode (no account needed, data stays on device)
+- Browse clubs and start rounds from club layouts
+- Send and receive round invites between users
+- Detect and resolve scoring conflicts from multiple devices
 - Account creation with Supabase Auth (enables cloud sync)
+- Auth flow with login, signup, and profile setup
+- Edit profile (display name, gear, favourite clubs)
 - Deploys to iOS and Android via Expo EAS
 
 ### Not in MVP
 
-Analytics, social features, leaderboards, club management, weather tracking, equipment tracking, subscriptions, web portal, and push notifications are all planned for future releases.
+Analytics, social features, leaderboards, weather tracking, subscriptions, web portal, push notifications, and guest-to-account data migration are all planned for future releases.
 
 ## Target Users
 

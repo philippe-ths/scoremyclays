@@ -1,5 +1,4 @@
 // Domain enums and types for ScoreMyClays
-// Source of truth: SCORE_MY_CLAYS_SPEC.md
 
 // --- Enums ---
 
