@@ -14,7 +14,7 @@ import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/providers/AuthProvider';
 import { getRound } from '@/db/queries/rounds';
-import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
+import { getSquadByRound, listShooterEntriesWithUsers } from '@/db/queries/squads';
 import { listStands, createStand } from '@/db/queries/stands';
 import { recordTargetResult, getResultsForStandAndShooter, getRoundConflicts, type ConflictedShotGroup } from '@/db/queries/scoring';
 import { updateRoundStatus } from '@/db/queries/rounds';
@@ -29,7 +29,7 @@ import {
   RoundStatus,
   TargetConfig,
   type Stand,
-  type ShooterEntry,
+  type EnrichedShooterEntry,
   type PresentationType,
   type Round,
   type ClubStand,
@@ -58,7 +58,7 @@ export default function ScoringScreen() {
 
   // Shared state
   const [round, setRound] = useState<Round | null>(null);
-  const [shooters, setShooters] = useState<ShooterEntry[]>([]);
+  const [shooters, setShooters] = useState<EnrichedShooterEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [conflicts, setConflicts] = useState<ConflictedShotGroup[]>([]);
   const deviceId = useMemo(() => `web-${user?.id?.slice(0, 8) ?? 'anon'}`, [user]);
@@ -103,7 +103,7 @@ export default function ScoringScreen() {
 
       const squad = await getSquadByRound(db, roundId);
       if (squad) {
-        const entries = await listShooterEntries(db, squad.id);
+        const entries = await listShooterEntriesWithUsers(db, squad.id);
         setShooters(entries);
       }
 
