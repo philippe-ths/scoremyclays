@@ -8,7 +8,7 @@ Clay shooting grounds often have poor or no mobile signal. Shooters currently tr
 
 ## What the App Does
 
-A shooter (or a designated scorer) uses the app to record the result of every target thrown during a round of sporting clays. The app stores all data locally on the device and syncs to the cloud when a connection becomes available.
+Any member of a squad can score for any other member. The app records the result of every target thrown during a round of sporting clays — who shot, who scored, and from which device. All data is stored locally on the device and syncs to the cloud when a connection becomes available.
 
 ## Key Concepts
 
