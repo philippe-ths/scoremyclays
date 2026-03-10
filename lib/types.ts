@@ -84,6 +84,10 @@ export interface ShooterEntry {
   position_in_squad: number;
 }
 
+export interface EnrichedShooterEntry extends ShooterEntry {
+  user_handle: string | null;
+}
+
 export interface Stand {
   id: string;
   round_id: string;

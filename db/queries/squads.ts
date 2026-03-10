@@ -1,5 +1,5 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
-import type { Squad, ShooterEntry } from '@/lib/types';
+import type { Squad, ShooterEntry, EnrichedShooterEntry } from '@/lib/types';
 
 export async function createSquad(
   db: AbstractPowerSyncDatabase,
@@ -47,4 +47,18 @@ export async function removeShooterEntry(
   id: string,
 ): Promise<void> {
   await db.execute('DELETE FROM shooter_entries WHERE id = ?', [id]);
+}
+
+export async function listShooterEntriesWithUsers(
+  db: AbstractPowerSyncDatabase,
+  squadId: string,
+): Promise<EnrichedShooterEntry[]> {
+  return db.getAll<EnrichedShooterEntry>(
+    `SELECT se.*, u.user_id AS user_handle
+     FROM shooter_entries se
+     LEFT JOIN users u ON se.user_id = u.id
+     WHERE se.squad_id = ?
+     ORDER BY se.position_in_squad`,
+    [squadId],
+  );
 }

@@ -6,7 +6,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Colors, Spacing, FontSize, BorderRadius, MIN_TAP_TARGET_SIZE } from '@/lib/constants';
-import type { ShooterEntry } from '@/lib/types';
+import type { ShooterEntry, EnrichedShooterEntry } from '@/lib/types';
 
 export type ShooterStatus = 'not-started' | 'in-progress' | 'completed';
 
@@ -17,10 +17,10 @@ export interface ShooterProgress {
 
 interface ShooterPickerProps {
   standLabel: string;
-  shooters: ShooterEntry[];
+  shooters: (ShooterEntry | EnrichedShooterEntry)[];
   shooterStatuses: Record<string, ShooterStatus>;
   shooterProgress: Record<string, ShooterProgress>;
-  onSelectShooter: (shooter: ShooterEntry) => void;
+  onSelectShooter: (shooter: ShooterEntry | EnrichedShooterEntry) => void;
   onBack?: () => void;
   /** Action when all shooters at this stand are completed */
   onAllComplete?: () => void;
@@ -86,7 +86,12 @@ export default function ShooterPicker({
               onPress={() => onSelectShooter(shooter)}
             >
               <View style={styles.shooterHeader}>
-                <Text style={styles.shooterName}>{shooter.shooter_name}</Text>
+                <View style={styles.shooterNameGroup}>
+                  <Text style={styles.shooterName}>{shooter.shooter_name}</Text>
+                  {'user_handle' in shooter && shooter.user_handle ? (
+                    <Text style={styles.shooterHandle}>@{shooter.user_handle}</Text>
+                  ) : null}
+                </View>
                 <Text style={[styles.statusBadge, { color: STATUS_BORDER[status] }]}>
                   {STATUS_LABELS[status]}
                 </Text>
@@ -162,11 +167,18 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  shooterNameGroup: {
+    flex: 1,
+  },
   shooterName: {
     fontSize: FontSize.lg,
     fontWeight: '600',
     color: Colors.textPrimary,
-    flex: 1,
+  },
+  shooterHandle: {
+    fontSize: FontSize.xs,
+    color: Colors.textSecondary,
+    marginTop: 1,
   },
   statusBadge: {
     fontSize: FontSize.xs,
