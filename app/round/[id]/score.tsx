@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,7 +7,8 @@ import {
   Alert,
   Platform,
 } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useNavigation } from '@react-navigation/native';
 import { usePowerSync } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
@@ -220,6 +221,65 @@ export default function ScoringScreen() {
     setScoringPhase('shooter-picker');
     if (isClubRound) setClubPhase('shooter-picker');
   }
+
+  // Navigate back within the scoring state machine
+  function handleHeaderBack() {
+    if (isClubRound) {
+      switch (clubPhase) {
+        case 'scoring':
+          returnToShooterPicker();
+          break;
+        case 'shooter-picker':
+          setCurrentClubStand(null);
+          setClubPhase('stand-selector');
+          break;
+        case 'stand-selector':
+          setSelectedPosition(null);
+          setClubPhase('position-picker');
+          break;
+        default:
+          router.back();
+      }
+    } else {
+      if (scoringPhase === 'scoring') {
+        returnToShooterPicker();
+      } else {
+        router.back();
+      }
+    }
+  }
+
+  // Compute contextual header title
+  const headerTitle = useMemo(() => {
+    if (isClubRound) {
+      switch (clubPhase) {
+        case 'position-picker': return 'Scoring';
+        case 'stand-selector': return 'Choose Stand';
+        case 'shooter-picker': return 'Choose Shooter';
+        case 'scoring': return 'Scoring';
+      }
+    }
+    return scoringPhase === 'shooter-picker' ? 'Choose Shooter' : 'Scoring';
+  }, [isClubRound, clubPhase, scoringPhase]);
+
+  // Whether the header back button should exit the round or navigate within the state machine
+  const showInternalBack = isClubRound
+    ? clubPhase !== 'position-picker'
+    : scoringPhase === 'scoring';
+
+  const navigation = useNavigation();
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      title: headerTitle,
+      headerLeft: showInternalBack
+        ? () => (
+            <TouchableOpacity onPress={handleHeaderBack} style={{ paddingRight: Spacing.sm }}>
+              <Ionicons name="arrow-back" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+          )
+        : undefined,
+    });
+  }, [navigation, headerTitle, showInternalBack, handleHeaderBack]);
 
   const standComplete = currentStand
     ? targetNum > (currentStand.num_targets ?? 0)
