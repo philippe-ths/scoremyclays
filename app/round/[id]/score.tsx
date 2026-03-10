@@ -22,6 +22,7 @@ import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import PositionPicker, { type PositionStatus } from '@/components/PositionPicker';
 import StandSelector from '@/components/StandSelector';
+import ShooterPicker, { type ShooterStatus, type ShooterProgress } from '@/components/ShooterPicker';
 import {
   ShotResult,
   RoundStatus,
@@ -45,7 +46,8 @@ function birdsPerTarget(config: TargetConfig): number {
   return config === TargetConfig.SINGLE ? 1 : 2;
 }
 
-type ClubPhase = 'position-picker' | 'stand-selector' | 'scoring';
+type ClubPhase = 'position-picker' | 'stand-selector' | 'shooter-picker' | 'scoring';
+type ScoringPhase = 'shooter-picker' | 'scoring';
 
 export default function ScoringScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
@@ -73,6 +75,11 @@ export default function ScoringScreen() {
   const [createdStandMap, setCreatedStandMap] = useState<Map<string, string>>(new Map());
   /** Set of club_stand_ids that have been fully completed */
   const [completedClubStandIds, setCompletedClubStandIds] = useState<Set<string>>(new Set());
+
+  // Shooter picker state
+  const [scoringPhase, setScoringPhase] = useState<ScoringPhase>('shooter-picker');
+  const [shooterStatuses, setShooterStatuses] = useState<Record<string, ShooterStatus>>({});
+  const [shooterProgress, setShooterProgress] = useState<Record<string, ShooterProgress>>({});
 
   // Scoring state (shared)
   const [shooterIdx, setShooterIdx] = useState(0);
@@ -161,12 +168,68 @@ export default function ScoringScreen() {
     })();
   }, [currentStand?.id, currentShooter?.id]);
 
+  // Compute shooter statuses when stand changes or when returning to shooter picker
+  const refreshShooterStatuses = useCallback(
+    async (stand: Stand) => {
+      const statuses: Record<string, ShooterStatus> = {};
+      const progress: Record<string, ShooterProgress> = {};
+      const totalShots = (stand.num_targets ?? 0) * birdsPerTarget(stand.target_config as TargetConfig);
+
+      for (const shooter of shooters) {
+        const results = await getResultsForStandAndShooter(db, stand.id, shooter.id);
+        const recorded = results.length;
+        progress[shooter.id] = { recorded, total: totalShots };
+        if (recorded === 0) {
+          statuses[shooter.id] = 'not-started';
+        } else if (recorded >= totalShots) {
+          statuses[shooter.id] = 'completed';
+        } else {
+          statuses[shooter.id] = 'in-progress';
+        }
+      }
+
+      setShooterStatuses(statuses);
+      setShooterProgress(progress);
+    },
+    [db, shooters],
+  );
+
+  // Refresh statuses when the current stand changes
+  useEffect(() => {
+    if (!currentStand || shooters.length === 0) return;
+    refreshShooterStatuses(currentStand);
+  }, [currentStand?.id, shooters.length]);
+
+  function handleSelectShooter(shooter: ShooterEntry) {
+    const idx = shooters.findIndex((s) => s.id === shooter.id);
+    if (idx >= 0) {
+      setShooterIdx(idx);
+      setTargetNum(1);
+      setBirdNum(1);
+      setKillCount(0);
+      setTotalRecorded(0);
+      setScoringPhase('scoring');
+      if (isClubRound) setClubPhase('scoring');
+    }
+  }
+
+  async function returnToShooterPicker() {
+    if (currentStand) {
+      await refreshShooterStatuses(currentStand);
+    }
+    setScoringPhase('shooter-picker');
+    if (isClubRound) setClubPhase('shooter-picker');
+  }
+
   const standComplete = currentStand
     ? targetNum > (currentStand.num_targets ?? 0)
     : false;
 
   const isLastStand = standIdx === stands.length - 1;
   const isLastShooter = shooterIdx === shooters.length - 1;
+  const allShootersCompleted = shooters.length > 0 && shooters.every(
+    (s) => (shooterStatuses[s.id] ?? 'not-started') === 'completed',
+  );
 
   // --- Scoring handler (shared) ---
   const handleScore = useCallback(
@@ -202,22 +265,14 @@ export default function ScoringScreen() {
   );
 
   // --- Custom mode navigation ---
-  function handleNextShooter() {
-    if (!isLastShooter) {
-      setShooterIdx((i) => i + 1);
-      setTargetNum(1);
-      setBirdNum(1);
-      setKillCount(0);
-      setTotalRecorded(0);
-    } else {
-      handleNextStand();
-    }
+  function handleReturnToShooterPicker() {
+    returnToShooterPicker();
   }
 
   function handleNextStand() {
     if (!isLastStand) {
       setStandIdx((i) => i + 1);
-      setShooterIdx(0);
+      setScoringPhase('shooter-picker');
       setTargetNum(1);
       setBirdNum(1);
       setKillCount(0);
@@ -273,12 +328,8 @@ export default function ScoringScreen() {
     };
 
     setCurrentClubStand(stand);
-    setShooterIdx(0);
-    setTargetNum(1);
-    setBirdNum(1);
-    setKillCount(0);
-    setTotalRecorded(0);
-    setClubPhase('scoring');
+    setScoringPhase('shooter-picker');
+    setClubPhase('shooter-picker');
   }
 
   function handleClubStandComplete() {
@@ -296,17 +347,8 @@ export default function ScoringScreen() {
     setClubPhase('position-picker');
   }
 
-  function handleClubNextShooter() {
-    if (!isLastShooter) {
-      setShooterIdx((i) => i + 1);
-      setTargetNum(1);
-      setBirdNum(1);
-      setKillCount(0);
-      setTotalRecorded(0);
-    } else {
-      // All shooters done at this stand
-      handleClubStandComplete();
-    }
+  function handleClubReturnToShooterPicker() {
+    returnToShooterPicker();
   }
 
   // --- Shared ---
@@ -361,6 +403,42 @@ export default function ScoringScreen() {
         completedStandIds={completedClubStandIds}
         onSelectStand={handleSelectClubStand}
         onBack={() => setClubPhase('position-picker')}
+      />
+    );
+  }
+
+  // --- Club mode: shooter picker ---
+  if (isClubRound && clubPhase === 'shooter-picker' && currentClubStand) {
+    const standLabel = `Stand ${currentClubStand.stand_number}`;
+    return (
+      <ShooterPicker
+        standLabel={standLabel}
+        shooters={shooters}
+        shooterStatuses={shooterStatuses}
+        shooterProgress={shooterProgress}
+        onSelectShooter={handleSelectShooter}
+        onBack={() => {
+          setCurrentClubStand(null);
+          setClubPhase('stand-selector');
+        }}
+        onAllComplete={handleClubStandComplete}
+        allCompleteLabel="Choose Next Position"
+      />
+    );
+  }
+
+  // --- Custom mode: shooter picker ---
+  if (!isClubRound && scoringPhase === 'shooter-picker' && currentStand) {
+    const standLabel = `Stand ${currentStand.stand_number}/${stands.length}`;
+    return (
+      <ShooterPicker
+        standLabel={standLabel}
+        shooters={shooters}
+        shooterStatuses={shooterStatuses}
+        shooterProgress={shooterProgress}
+        onSelectShooter={handleSelectShooter}
+        onAllComplete={isLastStand ? handleFinish : handleNextStand}
+        allCompleteLabel={isLastStand ? 'Finish Round' : 'Next Stand'}
       />
     );
   }
@@ -424,24 +502,16 @@ export default function ScoringScreen() {
             {isClubRound ? (
               <TouchableOpacity
                 style={styles.nextBtn}
-                onPress={isLastShooter ? handleClubStandComplete : handleClubNextShooter}
+                onPress={handleClubReturnToShooterPicker}
               >
-                <Text style={styles.nextBtnText}>
-                  {isLastShooter ? 'Choose Next Position' : 'Next Shooter'}
-                </Text>
+                <Text style={styles.nextBtnText}>Choose Next Shooter</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 style={styles.nextBtn}
-                onPress={isLastShooter && isLastStand ? handleFinish : handleNextShooter}
+                onPress={handleReturnToShooterPicker}
               >
-                <Text style={styles.nextBtnText}>
-                  {isLastShooter && isLastStand
-                    ? 'Finish Round'
-                    : isLastShooter
-                      ? 'Next Stand'
-                      : 'Next Shooter'}
-                </Text>
+                <Text style={styles.nextBtnText}>Choose Next Shooter</Text>
               </TouchableOpacity>
             )}
           </View>
