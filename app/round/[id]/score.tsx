@@ -473,12 +473,10 @@ export default function ScoringScreen() {
             {PRESENTATION_LABELS[currentStand.presentation as PresentationType]}
           </Text>
         </View>
-        <View style={styles.shooterBox}>
+        <TouchableOpacity style={styles.shooterBox} onPress={returnToShooterPicker}>
           <Text style={styles.shooterLabel}>{currentShooter.shooter_name}</Text>
-          <Text style={styles.shooterDetail}>
-            Shooter {shooterIdx + 1}/{shooters.length}
-          </Text>
-        </View>
+          <Text style={styles.changeShooterHint}>✎ Change</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Target info */}
@@ -596,6 +594,12 @@ const styles = StyleSheet.create({
   shooterDetail: {
     fontSize: FontSize.xs,
     color: Colors.textSecondary,
+  },
+  changeShooterHint: {
+    fontSize: FontSize.xs,
+    color: Colors.primary,
+    fontWeight: '600',
+    marginTop: 2,
   },
   targetInfo: {
     paddingVertical: Spacing.lg,
