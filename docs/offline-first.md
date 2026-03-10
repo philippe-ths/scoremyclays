@@ -1,6 +1,6 @@
 # Offline-First Architecture
 
-ScoreMyClays is designed to work with zero connectivity from the moment a session starts. This document explains why, how, and what trade-offs are involved.
+ScoreMyClays requires an internet connection for authentication and initial sync, but once a round is started, every part of the scoring flow works fully offline. This document explains why, how, and what trade-offs are involved.
 
 ## Why Offline-First
 
@@ -103,6 +103,4 @@ Sync is fully enabled for authenticated users using a combination of Supabase Ro
 3. **Component State**: `SyncProvider` actively reports the user's sync state (`offline`, `syncing`, `synced`) through built-in listeners, and handles error boundary alerts.
 4. **App-Level Upload Skips**: Reference tables (`clubs`, `club_positions`, `club_stands`) bypass the sync upload queue explicitly — these are read-only data seeded via Supabase migrations. This prevents users from stalling their own `target_results` uploads attempting to overwrite admin-managed content.
 
-### Future Enhancements
 
-1. Implement guest-to-account upgrade path (associate local data with a newly created account natively).
