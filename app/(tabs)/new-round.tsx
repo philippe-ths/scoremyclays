@@ -7,6 +7,7 @@ import {
   View,
   ScrollView,
   Alert,
+  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
@@ -118,7 +119,7 @@ export default function NewRoundScreen() {
   }
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" onScrollBeginDrag={() => setShowClubDropdown(false)}>
       {/* Club Selection */}
       <Text style={styles.label}>Club (optional)</Text>
       <View style={styles.clubSearchContainer}>
@@ -311,6 +312,12 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.sm,
   },
   dropdown: {
+    position: 'absolute',
+    top: '100%',
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    ...Platform.select({ android: { elevation: 10 } }),
     borderWidth: 1,
     borderColor: Colors.border,
     borderRadius: BorderRadius.md,
