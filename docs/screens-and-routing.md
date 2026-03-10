@@ -6,52 +6,83 @@ ScoreMyClays uses Expo Router for file-based routing. The URL structure maps dir
 
 | Route | File | Purpose |
 |-------|------|---------|
-| `/` | `app/(tabs)/index.tsx` | Home — hero section, recent rounds, new round CTA |
-| `/new-round` | `app/(tabs)/new-round.tsx` | Create a new round (ground name, date, target count) |
+| `/` | `app/(tabs)/index.tsx` | Home — recent rounds, pending invite notification, new round CTA |
+| `/new-round` | `app/(tabs)/new-round.tsx` | Create a new round (custom or club-based) |
+| `/clubs` | `app/(tabs)/clubs.tsx` | Browse and search clubs |
 | `/history` | `app/(tabs)/history.tsx` | Browse all past rounds |
-| `/profile` | `app/(tabs)/profile.tsx` | User profile and settings |
-| `/round/[id]/setup` | `app/round/[id]/setup.tsx` | Configure stands and squad for a round |
+| `/profile` | `app/(tabs)/profile.tsx` | User profile, gear, favourite clubs, logout |
+| `/auth/login` | `app/auth/login.tsx` | Supabase email/password login |
+| `/auth/signup` | `app/auth/signup.tsx` | Account registration |
+| `/auth/profile-setup` | `app/auth/profile-setup.tsx` | Set immutable user_id handle |
+| `/clubs/[id]` | `app/clubs/[id]/index.tsx` | Club detail — positions, stands, "Start Round" CTA |
+| `/invites` | `app/invites/index.tsx` | Accept or decline pending round invites |
+| `/profile/edit` | `app/profile/edit.tsx` | Edit display name, gear list, favourite clubs |
+| `/round/[id]/setup` | `app/round/[id]/setup.tsx` | Configure stands, squad, and invites for a round |
 | `/round/[id]/score` | `app/round/[id]/score.tsx` | Active scoring interface |
+| `/round/[id]/conflicts` | `app/round/[id]/conflicts.tsx` | Resolve duplicate shot records (round creator only) |
 | `/round/[id]/summary` | `app/round/[id]/summary.tsx` | Final scores and stand breakdown |
 
 ## Navigation Structure
 
 ```
-Tab Bar
+Auth Stack (shown when not authenticated)
+  ├─ Login (/auth/login)
+  ├─ Signup (/auth/signup)
+  └─ Profile Setup (/auth/profile-setup)
+
+Tab Bar (shown when authenticated + profile complete)
   ├─ Home (/)
   ├─ New Round (/new-round)
+  ├─ Clubs (/clubs)
   ├─ History (/history)
   └─ Profile (/profile)
 
 Stack (pushed on top of tabs)
+  ├─ Club Detail (/clubs/[id])
+  ├─ Invites (/invites)
+  ├─ Edit Profile (/profile/edit)
   ├─ Round Setup (/round/[id]/setup)
   ├─ Scoring (/round/[id]/score)
+  ├─ Conflicts (/round/[id]/conflicts)
   └─ Summary (/round/[id]/summary)
 ```
 
-Tab screens live in `app/(tabs)/` and are always accessible via the bottom tab bar. Round screens are pushed onto a Stack navigator over the tabs.
+Auth screens are shown when the user is unauthenticated or has not completed profile setup. Tab screens live in `app/(tabs)/` and are always accessible via the bottom tab bar. Round, club, invite, and profile screens are pushed onto a Stack navigator over the tabs.
 
 ## User Flow
 
 ```
-Home ──→ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
-  │                                                       ↑
-  └── History ──→ Summary ─────────────────────────────────┘
+Login ──→ Profile Setup ──→ Home
+                              │
+    ┌─────────────────────────┤
+    │                         │
+    ▼                         ▼
+New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
+    │                    │  ▲                   ▲
+    │                    │  └── Conflicts ───────┤
+    │                    │                       │
+    └── (club-based) ────┘   History ──→ Summary ┘
+                              │
+    Clubs ──→ Club Detail ────┘
+    Invites ──→ Accept ──→ Score
 ```
 
-1. **Home**: Shows 5 most recent rounds. Tapping an in-progress round goes to Score; tapping a completed round goes to Summary.
-2. **New Round**: User enters ground name, selects date, picks target count (25/50/75/100). Creates round + squad + shooter entry, then navigates to Setup.
-3. **Setup**: User adds stands (each with presentation type, target config, number of targets) and additional shooters to the squad. Validates at least one stand exists before allowing scoring to start.
-4. **Score**: The core interface. Displays current stand, shooter, and target. Single-tap KILL/LOSS/NO_SHOT buttons record results. Auto-advances through targets → shooters → stands. Shows running score total.
-5. **Summary**: Per-shooter score totals and per-stand breakdown with individual shooter scores. "Back to Home" returns to the tab navigator.
+1. **Login / Signup**: User authenticates with email/password via Supabase. Redirected automatically by `useProtectedRoute`.
+2. **Profile Setup**: First-time users set their immutable `user_id` handle (used for invites). Required before accessing the app.
+3. **Home**: Shows recent rounds and a pending invite count. Tapping an in-progress round goes to Score; tapping a completed round goes to Summary.
+4. **New Round**: User enters ground name, selects date, picks target count. Optionally selects a club to pre-populate stands. Creates round + squad + shooter entry, then navigates to Setup.
+5. **Setup**: User configures stands (or views pre-configured club stands) and manages the squad. Can send invites to other users via `UserSearch`.
+6. **Score**: The core interface. For club rounds, uses `PositionPicker` → `StandSelector` → `ShooterPicker` flow. For custom rounds, uses `StandSelector` → `ShooterPicker` flow. Shows running score total.
+7. **Conflicts**: Round creator can view and resolve duplicate shot records from competing devices.
+8. **Summary**: Per-shooter score totals and per-stand breakdown. Club rounds group stands by position.
 
 ## Screen Details
 
 ### Home (`app/(tabs)/index.tsx`)
 
-- Hero section with app name and tagline
 - Prominent "+ New Round" button
-- FlatList of 5 most recent rounds (shows ground name, date, score, status badge)
+- FlatList of recent rounds (shows ground name, date, score, status badge)
+- Pending invite notification with count — tapping navigates to `/invites`
 - Empty state: "No rounds yet" message
 
 ### New Round (`app/(tabs)/new-round.tsx`)
@@ -59,37 +90,98 @@ Home ──→ New Round ──→ Setup ──→ Score ──→ Summary ─�
 - Ground name text input
 - Date display (defaults to today)
 - Target count selector: 25, 50, 75, 100 (tap to select)
+- Optional club selection — when a club is chosen, stands are pre-configured from club data
 - "Create Round" button — creates round, squad, and initial shooter entry in one transaction
+
+### Clubs (`app/(tabs)/clubs.tsx`)
+
+- Searchable list of all clubs
+- Each row shows club name and description
+- Tapping a club navigates to the Club Detail screen
 
 ### History (`app/(tabs)/history.tsx`)
 
 - FlatList of all rounds ordered by date (newest first)
+- Includes rounds created by the user and rounds where they appear as a shooter
 - Each row shows ground name, date, total score, status badge
 - Status badges: green for Completed, amber for In Progress
 
+### Profile (`app/(tabs)/profile.tsx`)
+
+- Display name and user handle
+- Gear list (managed as JSON array)
+- Favourite clubs list
+- "Edit Profile" button navigates to `/profile/edit`
+- Logout button
+
+### Login (`app/auth/login.tsx`)
+
+- Email and password inputs
+- "Sign In" button — authenticates via Supabase
+- Link to Signup screen
+
+### Signup (`app/auth/signup.tsx`)
+
+- Email and password inputs
+- "Create Account" button — creates Supabase auth user and blank user record
+- Link back to Login screen
+
+### Profile Setup (`app/auth/profile-setup.tsx`)
+
+- Shown after first login when `user_id` is not yet set
+- User enters their immutable handle (used for receiving invites)
+- Redirects to Home on completion
+
+### Club Detail (`app/clubs/[id]/index.tsx`)
+
+- Club name and description
+- List of positions, each showing its configured stands (target config, presentation, num targets)
+- "Start Round at This Club" button — navigates to New Round with club pre-selected
+
+### Invites (`app/invites/index.tsx`)
+
+- List of pending incoming invites
+- Each invite shows round details and inviter name
+- Accept / Decline buttons
+- Accepting adds the user as a shooter entry in the round's squad
+
+### Edit Profile (`app/profile/edit.tsx`)
+
+- Edit display name
+- Manage gear list (add/remove items)
+- Manage favourite clubs
+
 ### Round Setup (`app/round/[id]/setup.tsx`)
 
-- **Stands section**: List of configured stands. "+ Add Stand" adds a stand with sensible defaults (Single, Crosser, 10 targets).
-- **Squad section**: List of shooters with position numbers. Guest user is always Shooter 1.
+- **Stands section**: List of configured stands. For custom rounds, "+ Add Stand" adds a stand with sensible defaults (Single, Crosser, 10 targets). For club rounds, stands are pre-populated from the club's positions.
+- **Squad section**: List of shooters with position numbers. Authenticated user is always Shooter 1.
+- **Invite section**: `UserSearch` component to find users by handle and send invites.
 - "Start Scoring" button — validates at least one stand exists
 
 ### Scoring (`app/round/[id]/score.tsx`)
 
+- **Club rounds**: `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots. `PositionPicker` shows status badges for position completeness.
+- **Custom rounds**: `StandSelector` → `ShooterPicker` → record shots.
 - **Top bar**: Current score (kills/total), stand progress (Stand N of M with presentation label), current shooter name
 - **Target indicator**: "Target X of Y" with bird number for pairs
 - **Score buttons**: KILL (green), LOSS (red), NO SHOT (grey) — minimum 80px, designed for gloved fingers
 - **Stand Complete overlay**: Shows score for that stand/shooter, with "Next Shooter", "Next Stand", or "Finish Round" buttons
 - Haptic feedback on each tap (gracefully degrades to no-op on web)
 - Resumes mid-round if the app is reopened
+- Sync conflict warning displayed for affected shooters
+
+### Conflicts (`app/round/[id]/conflicts.tsx`)
+
+- Only accessible to the round creator
+- Lists duplicate shot records grouped by (shooter, stand, target, bird)
+- For each conflict, shows competing records with recorder name, device, and timestamp
+- Round creator selects the winning record; losing rows are deleted
 
 ### Summary (`app/round/[id]/summary.tsx`)
 
 - Ground name and date header
 - Per-shooter score totals (kills out of total targets)
 - Stand breakdown: each stand shows presentation type and per-shooter scores
+- Club rounds group stands by position
+- Conflicted shooters marked with a warning until conflicts are resolved
 - "Back to Home" button
-
-### Profile (`app/(tabs)/profile.tsx`)
-
-- Display name and guest status indicator
-- Placeholder for future account management and settings

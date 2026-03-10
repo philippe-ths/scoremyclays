@@ -16,6 +16,21 @@ For each stand (ordered by stand_number):
 
 The scorer taps one button per bird. The app handles all advancement automatically.
 
+## Custom vs Club Round Flow
+
+The scoring screen adapts its navigation based on whether the round is custom or club-based:
+
+| Round Type | Scoring Navigation |
+|-----------|--------------------|
+| **Custom** | `StandSelector` → `ShooterPicker` → record shots |
+| **Club-based** | `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots |
+
+- **`PositionPicker`**: Shows all club positions with status badges indicating completeness. Only appears for club-based rounds.
+- **`StandSelector`**: Shows stands within the selected position (club) or all stands (custom). Allows the scorer to choose which stand to score next.
+- **`ShooterPicker`**: Shows shooters within the current stand with a progress bar and scoring status.
+
+For custom rounds, the state machine advances linearly through stands. For club rounds, the scorer can pick any position and stand in any order.
+
 ## Birds Per Target
 
 The number of birds per target depends on the stand's target configuration:
@@ -79,6 +94,7 @@ Each tap writes a single `TargetResult` row:
 |-------|-------|
 | `id` | New UUID (generated locally via `expo-crypto`) |
 | `stand_id` | Current stand's ID |
+| `round_id` | Current round's ID (denormalized for efficient querying) |
 | `shooter_entry_id` | Current shooter's ID |
 | `target_number` | Current target number |
 | `bird_number` | Current bird number |

@@ -25,13 +25,30 @@ npx powersync-web copy-assets --output public
 
 ## Environment Variables
 
-For basic guest mode (the default view without logging in), no environment variables are needed to test basic UX, but to test user invites or synchronized data, a `.env` file is required:
+For basic development, no environment variables are needed to test the UI, but to test user invites or synchronized data, a `.env` file is required:
 
 ```
 EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 EXPO_PUBLIC_POWERSYNC_URL=https://your-instance.powersync.journeyapps.com
 ```
+
+## Supabase Migrations
+
+The `supabase/migrations/` directory contains 8 migration files that define the full database schema, RLS policies, and seed data:
+
+| Migration | Purpose |
+|-----------|---------|
+| `001_initial_schema.sql` | Core tables and RLS policies |
+| `002_denormalize_round_id.sql` | Add `round_id` to `target_results` for efficient queries |
+| `003_fix_rls_recursion.sql` | Fix recursive RLS policy issues |
+| `004_seed_clubs.sql` | Seed club reference data (clubs, positions, stands) |
+| `005_fix_all_rls_recursion.sql` | Additional RLS recursion fixes |
+| `006_add_invitee_id.sql` | Add `invitee_id` (UUID) to invites |
+| `007_allow_invitee_shooter_entry.sql` | Allow invited users to be added as shooters |
+| `008_allow_squad_scoring.sql` | Allow squad members to record scores |
+
+If setting up a fresh Supabase project, apply these migrations in order. PowerSync sync rules are defined in `supabase/powersync-sync-rules.yaml`.
 
 ## Running the App
 
