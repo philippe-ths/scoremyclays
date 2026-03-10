@@ -8,7 +8,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "postinstall": "npx powersync-web copy-assets --output public"
+    "postinstall": "npx powersync-web copy-assets --output public && cp node_modules/@journeyapps/wa-sqlite/dist/wa-sqlite-async.wasm public/"
   },
   "dependencies": {
     "@journeyapps/wa-sqlite": "^1.5.0",
