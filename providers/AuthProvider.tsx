@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { usePowerSync } from '@powersync/react';
 import type { User } from '@/lib/types';
 import { useDatabase } from './DatabaseProvider';
@@ -52,12 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(newSession);
 
       if (newSession?.user && event !== 'SIGNED_OUT') {
+        // Keep the router from acting while we resolve the user record
+        setIsLoading(true);
         await syncUserWithDatabase(newSession.user.id, newSession.user.email || null);
+        if (mounted) setIsLoading(false);
       } else if (event === 'SIGNED_OUT') {
         setUser(null);
       }
 
-      // Mark loading done after initial session event
+      // Mark loading done after initial session event (handles no-session case)
       if (event === 'INITIAL_SESSION') {
         setIsLoading(false);
       }
@@ -72,7 +75,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   /**
    * Sync Supabase auth user with local database User table.
    * If PowerSync has already synced the profile, use it.
-   * Otherwise create a blank record — PowerSync will merge remote data once sync completes.
+   * Otherwise query Supabase directly (user just authenticated, so network is available).
+   * Only create a blank record if no remote profile exists (true first-time user).
    */
   async function syncUserWithDatabase(userId: string, email: string | null) {
     if (!db) {
@@ -92,9 +96,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Not found locally yet — create a record.
-      // PowerSync will upload this to Supabase, and if a remote record
-      // already exists, the upsert in uploadData will merge it.
+      // Not found locally — check Supabase for an existing profile.
+      // The user just authenticated so network should be available.
+      let remoteUser: User | null = null;
+      try {
+        const { data } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        if (data) {
+          remoteUser = data as User;
+        }
+      } catch {
+        // Network or query error — fall through to blank record creation
+      }
+
+      if (remoteUser) {
+        // Profile exists on Supabase — insert it locally so the router
+        // sees the real profile state immediately.
+        await db.execute(
+          `INSERT INTO users (id, display_name, email, user_id, discoverable, favourite_club_ids, gear, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            remoteUser.id,
+            remoteUser.display_name,
+            remoteUser.email,
+            remoteUser.user_id,
+            remoteUser.discoverable,
+            remoteUser.favourite_club_ids,
+            remoteUser.gear,
+            remoteUser.created_at,
+            remoteUser.updated_at,
+          ]
+        );
+        setUser(remoteUser);
+        return;
+      }
+
+      // No remote profile — true first-time user. Create a blank record.
       const now = new Date().toISOString();
       const newUser: User = {
         id: userId,
@@ -187,6 +227,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.error('Error refreshing user:', error instanceof Error ? error.message : error);
     }
   };
+
+  // Watch for PowerSync changes to the user record.
+  // Handles the case where PowerSync syncs the real profile after initial load.
+  const watchedUserId = useRef<string | null>(null);
+  useEffect(() => {
+    if (!db || !user?.id) return;
+    // Avoid re-subscribing for the same user
+    if (watchedUserId.current === user.id) return;
+    watchedUserId.current = user.id;
+
+    const abort = new AbortController();
+    const userId = user.id;
+
+    db.watch(
+      'SELECT * FROM users WHERE id = ?',
+      [userId],
+      {
+        onResult(results) {
+          const updated = results.rows?._array?.[0];
+          if (updated) {
+            setUser(updated as User);
+          }
+        },
+      },
+      { signal: abort.signal }
+    );
+
+    return () => {
+      watchedUserId.current = null;
+      abort.abort();
+    };
+  }, [db, user?.id]);
 
   const value: AuthContextValue = {
     user,
