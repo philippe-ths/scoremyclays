@@ -32,7 +32,8 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "@journeyapps/react-native-quick-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
