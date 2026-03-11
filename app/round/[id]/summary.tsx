@@ -44,11 +44,8 @@ export default function RoundSummaryScreen() {
 
   const [round, setRound] = useState<Round | null>(null);
   const [shooterScores, setShooterScores] = useState<ShooterScore[]>([]);
-  const [standBreakdowns, setStandBreakdowns] = useState<StandBreakdown[]>([]);
   const [positionBreakdowns, setPositionBreakdowns] = useState<PositionBreakdown[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
-  const isClubRound = !!round?.club_id;
 
   useEffect(() => {
     (async () => {
@@ -83,9 +80,7 @@ export default function RoundSummaryScreen() {
       }
 
       if (r?.club_id) {
-        // Group stands by position for club rounds
         const positions = await getClubPositions(db, r.club_id);
-        const posMap = new Map(positions.map((p) => [p.id, p]));
         const grouped = new Map<string, StandBreakdown[]>();
 
         for (const bd of breakdowns) {
@@ -105,8 +100,6 @@ export default function RoundSummaryScreen() {
           }
         }
         setPositionBreakdowns(posBreakdowns);
-      } else {
-        setStandBreakdowns(breakdowns);
       }
 
       setIsLoading(false);
@@ -155,30 +148,8 @@ export default function RoundSummaryScreen() {
         </View>
       ))}
 
-      {/* Per-stand breakdown (custom rounds) */}
-      {!isClubRound && (
-        <>
-          <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Stand Breakdown</Text>
-          {standBreakdowns.map((bd) => (
-            <View key={bd.stand.id} style={styles.standCard}>
-              <Text style={styles.standTitle}>
-                Stand {bd.stand.stand_number} · {PRESENTATION_LABELS[bd.stand.presentation as PresentationType]}
-              </Text>
-              {bd.results.map((r) => (
-                <View key={r.shooter.id} style={styles.standResultRow}>
-                  <Text style={styles.standShooterName}>{r.shooter.shooter_name}</Text>
-                  <Text style={styles.standShooterScore}>
-                    {r.kills}/{r.total}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          ))}
-        </>
-      )}
-
-      {/* Position-grouped breakdown (club rounds) */}
-      {isClubRound && (
+      {/* Position-grouped breakdown */}
+      {positionBreakdowns.length > 0 && (
         <>
           <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Position Breakdown</Text>
           {positionBreakdowns.map((pb) => (

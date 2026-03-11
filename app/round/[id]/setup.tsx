@@ -14,13 +14,12 @@ import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
 import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
-import { createStand, listStands, deleteStand } from '@/db/queries/stands';
 import { getClubWithDetails } from '@/db/queries/clubs';
 import { createInvite, checkDuplicateInvite } from '@/db/queries/invites';
 import { getUserByUserId } from '@/db/queries/users';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
-import { PresentationType, TargetConfig, InviteStatus, type Stand, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
+import { InviteStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
 import { UserSearch } from '@/components/UserSearch';
 
 export default function RoundSetupScreen() {
@@ -30,7 +29,6 @@ export default function RoundSetupScreen() {
   const { user } = useAuth();
 
   const [round, setRound] = useState<Round | null>(null);
-  const [stands, setStands] = useState<Stand[]>([]);
   const [shooters, setShooters] = useState<ShooterEntry[]>([]);
   const [squadId, setSquadId] = useState<string | null>(null);
   const [newShooterName, setNewShooterName] = useState('');
@@ -43,22 +41,17 @@ export default function RoundSetupScreen() {
   );
   const pendingInvites = pendingInviteRows ?? [];
 
-  const isClubRound = !!round?.club_id;
-
   const reload = useCallback(async () => {
     if (!roundId) return;
     const r = await getRound(db, roundId);
     setRound(r);
 
-    // Load club positions if club round
+    // Load club positions
     if (r?.club_id) {
       const clubData = await getClubWithDetails(db, r.club_id);
       if (clubData) {
         setClubPositions(clubData.positions);
       }
-    } else {
-      const s = await listStands(db, roundId);
-      setStands(s);
     }
 
     const squad = await getSquadByRound(db, roundId);
@@ -74,26 +67,6 @@ export default function RoundSetupScreen() {
       reload();
     }, [reload]),
   );
-
-  async function handleAddStand() {
-    if (!roundId) return;
-    const nextNumber = stands.length + 1;
-    await createStand(db, {
-      id: Crypto.randomUUID(),
-      round_id: roundId,
-      stand_number: nextNumber,
-      target_config: TargetConfig.SINGLE,
-      presentation: PresentationType.CROSSER,
-      presentation_notes: null,
-      num_targets: 10,
-    });
-    await reload();
-  }
-
-  async function handleDeleteStand(standId: string) {
-    await deleteStand(db, standId);
-    await reload();
-  }
 
   async function handleSelectUserForInvite(selectedUser: User) {
     if (!user || !roundId) return;
@@ -170,10 +143,6 @@ export default function RoundSetupScreen() {
   }
 
   function handleStartScoring() {
-    if (!isClubRound && stands.length === 0) {
-      Alert.alert('Add stands', 'Add at least one stand before scoring.');
-      return;
-    }
     if (shooters.length === 0) {
       Alert.alert('Add shooters', 'At least one shooter is required.');
       return;
@@ -183,49 +152,20 @@ export default function RoundSetupScreen() {
 
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      {/* Club Positions Preview (read-only for club rounds) */}
-      {isClubRound && (
-        <>
-          <Text style={styles.sectionTitle}>Positions</Text>
-          {clubPositions.map((position) => (
-            <View key={position.id} style={styles.card}>
-              <Text style={styles.cardTitle}>
-                {formatPositionTitle(position)}
-              </Text>
-              {position.stands.map((stand) => (
-                <Text key={stand.id} style={styles.cardDetail}>
-                  Stand {stand.stand_number} · {formatStandDetail(stand)}
-                </Text>
-              ))}
-            </View>
+      {/* Club Positions Preview */}
+      <Text style={styles.sectionTitle}>Positions</Text>
+      {clubPositions.map((position) => (
+        <View key={position.id} style={styles.card}>
+          <Text style={styles.cardTitle}>
+            {formatPositionTitle(position)}
+          </Text>
+          {position.stands.map((stand) => (
+            <Text key={stand.id} style={styles.cardDetail}>
+              Stand {stand.stand_number} · {formatStandDetail(stand)}
+            </Text>
           ))}
-        </>
-      )}
-
-      {/* Stands Section (custom rounds only) */}
-      {!isClubRound && (
-        <>
-          <Text style={styles.sectionTitle}>Stands</Text>
-
-          {stands.map((stand) => (
-            <View key={stand.id} style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.cardTitle}>Stand {stand.stand_number}</Text>
-                <TouchableOpacity onPress={() => handleDeleteStand(stand.id)}>
-                  <Text style={styles.deleteText}>Remove</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.cardDetail}>
-                {formatStandDetail(stand)}
-              </Text>
-            </View>
-          ))}
-
-          <TouchableOpacity style={styles.addBtn} onPress={handleAddStand}>
-            <Text style={styles.addBtnText}>+ Add Stand</Text>
-          </TouchableOpacity>
-        </>
-      )}
+        </View>
+      ))}
 
       {/* Squad Section */}
       <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Squad</Text>
@@ -338,20 +278,6 @@ const styles = StyleSheet.create({
   deleteText: {
     fontSize: FontSize.sm,
     color: Colors.miss,
-  },
-  addBtn: {
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    borderRadius: BorderRadius.md,
-    borderStyle: 'dashed',
-    paddingVertical: Spacing.md,
-    alignItems: 'center',
-    marginTop: Spacing.xs,
-  },
-  addBtnText: {
-    color: Colors.primary,
-    fontSize: FontSize.base,
-    fontWeight: '600',
   },
   addShooterRow: {
     flexDirection: 'row',

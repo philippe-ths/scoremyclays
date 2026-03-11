@@ -51,9 +51,3 @@ export async function updateStand(
   await db.execute(`UPDATE stands SET ${sets.join(', ')} WHERE id = ?`, values);
 }
 
-export async function deleteStand(
-  db: AbstractPowerSyncDatabase,
-  id: string,
-): Promise<void> {
-  await db.execute('DELETE FROM stands WHERE id = ?', [id]);
-}
