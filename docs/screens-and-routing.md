@@ -58,23 +58,23 @@ Login ──→ Profile Setup ──→ Home
     │                         │
     ▼                         ▼
 New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
-    │                    │  ▲                   ▲
-    │                    │  └── Conflicts ───────┤
-    │                    │                       │
-    └── (club-based) ────┘   History ──→ Summary ┘
-                              │
-    Clubs ──→ Club Detail ────┘
+                         │  ▲                   ▲
+                         │  └── Conflicts ───────┤
+                         │                       │
+                         │   History ──→ Summary ┘
+                         │      │
+    Clubs ──→ Club Detail ──────┘
     Invites ──→ Accept ──→ Score
 ```
 
 1. **Login / Signup**: User authenticates with email/password via Supabase. Redirected automatically by `useProtectedRoute`.
 2. **Profile Setup**: First-time users set their immutable `user_id` handle (used for invites). Required before accessing the app.
 3. **Home**: Shows recent rounds and a pending invite count. Tapping an in-progress round goes to Score; tapping a completed round goes to Summary.
-4. **New Round**: User enters ground name, selects date, picks target count. Optionally selects a club to pre-populate stands. Creates round + squad + shooter entry, then navigates to Setup.
-5. **Setup**: User configures stands (or views pre-configured club stands) and manages the squad. Can send invites to other users via `UserSearch`.
-6. **Score**: The core interface. For club rounds, uses `PositionPicker` → `StandSelector` → `ShooterPicker` flow. For custom rounds, uses `ShooterPicker` flow with sequential stand advancement. Shows running score total.
+4. **New Round**: User selects a club and date. Creates round + squad + shooter entry, then navigates to Setup.
+5. **Setup**: User views club positions and stands, manages the squad. Can send invites to other users via `UserSearch`.
+6. **Score**: The core interface. Uses `PositionPicker` → `StandSelector` → `ShooterPicker` flow. Shows running score total.
 7. **Conflicts**: Round creator can view and resolve duplicate shot records from competing devices.
-8. **Summary**: Per-shooter score totals and per-stand breakdown. Club rounds group stands by position.
+8. **Summary**: Per-shooter score totals and per-position stand breakdown.
 
 ## Screen Details
 
@@ -87,10 +87,8 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 
 ### New Round (`app/(tabs)/new-round.tsx`)
 
-- Ground name text input
+- Club selection (required) — search and select a club
 - Date display (defaults to today)
-- Target count selector: 25, 50, 75, 100 (tap to select)
-- Optional club selection — when a club is chosen, stands are pre-configured from club data
 - "Create Round" button — creates round, squad, and initial shooter entry in one transaction
 
 ### Clubs (`app/(tabs)/clubs.tsx`)
@@ -153,16 +151,15 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 
 ### Round Setup (`app/round/[id]/setup.tsx`)
 
-- **Stands section**: List of configured stands. For custom rounds, "+ Add Stand" adds a stand with sensible defaults (Single, Crosser, 10 targets). For club rounds, stands are pre-populated from the club's positions.
+- **Positions section**: Read-only list of club positions and their stands.
 - **Squad section**: List of shooters with position numbers. Authenticated user is always Shooter 1.
 - **Invite section**: `UserSearch` component to find users by handle and send invites.
-- "Start Scoring" button — validates at least one stand exists
+- "Start Scoring" button — validates at least one shooter exists
 
 ### Scoring (`app/round/[id]/score.tsx`)
 
-- **Club rounds**: `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots. `PositionPicker` shows status badges for position completeness.
-- **Custom rounds**: `ShooterPicker` → record shots. Stands advance sequentially after all shooters complete.
-- **Top bar**: Current score (kills/total), stand progress (Stand N of M with presentation label), current shooter name
+- `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots. `PositionPicker` shows status badges for position completeness.
+- **Top bar**: Current score (kills/total), stand number with presentation label, current shooter name
 - **Target indicator**: "Target X of Y" with bird number for pairs
 - **Score buttons**: KILL (green), LOSS (red), NO SHOT (grey) — minimum 80px, designed for gloved fingers
 - **Stand Complete overlay**: Shows score for that stand/shooter, with "Next Shooter", "Next Stand", or "Finish Round" buttons

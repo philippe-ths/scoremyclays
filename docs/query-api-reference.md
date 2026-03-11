@@ -167,10 +167,6 @@ Partially updates a stand. Only the provided fields are updated — omitted fiel
 | `params.presentation_notes` | `string \| null` | Optional |
 | `params.num_targets` | `number` | Optional |
 
-### `deleteStand(db, id): Promise<void>`
-
-Deletes a stand by ID.
-
 ---
 
 ## scoring.ts

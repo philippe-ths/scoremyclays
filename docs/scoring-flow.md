@@ -4,20 +4,8 @@ This document explains how the scoring state machine works — from entering the
 
 ## The State Machine
 
-Scoring advances through a nested loop. The exact order depends on the round type:
+Scoring advances through a nested loop with free navigation across positions and stands:
 
-**Custom rounds** (shooter-first, sequential stands):
-```
-For each stand (advanced sequentially after all shooters complete):
-  Select a shooter (ShooterPicker):
-    For each target (1 to num_targets):
-      For each bird (1 to birds_per_target):
-        → Record KILL, LOSS, or NO_SHOT
-    When stand complete for this shooter → return to ShooterPicker
-  When all shooters complete → advance to next stand
-```
-
-**Club rounds** (position-first, free navigation):
 ```
 Select a position (PositionPicker):
   Select a stand (StandSelector):
@@ -31,22 +19,20 @@ Select a position (PositionPicker):
 
 The scorer taps one button per bird. The app handles all advancement automatically.
 
-## Custom vs Club Round Flow
+## Scoring Navigation
 
-The scoring screen adapts its navigation based on whether the round is custom or club-based:
+The scoring screen uses a 4-phase state machine:
 
-| Round Type | Scoring Navigation |
-|-----------|--------------------|
-| **Custom** | `ShooterPicker` → record shots → next shooter or next stand |
-| **Club-based** | `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots |
+| Phase | Component | Purpose |
+|-------|-----------|---------|
+| `position-picker` | `PositionPicker` | Shows all club positions with status badges indicating completeness |
+| `stand-selector` | `StandSelector` | Shows stands within the selected position |
+| `shooter-picker` | `ShooterPicker` | Shows shooters within the current stand with a progress bar and scoring status |
+| `scoring` | Score buttons | KILL / LOSS / NO SHOT buttons for recording shots |
 
-- **`PositionPicker`**: Shows all club positions with status badges indicating completeness. Only appears for club-based rounds.
-- **`StandSelector`**: Shows stands within the selected position. Only appears for club-based rounds.
-- **`ShooterPicker`**: Shows shooters within the current stand with a progress bar and scoring status.
+The scorer can pick any position and stand in any order.
 
-For custom rounds, the scorer selects a shooter first, then stands advance sequentially after all shooters complete. For club rounds, the scorer can pick any position and stand in any order.
-
-When a club round scorer selects a stand, the app first checks the local database for a stand that may have arrived via sync from another user. If none exists, it creates one using a deterministic UUID derived from `round_id` and `club_stand_id`, ensuring all devices produce the same stand ID. The insert uses `INSERT OR IGNORE` for idempotency.
+When a scorer selects a stand, the app first checks the local database for a stand that may have arrived via sync from another user. If none exists, it creates one using a deterministic UUID derived from `round_id` and `club_stand_id`, ensuring all devices produce the same stand ID. The insert uses `INSERT OR IGNORE` for idempotency.
 
 ## Birds Per Target
 
@@ -63,11 +49,10 @@ For pair configurations, each bird is tracked separately. A Report Pair target p
 
 ## State Variables
 
-The scoring screen tracks five position variables:
+The scoring screen tracks four position variables:
 
 | Variable | Meaning |
 |----------|---------|
-| `standIdx` | Index into the ordered list of stands |
 | `shooterIdx` | Index into the ordered list of shooters |
 | `targetNum` | Current target number (1-based, up to `num_targets`) |
 | `birdNum` | Current bird within the target (1-based, up to `birds_per_target`) |
@@ -83,9 +68,9 @@ After the scorer taps KILL, LOSS, or NO_SHOT:
 
 From the Stand Complete overlay:
 
-4. **Next shooter**: If more shooters remain, advance `shooterIdx`, reset `targetNum` and `birdNum` to 1.
-5. **Next stand**: If all shooters are done at this stand but more stands remain, advance `standIdx`, reset `shooterIdx`, `targetNum`, and `birdNum`.
-6. **Finish round**: If all stands are complete for all shooters, the round status is set to `COMPLETED` and the app navigates to the Summary screen.
+4. **Next shooter**: Tap "Choose Next Shooter" to return to the ShooterPicker and select another shooter at the same stand.
+5. **Position complete**: When all shooters at all stands in a position are done, return to PositionPicker.
+6. **Finish round**: When all positions are complete, the round status is set to `COMPLETED` and the app navigates to the Summary screen.
 
 ```
 Record shot
@@ -96,11 +81,7 @@ Record shot
     │
     └─ stand done → show Stand Complete overlay
                         │
-                        ├─ more shooters? → advance shooterIdx, reset targets
-                        │
-                        ├─ more stands? → advance standIdx, reset shooter + targets
-                        │
-                        └─ all done → mark round COMPLETED → navigate to Summary
+                        └─ return to ShooterPicker → choose next shooter or next position
 ```
 
 ## Database Writes
@@ -109,7 +90,7 @@ Each tap writes a single `TargetResult` row:
 
 | Field | Value |
 |-------|-------|
-| `id` | New UUID (random for target results, deterministic for club round stands) |
+| `id` | New UUID (random for target results, deterministic for stand creation) |
 | `stand_id` | Current stand's ID |
 | `round_id` | Current round's ID (denormalized for efficient querying) |
 | `shooter_entry_id` | Current shooter's ID |

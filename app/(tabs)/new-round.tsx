@@ -17,16 +17,12 @@ import { listClubs, getClub } from '@/db/queries/clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import type { Club } from '@/lib/types';
 
-const TARGET_OPTIONS = [25, 50, 75, 100];
-
 export default function NewRoundScreen() {
   const router = useRouter();
   const db = usePowerSync();
   const { user } = useAuth();
   const params = useLocalSearchParams<{ clubId?: string }>();
 
-  const [groundName, setGroundName] = useState('');
-  const [totalTargets, setTotalTargets] = useState(50);
   const [isCreating, setIsCreating] = useState(false);
 
   // Club selection state
@@ -44,7 +40,6 @@ export default function NewRoundScreen() {
         const club = await getClub(db, params.clubId!);
         if (club) {
           setSelectedClub(club);
-          setGroundName(club.name);
           setClubSearch(club.name);
         }
       })();
@@ -67,22 +62,19 @@ export default function NewRoundScreen() {
   function handleSelectClub(club: Club) {
     setSelectedClub(club);
     setClubSearch(club.name);
-    setGroundName(club.name);
     setShowClubDropdown(false);
   }
 
   function handleClearClub() {
     setSelectedClub(null);
     setClubSearch('');
-    setGroundName('');
     setShowClubDropdown(false);
   }
 
   async function handleCreate() {
     if (!user) return;
-    const trimmed = groundName.trim();
-    if (!trimmed) {
-      Alert.alert('Ground name required', 'Please enter the name of the shooting ground or select a club.');
+    if (!selectedClub) {
+      Alert.alert('Club required', 'Please select a club to start a round.');
       return;
     }
 
@@ -95,7 +87,7 @@ export default function NewRoundScreen() {
       await db.writeTransaction(async (tx) => {
         await tx.execute(
           'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [roundId, user.id, trimmed, today, totalTargets, 'IN_PROGRESS', null, selectedClub?.id ?? null, new Date().toISOString(), new Date().toISOString()],
+          [roundId, user.id, selectedClub.name, today, 0, 'IN_PROGRESS', null, selectedClub.id, new Date().toISOString(), new Date().toISOString()],
         );
         await tx.execute(
           'INSERT INTO squads (id, round_id) VALUES (?, ?)',
@@ -107,7 +99,6 @@ export default function NewRoundScreen() {
         );
       });
 
-      setGroundName('');
       setSelectedClub(null);
       setClubSearch('');
       router.push(`/round/${roundId}/setup`);
@@ -121,7 +112,7 @@ export default function NewRoundScreen() {
   return (
     <ScrollView style={styles.scroll} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" onScrollBeginDrag={() => setShowClubDropdown(false)}>
       {/* Club Selection */}
-      <Text style={styles.label}>Club (optional)</Text>
+      <Text style={styles.label}>Club</Text>
       <View style={styles.clubSearchContainer}>
         {selectedClub ? (
           <View style={styles.selectedClubRow}>
@@ -159,44 +150,10 @@ export default function NewRoundScreen() {
         )}
       </View>
 
-      {!selectedClub && (
-        <>
-          <Text style={styles.label}>Shooting Ground</Text>
-          <TextInput
-            style={styles.input}
-            value={groundName}
-            onChangeText={setGroundName}
-            placeholder="e.g. West London Shooting School"
-            placeholderTextColor={Colors.textMuted}
-            autoCapitalize="words"
-            returnKeyType="done"
-          />
-        </>
-      )}
-
       <Text style={styles.label}>Date</Text>
       <View style={styles.dateBox}>
         <Text style={styles.dateText}>{today}</Text>
       </View>
-
-      {!selectedClub && (
-        <>
-          <Text style={styles.label}>Total Targets</Text>
-          <View style={styles.targetRow}>
-            {TARGET_OPTIONS.map((n) => (
-              <TouchableOpacity
-                key={n}
-                style={[styles.targetBtn, totalTargets === n && styles.targetBtnActive]}
-                onPress={() => setTotalTargets(n)}
-              >
-                <Text style={[styles.targetBtnText, totalTargets === n && styles.targetBtnTextActive]}>
-                  {n}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </>
-      )}
 
       <TouchableOpacity
         style={[styles.createBtn, isCreating && styles.createBtnDisabled]}
@@ -245,31 +202,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: FontSize.base,
     color: Colors.textPrimary,
-  },
-  targetRow: {
-    flexDirection: 'row',
-    gap: Spacing.sm,
-  },
-  targetBtn: {
-    flex: 1,
-    paddingVertical: Spacing.md,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-    backgroundColor: Colors.bgSecondary,
-  },
-  targetBtnActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primary,
-  },
-  targetBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  targetBtnTextActive: {
-    color: '#FFFFFF',
   },
   createBtn: {
     marginTop: Spacing.xl,
