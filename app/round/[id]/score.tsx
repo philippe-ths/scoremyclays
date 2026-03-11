@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { usePowerSync } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
+import { deterministicUUID } from '@/lib/uuid';
 import { useAuth } from '@/providers/AuthProvider';
 import { getRound } from '@/db/queries/rounds';
 import { getSquadByRound, listShooterEntriesWithUsers } from '@/db/queries/squads';
@@ -355,7 +356,7 @@ export default function ScoringScreen() {
 
     // Create the round stand from club template if it doesn't exist yet
     if (!standId) {
-      standId = Crypto.randomUUID();
+      standId = await deterministicUUID(`${roundId}:${clubStand.id}`);
       await createStand(db, {
         id: standId,
         round_id: roundId,
