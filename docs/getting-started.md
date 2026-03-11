@@ -40,14 +40,13 @@ The `supabase/migrations/` directory contains migration files that define the fu
 | Migration | Purpose |
 |-----------|---------|
 | `001_initial_schema.sql` | Core tables and RLS policies |
-| `002_denormalize_round_id.sql` | Add `round_id` to `target_results` for efficient queries |
+| `002_denormalize_round_id.sql` | Add `round_id` to `shooter_entries` and `target_results` for sync rules |
 | `003_fix_rls_recursion.sql` | Fix recursive RLS policy issues |
 | `004_seed_clubs.sql` | Seed club reference data (clubs, positions, stands) |
 | `005_fix_all_rls_recursion.sql` | Additional RLS recursion fixes |
 | `006_add_invitee_id.sql` | Add `invitee_id` (UUID) to invites |
 | `007_allow_invitee_shooter_entry.sql` | Allow invited users to be added as shooters |
 | `008_allow_squad_scoring.sql` | Allow squad members to record scores |
-| `009_allow_squad_stand_writes.sql` | Allow squad members to write to the stands table |
 | `010_unique_club_stand_per_round.sql` | Unique index preventing duplicate stands per club stand per round |
 
 If setting up a fresh Supabase project, apply these migrations in order. PowerSync sync rules are defined in `supabase/powersync-sync-rules.yaml`.

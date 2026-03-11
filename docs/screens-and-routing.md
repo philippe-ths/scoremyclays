@@ -72,7 +72,7 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 3. **Home**: Shows recent rounds and a pending invite count. Tapping an in-progress round goes to Score; tapping a completed round goes to Summary.
 4. **New Round**: User enters ground name, selects date, picks target count. Optionally selects a club to pre-populate stands. Creates round + squad + shooter entry, then navigates to Setup.
 5. **Setup**: User configures stands (or views pre-configured club stands) and manages the squad. Can send invites to other users via `UserSearch`.
-6. **Score**: The core interface. For club rounds, uses `PositionPicker` → `StandSelector` → `ShooterPicker` flow. For custom rounds, uses `StandSelector` → `ShooterPicker` flow. Shows running score total.
+6. **Score**: The core interface. For club rounds, uses `PositionPicker` → `StandSelector` → `ShooterPicker` flow. For custom rounds, uses `ShooterPicker` flow with sequential stand advancement. Shows running score total.
 7. **Conflicts**: Round creator can view and resolve duplicate shot records from competing devices.
 8. **Summary**: Per-shooter score totals and per-stand breakdown. Club rounds group stands by position.
 
@@ -81,7 +81,7 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 ### Home (`app/(tabs)/index.tsx`)
 
 - Prominent "+ New Round" button
-- FlatList of recent rounds (shows ground name, date, score, status badge)
+- FlatList of recent rounds (shows ground name, date, target count, status badge)
 - Pending invite notification with count — tapping navigates to `/invites`
 - Empty state: "No rounds yet" message
 
@@ -103,7 +103,7 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 
 - FlatList of all rounds ordered by date (newest first)
 - Includes rounds created by the user and rounds where they appear as a shooter
-- Each row shows ground name, date, total score, status badge
+- Each row shows ground name, date, target count, status badge
 - Status badges: green for Completed, amber for In Progress
 
 ### Profile (`app/(tabs)/profile.tsx`)
@@ -161,7 +161,7 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 ### Scoring (`app/round/[id]/score.tsx`)
 
 - **Club rounds**: `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots. `PositionPicker` shows status badges for position completeness.
-- **Custom rounds**: `StandSelector` → `ShooterPicker` → record shots.
+- **Custom rounds**: `ShooterPicker` → record shots. Stands advance sequentially after all shooters complete.
 - **Top bar**: Current score (kills/total), stand progress (Stand N of M with presentation label), current shooter name
 - **Target indicator**: "Target X of Y" with bird number for pairs
 - **Score buttons**: KILL (green), LOSS (red), NO SHOT (grey) — minimum 80px, designed for gloved fingers
