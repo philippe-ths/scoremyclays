@@ -5,7 +5,7 @@
 - **Node.js** 18+ and npm
 - **Expo CLI** (`npx expo` — no global install needed)
 - A web browser for development (Chrome recommended)
-- For native development: Xcode (iOS) or Android Studio (Android), or use Expo Go on a physical device
+- For native development: Xcode (iOS) or Android Studio (Android) — native builds are required because the app uses native modules (e.g. `@journeyapps/react-native-quick-sqlite`) that are not available in Expo Go
 
 ## Setup
 
@@ -68,7 +68,7 @@ Opens at `http://localhost:8081`. Hot reload is enabled.
 npm run ios
 ```
 
-Requires Xcode, or use Expo Go on a physical iPhone.
+Runs `expo run:ios`, which builds a development client with native modules. Requires Xcode. The first build takes several minutes; subsequent launches are fast.
 
 ### Android
 
@@ -76,7 +76,7 @@ Requires Xcode, or use Expo Go on a physical iPhone.
 npm run android
 ```
 
-Requires Android Studio with an emulator, or use Expo Go on a physical Android device.
+Runs `expo run:android`, which builds a development client with native modules. Requires Android Studio with an emulator or a connected device.
 
 ## Project Scripts
 
@@ -84,8 +84,8 @@ Requires Android Studio with an emulator, or use Expo Go on a physical Android d
 |--------|---------|---------|
 | `start` | `expo start` | Start dev server (pick platform interactively) |
 | `web` | `expo start --web` | Start web dev server |
-| `ios` | `expo start --ios` | Start iOS dev server |
-| `android` | `expo start --android` | Start Android dev server |
+| `ios` | `expo run:ios` | Build and run native iOS dev client |
+| `android` | `expo run:android` | Build and run native Android dev client |
 | `postinstall` | `npx powersync-web copy-assets --output public` | Copy WASM assets for web |
 
 ## Common Issues
