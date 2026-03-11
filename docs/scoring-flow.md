@@ -4,14 +4,29 @@ This document explains how the scoring state machine works — from entering the
 
 ## The State Machine
 
-Scoring advances through a nested loop:
+Scoring advances through a nested loop. The exact order depends on the round type:
 
+**Custom rounds** (shooter-first, sequential stands):
 ```
-For each stand (ordered by stand_number):
-  For each shooter (ordered by position_in_squad):
+For each stand (advanced sequentially after all shooters complete):
+  Select a shooter (ShooterPicker):
     For each target (1 to num_targets):
       For each bird (1 to birds_per_target):
         → Record KILL, LOSS, or NO_SHOT
+    When stand complete for this shooter → return to ShooterPicker
+  When all shooters complete → advance to next stand
+```
+
+**Club rounds** (position-first, free navigation):
+```
+Select a position (PositionPicker):
+  Select a stand (StandSelector):
+    Select a shooter (ShooterPicker):
+      For each target (1 to num_targets):
+        For each bird (1 to birds_per_target):
+          → Record KILL, LOSS, or NO_SHOT
+      When stand complete for this shooter → return to ShooterPicker
+    When all shooters complete → return to PositionPicker
 ```
 
 The scorer taps one button per bird. The app handles all advancement automatically.
@@ -22,14 +37,14 @@ The scoring screen adapts its navigation based on whether the round is custom or
 
 | Round Type | Scoring Navigation |
 |-----------|--------------------|
-| **Custom** | `StandSelector` → `ShooterPicker` → record shots |
+| **Custom** | `ShooterPicker` → record shots → next shooter or next stand |
 | **Club-based** | `PositionPicker` → `StandSelector` → `ShooterPicker` → record shots |
 
 - **`PositionPicker`**: Shows all club positions with status badges indicating completeness. Only appears for club-based rounds.
-- **`StandSelector`**: Shows stands within the selected position (club) or all stands (custom). Allows the scorer to choose which stand to score next.
+- **`StandSelector`**: Shows stands within the selected position. Only appears for club-based rounds.
 - **`ShooterPicker`**: Shows shooters within the current stand with a progress bar and scoring status.
 
-For custom rounds, the state machine advances linearly through stands. For club rounds, the scorer can pick any position and stand in any order.
+For custom rounds, the scorer selects a shooter first, then stands advance sequentially after all shooters complete. For club rounds, the scorer can pick any position and stand in any order.
 
 When a club round scorer selects a stand, the app first checks the local database for a stand that may have arrived via sync from another user. If none exists, it creates one using a deterministic UUID derived from `round_id` and `club_stand_id`, ensuring all devices produce the same stand ID. The insert uses `INSERT OR IGNORE` for idempotency.
 
