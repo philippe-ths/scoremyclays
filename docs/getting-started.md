@@ -35,7 +35,7 @@ EXPO_PUBLIC_POWERSYNC_URL=https://your-instance.powersync.journeyapps.com
 
 ## Supabase Migrations
 
-The `supabase/migrations/` directory contains 8 migration files that define the full database schema, RLS policies, and seed data:
+The `supabase/migrations/` directory contains migration files that define the full database schema, RLS policies, and seed data:
 
 | Migration | Purpose |
 |-----------|---------|
@@ -47,6 +47,8 @@ The `supabase/migrations/` directory contains 8 migration files that define the 
 | `006_add_invitee_id.sql` | Add `invitee_id` (UUID) to invites |
 | `007_allow_invitee_shooter_entry.sql` | Allow invited users to be added as shooters |
 | `008_allow_squad_scoring.sql` | Allow squad members to record scores |
+| `009_allow_squad_stand_writes.sql` | Allow squad members to write to the stands table |
+| `010_unique_club_stand_per_round.sql` | Unique index preventing duplicate stands per club stand per round |
 
 If setting up a fresh Supabase project, apply these migrations in order. PowerSync sync rules are defined in `supabase/powersync-sync-rules.yaml`.
 

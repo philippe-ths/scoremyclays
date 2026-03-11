@@ -33,6 +33,10 @@ Every entity (rounds, stands, shooters, target results) is assigned a UUID gener
 - Multiple offline devices can create entities without collisions
 - When sync happens, local UUIDs are preserved as the primary keys
 
+### Deterministic UUIDs for Shared Resources
+
+Club round stands are a special case: multiple users may independently try to create the same logical stand. To prevent duplicates, club round stands use **deterministic UUIDs** derived from `SHA-256(round_id + club_stand_id)` via `lib/uuid.ts`. This guarantees that every device generates the same ID for the same logical stand, and `INSERT OR IGNORE` makes the creation idempotent. A partial unique index on `stands(round_id, club_stand_id)` provides a database-level safety net.
+
 ### Current State
 
 The app operates seamlessly offline, while simultaneously utilizing full **PowerSync multi-device synchronization** whenever authenticated users are online. 
