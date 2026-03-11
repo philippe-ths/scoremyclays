@@ -111,6 +111,8 @@ db/               Database layer
 lib/              Utilities, constants, and types
   types.ts        Domain enums and entity interfaces
   constants.ts    Colours, spacing, presentation labels
+  formatting.ts   Display formatting helpers (stand details, position titles)
+  uuid.ts         Deterministic UUID generation from SHA-256 hashes
   supabase.ts     Supabase client configuration
   powersync-connector.ts  PowerSync ↔ Supabase sync connector
 providers/        React context providers

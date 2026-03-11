@@ -31,6 +31,8 @@ The scoring screen adapts its navigation based on whether the round is custom or
 
 For custom rounds, the state machine advances linearly through stands. For club rounds, the scorer can pick any position and stand in any order.
 
+When a club round scorer selects a stand, the app first checks the local database for a stand that may have arrived via sync from another user. If none exists, it creates one using a deterministic UUID derived from `round_id` and `club_stand_id`, ensuring all devices produce the same stand ID. The insert uses `INSERT OR IGNORE` for idempotency.
+
 ## Birds Per Target
 
 The number of birds per target depends on the stand's target configuration:
@@ -92,7 +94,7 @@ Each tap writes a single `TargetResult` row:
 
 | Field | Value |
 |-------|-------|
-| `id` | New UUID (generated locally via `expo-crypto`) |
+| `id` | New UUID (random for target results, deterministic for club round stands) |
 | `stand_id` | Current stand's ID |
 | `round_id` | Current round's ID (denormalized for efficient querying) |
 | `shooter_entry_id` | Current shooter's ID |
@@ -103,6 +105,19 @@ Each tap writes a single `TargetResult` row:
 | `device_id` | Device identifier for conflict resolution |
 
 All writes go to the local SQLite database. No network call is needed.
+
+## Reactive Sync Updates
+
+The scoring screen uses PowerSync's `db.watch()` to reactively update the UI as data syncs from other devices, without requiring a manual refresh:
+
+| Watcher | Query | Updates |
+|---------|-------|---------|
+| Stands | `stands WHERE round_id = ?` | `createdStandMap` — reflects stands created by other users |
+| Shooter entries | `shooter_entries WHERE squad_id = ?` | `shooters` list — new squad members appear automatically |
+| Shooter statuses | `target_results WHERE stand_id = ?` | Shooter progress badges (not-started / in-progress / completed) |
+| Live score | `target_results WHERE stand_id = ? AND shooter_entry_id = ?` | Kill count and target position for the current shooter |
+
+This means when one user scores a shooter, other users on the same round see the status update in real time.
 
 ## Mid-Round Resume
 
