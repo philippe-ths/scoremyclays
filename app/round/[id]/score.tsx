@@ -354,6 +354,15 @@ export default function ScoringScreen() {
 
     let standId = createdStandMap.get(clubStand.id);
 
+    // Check if the stand arrived via sync since initial load
+    if (!standId) {
+      const synced = await db.getOptional<{ id: string }>(
+        'SELECT id FROM stands WHERE round_id = ? AND club_stand_id = ?',
+        [roundId, clubStand.id],
+      );
+      if (synced) standId = synced.id;
+    }
+
     // Create the round stand from club template if it doesn't exist yet
     if (!standId) {
       standId = await deterministicUUID(`${roundId}:${clubStand.id}`);

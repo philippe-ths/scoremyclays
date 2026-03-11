@@ -16,7 +16,7 @@ export async function createStand(
   },
 ): Promise<void> {
   await db.execute(
-    'INSERT INTO stands (id, round_id, stand_number, target_config, presentation, presentation_notes, num_targets, club_stand_id, club_position_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    'INSERT OR IGNORE INTO stands (id, round_id, stand_number, target_config, presentation, presentation_notes, num_targets, club_stand_id, club_position_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [params.id, params.round_id, params.stand_number, params.target_config, params.presentation, params.presentation_notes, params.num_targets, params.club_stand_id ?? null, params.club_position_id ?? null],
   );
 }
