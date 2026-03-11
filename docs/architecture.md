@@ -7,7 +7,7 @@
 | Mobile Framework | React Native + Expo (managed workflow) | RN 0.83, Expo 55 |
 | Language | TypeScript | 5.9 |
 | Routing | Expo Router (file-based) | 55.0 |
-| Local Database | SQLite via PowerSync | — |
+| Local Database | SQLite via PowerSync (`react-native-quick-sqlite` on native, `wa-sqlite` on web) | — |
 | Sync Engine | PowerSync | web 1.34, native 1.30 |
 | Backend | Supabase (PostgreSQL + Auth) | 2.49 |
 | Build & Deploy | Expo EAS Build | — |

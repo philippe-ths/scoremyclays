@@ -50,7 +50,7 @@ PowerSync uses different packages for web browsers and native platforms (iOS/And
 | Platform | Package | SQLite Engine |
 |----------|---------|---------------|
 | Web | `@powersync/web` | wa-sqlite (WASM) |
-| iOS / Android | `@powersync/react-native` | Native SQLite |
+| iOS / Android | `@powersync/react-native` | `@journeyapps/react-native-quick-sqlite` |
 
 The app handles this with platform-specific file extensions, which Metro and Expo resolve automatically:
 
