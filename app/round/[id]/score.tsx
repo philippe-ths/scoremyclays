@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -67,6 +67,7 @@ export default function ScoringScreen() {
   // Custom mode state (sequential)
   const [stands, setStands] = useState<Stand[]>([]);
   const [standIdx, setStandIdx] = useState(0);
+  const [squadId, setSquadId] = useState<string | null>(null);
 
   // Club mode state
   const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
@@ -104,6 +105,7 @@ export default function ScoringScreen() {
 
       const squad = await getSquadByRound(db, roundId);
       if (squad) {
+        setSquadId(squad.id);
         const entries = await listShooterEntriesWithUsers(db, squad.id);
         setShooters(entries);
       }
@@ -142,33 +144,27 @@ export default function ScoringScreen() {
     })();
   }, [db, roundId]);
 
-  // Load existing results when stand/shooter changes to resume mid-round
+  // Reactively watch shooter entries — picks up new squad members via sync
   useEffect(() => {
-    if (!currentStand || !currentShooter) return;
-    (async () => {
-      const existing = await getResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
-      if (existing.length > 0) {
-        const lastResult = existing[existing.length - 1];
-        const kills = existing.filter((r) => r.result === ShotResult.KILL).length;
-        setKillCount(kills);
-        setTotalRecorded(existing.length);
-        const nextTarget = lastResult.target_number;
-        const nextBird = lastResult.bird_number;
-        if (nextBird < maxBirds) {
-          setTargetNum(nextTarget);
-          setBirdNum(nextBird + 1);
-        } else if (nextTarget < (currentStand.num_targets ?? 0)) {
-          setTargetNum(nextTarget + 1);
-          setBirdNum(1);
-        }
-      } else {
-        setKillCount(0);
-        setTotalRecorded(0);
-        setTargetNum(1);
-        setBirdNum(1);
-      }
-    })();
-  }, [currentStand?.id, currentShooter?.id]);
+    if (!squadId) return;
+    const abort = new AbortController();
+    db.watch(
+      `SELECT se.*, u.user_id AS user_handle
+       FROM shooter_entries se
+       LEFT JOIN users u ON se.user_id = u.id
+       WHERE se.squad_id = ?
+       ORDER BY se.position_in_squad`,
+      [squadId],
+      {
+        onResult(results) {
+          const rows = (results.rows?._array ?? []) as EnrichedShooterEntry[];
+          setShooters(rows);
+        },
+      },
+      { signal: abort.signal },
+    );
+    return () => abort.abort();
+  }, [db, squadId]);
 
   // Compute shooter statuses when stand changes or when returning to shooter picker
   const refreshShooterStatuses = useCallback(
@@ -196,11 +192,112 @@ export default function ScoringScreen() {
     [db, shooters],
   );
 
-  // Refresh statuses when the current stand changes
+  // Reactively watch stands table — picks up stands created by other users via sync
+  useEffect(() => {
+    if (!roundId || !round?.club_id) return;
+    const abort = new AbortController();
+    db.watch(
+      'SELECT id, club_stand_id FROM stands WHERE round_id = ?',
+      [roundId],
+      {
+        onResult(results) {
+          const rows = results.rows?._array ?? [];
+          const next = new Map<string, string>();
+          for (const row of rows) {
+            if (row.club_stand_id) next.set(row.club_stand_id, row.id);
+          }
+          setCreatedStandMap(next);
+        },
+      },
+      { signal: abort.signal },
+    );
+    return () => abort.abort();
+  }, [db, roundId, round?.club_id]);
+
+  // Reactively watch target_results for the current stand — updates shooter statuses in real time
+  const refreshingStandIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (!currentStand || shooters.length === 0) return;
-    refreshShooterStatuses(currentStand);
-  }, [currentStand?.id, shooters.length]);
+    refreshingStandIdRef.current = currentStand.id;
+    const abort = new AbortController();
+    db.watch(
+      'SELECT shooter_entry_id, COUNT(*) as cnt FROM target_results WHERE stand_id = ? GROUP BY shooter_entry_id',
+      [currentStand.id],
+      {
+        onResult() {
+          // Any change to results for this stand → refresh statuses
+          if (refreshingStandIdRef.current === currentStand.id) {
+            refreshShooterStatuses(currentStand);
+          }
+        },
+      },
+      { signal: abort.signal },
+    );
+    return () => abort.abort();
+  }, [db, currentStand?.id, shooters.length, refreshShooterStatuses]);
+
+  // Reactively watch target_results for current stand+shooter — updates live score
+  useEffect(() => {
+    if (!currentStand || !currentShooter) return;
+    const abort = new AbortController();
+    db.watch(
+      'SELECT id FROM target_results WHERE stand_id = ? AND shooter_entry_id = ?',
+      [currentStand.id, currentShooter.id],
+      {
+        async onResult() {
+          const existing = await getResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
+          const kills = existing.filter((r) => r.result === ShotResult.KILL).length;
+          setKillCount(kills);
+          setTotalRecorded(existing.length);
+          if (existing.length > 0) {
+            const lastResult = existing[existing.length - 1];
+            const nextTarget = lastResult.target_number;
+            const nextBird = lastResult.bird_number;
+            const maxB = birdsPerTarget(currentStand.target_config as TargetConfig);
+            if (nextBird < maxB) {
+              setTargetNum(nextTarget);
+              setBirdNum(nextBird + 1);
+            } else if (nextTarget < (currentStand.num_targets ?? 0)) {
+              setTargetNum(nextTarget + 1);
+              setBirdNum(1);
+            } else {
+              setTargetNum(nextTarget + 1);
+            }
+          }
+        },
+      },
+      { signal: abort.signal },
+    );
+    return () => abort.abort();
+  }, [db, currentStand?.id, currentShooter?.id]);
+
+  // Load existing results when stand/shooter changes to resume mid-round
+  useEffect(() => {
+    if (!currentStand || !currentShooter) return;
+    (async () => {
+      const existing = await getResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
+      if (existing.length > 0) {
+        const lastResult = existing[existing.length - 1];
+        const kills = existing.filter((r) => r.result === ShotResult.KILL).length;
+        setKillCount(kills);
+        setTotalRecorded(existing.length);
+        const nextTarget = lastResult.target_number;
+        const nextBird = lastResult.bird_number;
+        if (nextBird < maxBirds) {
+          setTargetNum(nextTarget);
+          setBirdNum(nextBird + 1);
+        } else if (nextTarget < (currentStand.num_targets ?? 0)) {
+          setTargetNum(nextTarget + 1);
+          setBirdNum(1);
+        }
+      } else {
+        setKillCount(0);
+        setTotalRecorded(0);
+        setTargetNum(1);
+        setBirdNum(1);
+      }
+    })();
+  }, [currentStand?.id, currentShooter?.id]);
 
   function handleSelectShooter(shooter: ShooterEntry) {
     const idx = shooters.findIndex((s) => s.id === shooter.id);
