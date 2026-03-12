@@ -1,7 +1,7 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
 import type { Stand, PresentationType, TargetConfig } from '@/lib/types';
 
-export async function createStand(
+export async function smcCreateStand(
   db: AbstractPowerSyncDatabase,
   params: {
     id: string;
@@ -21,21 +21,21 @@ export async function createStand(
   );
 }
 
-export async function listStands(
+export async function smcListStands(
   db: AbstractPowerSyncDatabase,
   roundId: string,
 ): Promise<Stand[]> {
   return db.getAll<Stand>('SELECT * FROM stands WHERE round_id = ? ORDER BY stand_number', [roundId]);
 }
 
-export async function getStand(
+export async function smcGetStand(
   db: AbstractPowerSyncDatabase,
   id: string,
 ): Promise<Stand | null> {
   return db.getOptional<Stand>('SELECT * FROM stands WHERE id = ?', [id]);
 }
 
-export async function updateStand(
+export async function smcUpdateStand(
   db: AbstractPowerSyncDatabase,
   id: string,
   params: Partial<Pick<Stand, 'target_config' | 'presentation' | 'presentation_notes' | 'num_targets'>>,
@@ -50,4 +50,3 @@ export async function updateStand(
   values.push(id);
   await db.execute(`UPDATE stands SET ${sets.join(', ')} WHERE id = ?`, values);
 }
-

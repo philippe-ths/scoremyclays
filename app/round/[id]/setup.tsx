@@ -12,11 +12,11 @@ import {
 import { usePowerSync, useQuery } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
-import { getRound } from '@/db/queries/rounds';
-import { getSquadByRound, addShooterEntry, listShooterEntries, removeShooterEntry } from '@/db/queries/squads';
-import { getClubWithDetails } from '@/db/queries/clubs';
-import { createInvite, checkDuplicateInvite } from '@/db/queries/invites';
-import { getUserByUserId } from '@/db/queries/users';
+import { smcGetRound } from '@/db/queries/smc-rounds';
+import { smcGetSquadByRound, smcAddShooterEntry, smcListShooterEntries, smcRemoveShooterEntry } from '@/db/queries/smc-squads';
+import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
+import { smcCreateInvite, smcCheckDuplicateInvite } from '@/db/queries/smc-invites';
+import { smcGetUserByUserId } from '@/db/queries/smc-users';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
 import { InviteStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
@@ -43,21 +43,21 @@ export default function RoundSetupScreen() {
 
   const reload = useCallback(async () => {
     if (!roundId) return;
-    const r = await getRound(db, roundId);
+    const r = await smcGetRound(db, roundId);
     setRound(r);
 
     // Load club positions
     if (r?.club_id) {
-      const clubData = await getClubWithDetails(db, r.club_id);
+      const clubData = await smcGetClubWithDetails(db, r.club_id);
       if (clubData) {
         setClubPositions(clubData.positions);
       }
     }
 
-    const squad = await getSquadByRound(db, roundId);
+    const squad = await smcGetSquadByRound(db, roundId);
     if (squad) {
       setSquadId(squad.id);
-      const entries = await listShooterEntries(db, squad.id);
+      const entries = await smcListShooterEntries(db, squad.id);
       setShooters(entries);
     }
   }, [db, roundId]);
@@ -72,7 +72,7 @@ export default function RoundSetupScreen() {
     if (!user || !roundId) return;
 
     // Check if already invited or participant
-    const existing = await checkDuplicateInvite(db, roundId, selectedUser.user_id!);
+    const existing = await smcCheckDuplicateInvite(db, roundId, selectedUser.user_id!);
     if (existing) {
       if (existing.status === InviteStatus.PENDING) {
         Alert.alert('Already invited', 'You have already invited this user to this round.');
@@ -81,7 +81,7 @@ export default function RoundSetupScreen() {
       } else {
         Alert.alert('Re-inviting', 'Sending a new invite to this user.');
         // Update declined invite back to PENDING
-        await createInvite(db, {
+        await smcCreateInvite(db, {
           id: existing.id,
           round_id: roundId,
           inviter_id: user.id,
@@ -94,7 +94,7 @@ export default function RoundSetupScreen() {
 
     // Create invite
     try {
-      await createInvite(db, {
+      await smcCreateInvite(db, {
         id: Crypto.randomUUID(),
         round_id: roundId,
         inviter_id: user.id,
@@ -121,7 +121,7 @@ export default function RoundSetupScreen() {
       Alert.alert('Squad full', `Maximum ${MAX_SQUAD_SIZE} shooters per squad.`);
       return;
     }
-    await addShooterEntry(db, {
+    await smcAddShooterEntry(db, {
       id: Crypto.randomUUID(),
       squad_id: squadId,
       round_id: roundId!,
@@ -138,7 +138,7 @@ export default function RoundSetupScreen() {
       Alert.alert('Cannot remove', 'At least one shooter is required.');
       return;
     }
-    await removeShooterEntry(db, entryId);
+    await smcRemoveShooterEntry(db, entryId);
     await reload();
   }
 

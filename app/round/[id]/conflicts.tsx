@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
-import { getRoundConflicts, resolveConflict, type ConflictedShotGroup } from '@/db/queries/scoring';
-import { getRound } from '@/db/queries/rounds';
-import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
+import { smcGetRoundConflicts, smcResolveConflict, type ConflictedShotGroup } from '@/db/queries/smc-scoring';
+import { smcGetRound } from '@/db/queries/smc-rounds';
+import { smcGetSquadByRound, smcListShooterEntries } from '@/db/queries/smc-squads';
 import { useAuth } from '@/providers/AuthProvider';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
@@ -32,22 +32,22 @@ export default function ConflictsScreen() {
     if (!roundId) return;
     
     // Authorization check
-    const round = await getRound(db, roundId);
+    const round = await smcGetRound(db, roundId);
     if (!round || round.created_by !== user?.id) {
       Alert.alert('Unauthorized', 'Only the round organizer can resolve conflicts.');
       router.back();
       return;
     }
 
-    const squad = await getSquadByRound(db, roundId);
+    const squad = await smcGetSquadByRound(db, roundId);
     if (squad) {
-      const shooterList = await listShooterEntries(db, squad.id);
+      const shooterList = await smcListShooterEntries(db, squad.id);
       const shooterMap: Record<string, ShooterEntry> = {};
       shooterList.forEach(s => { shooterMap[s.id] = s; });
       setShooters(shooterMap);
     }
 
-    const c = await getRoundConflicts(db, roundId);
+    const c = await smcGetRoundConflicts(db, roundId);
     setConflicts(c);
     setIsLoading(false);
   }
@@ -69,7 +69,7 @@ export default function ConflictsScreen() {
         const keepId = resolved[groupKey];
         if (keepId) {
           const deleteIds = group.records.filter(r => r.id !== keepId).map(r => r.id);
-          await resolveConflict(db, keepId, deleteIds);
+          await smcResolveConflict(db, keepId, deleteIds);
         }
       }
       Alert.alert('Success', 'All conflicts resolved!');

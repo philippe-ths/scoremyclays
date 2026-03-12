@@ -1,5 +1,5 @@
 import { createMockDb } from '../../helpers/mockDb';
-import { listClubs, getClubWithDetails } from '@/db/queries/clubs';
+import { smcListClubs, smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import type { Club, ClubPosition, ClubStand } from '@/lib/types';
 import { TargetConfig, PresentationType } from '@/lib/types';
 
@@ -11,12 +11,12 @@ const mockClub: Club = {
   created_at: '2026-01-01T00:00:00Z',
 };
 
-describe('listClubs', () => {
+describe('smcListClubs', () => {
   it('filters by search term when provided', async () => {
     const db = createMockDb();
     (db.getAll as jest.Mock).mockResolvedValue([mockClub]);
 
-    await listClubs(db, 'Test');
+    await smcListClubs(db, 'Test');
 
     const [sql, params] = (db.getAll as jest.Mock).mock.calls[0];
     expect(sql).toContain('LIKE ?');
@@ -27,7 +27,7 @@ describe('listClubs', () => {
     const db = createMockDb();
     (db.getAll as jest.Mock).mockResolvedValue([mockClub]);
 
-    await listClubs(db);
+    await smcListClubs(db);
 
     const [sql, params] = (db.getAll as jest.Mock).mock.calls[0];
     expect(sql).not.toContain('LIKE');
@@ -38,19 +38,19 @@ describe('listClubs', () => {
     const db = createMockDb();
     (db.getAll as jest.Mock).mockResolvedValue([]);
 
-    await listClubs(db, '   ');
+    await smcListClubs(db, '   ');
 
     const [sql] = (db.getAll as jest.Mock).mock.calls[0];
     expect(sql).not.toContain('LIKE');
   });
 });
 
-describe('getClubWithDetails', () => {
+describe('smcGetClubWithDetails', () => {
   it('returns null when club not found', async () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock).mockResolvedValue(null);
 
-    const result = await getClubWithDetails(db, 'missing');
+    const result = await smcGetClubWithDetails(db, 'missing');
     expect(result).toBeNull();
   });
 
@@ -79,7 +79,7 @@ describe('getClubWithDetails', () => {
       .mockResolvedValueOnce([position])
       .mockResolvedValueOnce([stand]);
 
-    const result = await getClubWithDetails(db, 'club1');
+    const result = await smcGetClubWithDetails(db, 'club1');
 
     expect(result).not.toBeNull();
     expect(result!.club).toEqual(mockClub);

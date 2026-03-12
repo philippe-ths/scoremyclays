@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
-import { getClubWithDetails } from '@/db/queries/clubs';
+import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
@@ -25,7 +25,7 @@ export default function ClubDetailScreen() {
 
   const load = useCallback(async () => {
     if (!clubId) return;
-    const result = await getClubWithDetails(db, clubId);
+    const result = await smcGetClubWithDetails(db, clubId);
     if (result) {
       setClub(result.club);
       setPositions(result.positions);

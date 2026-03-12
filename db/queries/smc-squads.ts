@@ -1,21 +1,21 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
 import type { Squad, ShooterEntry, EnrichedShooterEntry } from '@/lib/types';
 
-export async function createSquad(
+export async function smcCreateSquad(
   db: AbstractPowerSyncDatabase,
   params: { id: string; round_id: string },
 ): Promise<void> {
   await db.execute('INSERT INTO squads (id, round_id) VALUES (?, ?)', [params.id, params.round_id]);
 }
 
-export async function getSquadByRound(
+export async function smcGetSquadByRound(
   db: AbstractPowerSyncDatabase,
   roundId: string,
 ): Promise<Squad | null> {
   return db.getOptional<Squad>('SELECT * FROM squads WHERE round_id = ?', [roundId]);
 }
 
-export async function addShooterEntry(
+export async function smcAddShooterEntry(
   db: AbstractPowerSyncDatabase,
   params: {
     id: string;
@@ -32,7 +32,7 @@ export async function addShooterEntry(
   );
 }
 
-export async function listShooterEntries(
+export async function smcListShooterEntries(
   db: AbstractPowerSyncDatabase,
   squadId: string,
 ): Promise<ShooterEntry[]> {
@@ -42,14 +42,14 @@ export async function listShooterEntries(
   );
 }
 
-export async function removeShooterEntry(
+export async function smcRemoveShooterEntry(
   db: AbstractPowerSyncDatabase,
   id: string,
 ): Promise<void> {
   await db.execute('DELETE FROM shooter_entries WHERE id = ?', [id]);
 }
 
-export async function listShooterEntriesWithUsers(
+export async function smcListShooterEntriesWithUsers(
   db: AbstractPowerSyncDatabase,
   squadId: string,
 ): Promise<EnrichedShooterEntry[]> {

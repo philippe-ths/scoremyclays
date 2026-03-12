@@ -4,7 +4,7 @@ import type { User } from '@/lib/types';
 /**
  * Get user by their internal ID (UUID from auth)
  */
-export async function getUserById(
+export async function smcGetUserById(
   db: AbstractPowerSyncDatabase,
   userId: string,
 ): Promise<User | null> {
@@ -14,7 +14,7 @@ export async function getUserById(
 /**
  * Get user by their unique user_id handle (e.g., "@phil_marr")
  */
-export async function getUserByUserId(
+export async function smcGetUserByUserId(
   db: AbstractPowerSyncDatabase,
   userIdHandle: string,
 ): Promise<User | null> {
@@ -27,7 +27,7 @@ export async function getUserByUserId(
 /**
  * Search users by display name (only returns discoverable users)
  */
-export async function searchUsersByDisplayName(
+export async function smcSearchUsersByDisplayName(
   db: AbstractPowerSyncDatabase,
   displayName: string,
 ): Promise<User[]> {
@@ -42,7 +42,7 @@ export async function searchUsersByDisplayName(
  * Search users by partial user_id match (works regardless of discoverable setting)
  * This allows users to be found by their handle even if they're not discoverable
  */
-export async function searchUsersByUserId(
+export async function smcSearchUsersByUserId(
   db: AbstractPowerSyncDatabase,
   userIdHandle: string,
 ): Promise<User[]> {
@@ -56,7 +56,7 @@ export async function searchUsersByUserId(
 /**
  * Check if a user_id handle is available (not taken)
  */
-export async function isUserIdAvailable(
+export async function smcIsUserIdAvailable(
   db: AbstractPowerSyncDatabase,
   userIdHandle: string,
 ): Promise<boolean> {
@@ -70,7 +70,7 @@ export async function isUserIdAvailable(
 /**
  * Update user profile fields
  */
-export async function updateUserProfile(
+export async function smcUpdateUserProfile(
   db: AbstractPowerSyncDatabase,
   userId: string,
   updates: {

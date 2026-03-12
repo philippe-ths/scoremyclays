@@ -13,7 +13,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
-import { listClubs, getClub } from '@/db/queries/clubs';
+import { smcListClubs, smcGetClub } from '@/db/queries/smc-clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import type { Club } from '@/lib/types';
 
@@ -37,7 +37,7 @@ export default function NewRoundScreen() {
   useEffect(() => {
     if (params.clubId) {
       (async () => {
-        const club = await getClub(db, params.clubId!);
+        const club = await smcGetClub(db, params.clubId!);
         if (club) {
           setSelectedClub(club);
           setClubSearch(club.name);
@@ -54,7 +54,7 @@ export default function NewRoundScreen() {
       setShowClubDropdown(false);
       return;
     }
-    const results = await listClubs(db, query);
+    const results = await smcListClubs(db, query);
     setClubResults(results);
     setShowClubDropdown(results.length > 0);
   }, [db]);

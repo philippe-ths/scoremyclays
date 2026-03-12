@@ -5,7 +5,7 @@ import { InviteStatus } from '@/lib/types';
 /**
  * Create a new invite
  */
-export async function createInvite(
+export async function smcCreateInvite(
   db: AbstractPowerSyncDatabase,
   params: {
     id: string;
@@ -25,7 +25,7 @@ export async function createInvite(
 /**
  * Get invite by ID
  */
-export async function getInviteById(
+export async function smcGetInviteById(
   db: AbstractPowerSyncDatabase,
   inviteId: string,
 ): Promise<Invite | null> {
@@ -35,7 +35,7 @@ export async function getInviteById(
 /**
  * List all invites for a specific round
  */
-export async function listInvitesForRound(
+export async function smcListInvitesForRound(
   db: AbstractPowerSyncDatabase,
   roundId: string,
 ): Promise<Invite[]> {
@@ -49,7 +49,7 @@ export async function listInvitesForRound(
  * List incoming invites for a user (where they are the invitee)
  * Optionally filter by status
  */
-export async function listIncomingInvitesForUser(
+export async function smcListIncomingInvitesForUser(
   db: AbstractPowerSyncDatabase,
   inviteeUserId: string,
   status?: string,
@@ -69,7 +69,7 @@ export async function listIncomingInvitesForUser(
 /**
  * List outgoing invites for a round by a specific user
  */
-export async function listOutgoingInvitesForRound(
+export async function smcListOutgoingInvitesForRound(
   db: AbstractPowerSyncDatabase,
   roundId: string,
   inviterId: string,
@@ -81,9 +81,9 @@ export async function listOutgoingInvitesForRound(
 }
 
 /**
- * Update invite status (PENDING → ACCEPTED or DECLINED)
+ * Update invite status (PENDING -> ACCEPTED or DECLINED)
  */
-export async function updateInviteStatus(
+export async function smcUpdateInviteStatus(
   db: AbstractPowerSyncDatabase,
   inviteId: string,
   status: string,
@@ -95,7 +95,7 @@ export async function updateInviteStatus(
  * Check if an invite already exists between these users for this round
  * Returns the existing invite if found, null otherwise
  */
-export async function checkDuplicateInvite(
+export async function smcCheckDuplicateInvite(
   db: AbstractPowerSyncDatabase,
   roundId: string,
   inviteeUserId: string,
@@ -109,7 +109,7 @@ export async function checkDuplicateInvite(
 /**
  * Get pending invite count for a user
  */
-export async function getPendingInviteCount(
+export async function smcGetPendingInviteCount(
   db: AbstractPowerSyncDatabase,
   inviteeUserId: string,
 ): Promise<number> {

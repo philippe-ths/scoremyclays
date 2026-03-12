@@ -1,7 +1,7 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
 import type { TargetResultRecord, ShotResult } from '@/lib/types';
 
-export async function recordTargetResult(
+export async function smcRecordTargetResult(
   db: AbstractPowerSyncDatabase,
   params: {
     id: string;
@@ -22,7 +22,7 @@ export async function recordTargetResult(
   );
 }
 
-export async function getResultsForStandAndShooter(
+export async function smcGetResultsForStandAndShooter(
   db: AbstractPowerSyncDatabase,
   standId: string,
   shooterEntryId: string,
@@ -46,7 +46,7 @@ export async function getResultsForStandAndShooter(
   return deduped;
 }
 
-export async function getResultsForStand(
+export async function smcGetResultsForStand(
   db: AbstractPowerSyncDatabase,
   standId: string,
 ): Promise<TargetResultRecord[]> {
@@ -56,7 +56,7 @@ export async function getResultsForStand(
   );
 }
 
-export async function getResultsForRound(
+export async function smcGetResultsForRound(
   db: AbstractPowerSyncDatabase,
   roundId: string,
 ): Promise<TargetResultRecord[]> {
@@ -69,7 +69,7 @@ export async function getResultsForRound(
   );
 }
 
-export async function updateTargetResult(
+export async function smcUpdateTargetResult(
   db: AbstractPowerSyncDatabase,
   id: string,
   result: ShotResult,
@@ -77,7 +77,7 @@ export async function updateTargetResult(
   await db.execute('UPDATE target_results SET result = ? WHERE id = ?', [result, id]);
 }
 
-export async function getShooterRoundScore(
+export async function smcGetShooterRoundScore(
   db: AbstractPowerSyncDatabase,
   roundId: string,
   shooterEntryId: string,
@@ -119,7 +119,7 @@ export interface ConflictedShotGroup {
   records: TargetResultRecord[];
 }
 
-export async function getRoundConflicts(
+export async function smcGetRoundConflicts(
   db: AbstractPowerSyncDatabase,
   roundId: string,
 ): Promise<ConflictedShotGroup[]> {
@@ -139,7 +139,7 @@ export async function getRoundConflicts(
     return [];
   }
 
-  const allResults = await getResultsForRound(db, roundId);
+  const allResults = await smcGetResultsForRound(db, roundId);
 
   return dupes.map((dupe) => ({
     ...dupe,
@@ -154,7 +154,7 @@ export async function getRoundConflicts(
   }));
 }
 
-export async function resolveConflict(
+export async function smcResolveConflict(
   db: AbstractPowerSyncDatabase,
   keepId: string,
   deleteIds: string[],

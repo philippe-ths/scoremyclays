@@ -9,7 +9,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
-import { listRounds } from '@/db/queries/rounds';
+import { smcListRounds } from '@/db/queries/smc-rounds';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import { RoundStatus, type Round } from '@/lib/types';
 
@@ -28,7 +28,7 @@ export default function HistoryScreen() {
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
-      listRounds(db, user.id).then(setRounds);
+      smcListRounds(db, user.id).then(setRounds);
     }, [db, user]),
   );
 

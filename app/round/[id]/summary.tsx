@@ -8,11 +8,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
-import { getRound } from '@/db/queries/rounds';
-import { getSquadByRound, listShooterEntries } from '@/db/queries/squads';
-import { listStands } from '@/db/queries/stands';
-import { getShooterRoundScore, getResultsForStandAndShooter } from '@/db/queries/scoring';
-import { getClubPositions } from '@/db/queries/clubs';
+import { smcGetRound } from '@/db/queries/smc-rounds';
+import { smcGetSquadByRound, smcListShooterEntries } from '@/db/queries/smc-squads';
+import { smcListStands } from '@/db/queries/smc-stands';
+import { smcGetShooterRoundScore, smcGetResultsForStandAndShooter } from '@/db/queries/smc-scoring';
+import { smcGetClubPositions } from '@/db/queries/smc-clubs';
 import { useAuth } from '@/providers/AuthProvider';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
@@ -51,18 +51,18 @@ export default function RoundSummaryScreen() {
     (async () => {
       if (!roundId) return;
 
-      const r = await getRound(db, roundId);
+      const r = await smcGetRound(db, roundId);
       setRound(r);
 
-      const stands = await listStands(db, roundId);
-      const squad = await getSquadByRound(db, roundId);
+      const stands = await smcListStands(db, roundId);
+      const squad = await smcGetSquadByRound(db, roundId);
       if (!squad) { setIsLoading(false); return; }
-      const shooters = await listShooterEntries(db, squad.id);
+      const shooters = await smcListShooterEntries(db, squad.id);
 
       // Per-shooter totals
       const scores: ShooterScore[] = [];
       for (const shooter of shooters) {
-        const score = await getShooterRoundScore(db, roundId, shooter.id);
+        const score = await smcGetShooterRoundScore(db, roundId, shooter.id);
         scores.push({ shooter, kills: score.kills, total: score.total, hasConflicts: score.hasConflicts });
       }
       setShooterScores(scores);
@@ -72,7 +72,7 @@ export default function RoundSummaryScreen() {
       for (const stand of stands) {
         const results: StandBreakdown['results'] = [];
         for (const shooter of shooters) {
-          const standResults = await getResultsForStandAndShooter(db, stand.id, shooter.id);
+          const standResults = await smcGetResultsForStandAndShooter(db, stand.id, shooter.id);
           const kills = standResults.filter((r) => r.result === ShotResult.KILL).length;
           results.push({ shooter, kills, total: standResults.length });
         }
@@ -80,7 +80,7 @@ export default function RoundSummaryScreen() {
       }
 
       if (r?.club_id) {
-        const positions = await getClubPositions(db, r.club_id);
+        const positions = await smcGetClubPositions(db, r.club_id);
         const grouped = new Map<string, StandBreakdown[]>();
 
         for (const bd of breakdowns) {

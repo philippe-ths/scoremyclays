@@ -1,12 +1,12 @@
 import { createMockDb } from '../../helpers/mockDb';
-import { isUserIdAvailable, updateUserProfile } from '@/db/queries/users';
+import { smcIsUserIdAvailable, smcUpdateUserProfile } from '@/db/queries/smc-users';
 
-describe('isUserIdAvailable', () => {
+describe('smcIsUserIdAvailable', () => {
   it('returns true when user_id is not taken', async () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock).mockResolvedValue({ count: 0 });
 
-    const available = await isUserIdAvailable(db, 'new_handle');
+    const available = await smcIsUserIdAvailable(db, 'new_handle');
 
     expect(available).toBe(true);
     const [sql] = (db.getOptional as jest.Mock).mock.calls[0];
@@ -17,7 +17,7 @@ describe('isUserIdAvailable', () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock).mockResolvedValue({ count: 1 });
 
-    const available = await isUserIdAvailable(db, 'existing_handle');
+    const available = await smcIsUserIdAvailable(db, 'existing_handle');
     expect(available).toBe(false);
   });
 
@@ -25,16 +25,16 @@ describe('isUserIdAvailable', () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock).mockResolvedValue(null);
 
-    const available = await isUserIdAvailable(db, 'any_handle');
+    const available = await smcIsUserIdAvailable(db, 'any_handle');
     expect(available).toBe(true);
   });
 });
 
-describe('updateUserProfile', () => {
+describe('smcUpdateUserProfile', () => {
   it('builds dynamic SQL for multiple fields', async () => {
     const db = createMockDb();
 
-    await updateUserProfile(db, 'user1', {
+    await smcUpdateUserProfile(db, 'user1', {
       display_name: 'New Name',
       discoverable: 1,
     });
@@ -55,7 +55,7 @@ describe('updateUserProfile', () => {
   it('does not execute when no fields provided', async () => {
     const db = createMockDb();
 
-    await updateUserProfile(db, 'user1', {});
+    await smcUpdateUserProfile(db, 'user1', {});
 
     expect(db.execute).not.toHaveBeenCalled();
   });

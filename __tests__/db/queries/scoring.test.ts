@@ -1,10 +1,10 @@
 import { createMockDb } from '../../helpers/mockDb';
 import {
-  getResultsForStandAndShooter,
-  getShooterRoundScore,
-  getRoundConflicts,
-  resolveConflict,
-} from '@/db/queries/scoring';
+  smcGetResultsForStandAndShooter,
+  smcGetShooterRoundScore,
+  smcGetRoundConflicts,
+  smcResolveConflict,
+} from '@/db/queries/smc-scoring';
 import type { TargetResultRecord } from '@/lib/types';
 import { ShotResult } from '@/lib/types';
 
@@ -23,7 +23,7 @@ function makeResult(overrides: Partial<TargetResultRecord> = {}): TargetResultRe
   };
 }
 
-describe('getResultsForStandAndShooter', () => {
+describe('smcGetResultsForStandAndShooter', () => {
   it('deduplicates by keeping first occurrence per target/bird', async () => {
     const db = createMockDb();
     const rows: TargetResultRecord[] = [
@@ -33,7 +33,7 @@ describe('getResultsForStandAndShooter', () => {
     ];
     (db.getAll as jest.Mock).mockResolvedValue(rows);
 
-    const result = await getResultsForStandAndShooter(db, 's1', 'se1');
+    const result = await smcGetResultsForStandAndShooter(db, 's1', 'se1');
 
     expect(result).toHaveLength(2);
     expect(result[0].id).toBe('r1');
@@ -49,19 +49,19 @@ describe('getResultsForStandAndShooter', () => {
     ];
     (db.getAll as jest.Mock).mockResolvedValue(rows);
 
-    const result = await getResultsForStandAndShooter(db, 's1', 'se1');
+    const result = await smcGetResultsForStandAndShooter(db, 's1', 'se1');
     expect(result).toHaveLength(3);
   });
 });
 
-describe('getShooterRoundScore', () => {
+describe('smcGetShooterRoundScore', () => {
   it('returns zero kills and total when conflicts exist', async () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock)
       .mockResolvedValueOnce({ conflict_count: 2 })
       .mockResolvedValueOnce({ kills: 5, total: 10 });
 
-    const result = await getShooterRoundScore(db, 'round1', 'se1');
+    const result = await smcGetShooterRoundScore(db, 'round1', 'se1');
 
     expect(result).toEqual({ kills: 0, total: 0, hasConflicts: true });
   });
@@ -72,7 +72,7 @@ describe('getShooterRoundScore', () => {
       .mockResolvedValueOnce({ conflict_count: 0 })
       .mockResolvedValueOnce({ kills: 7, total: 10 });
 
-    const result = await getShooterRoundScore(db, 'round1', 'se1');
+    const result = await smcGetShooterRoundScore(db, 'round1', 'se1');
 
     expect(result).toEqual({ kills: 7, total: 10, hasConflicts: false });
   });
@@ -83,18 +83,18 @@ describe('getShooterRoundScore', () => {
       .mockResolvedValueOnce(null)
       .mockResolvedValueOnce(null);
 
-    const result = await getShooterRoundScore(db, 'round1', 'se1');
+    const result = await smcGetShooterRoundScore(db, 'round1', 'se1');
 
     expect(result).toEqual({ kills: 0, total: 0, hasConflicts: false });
   });
 });
 
-describe('getRoundConflicts', () => {
+describe('smcGetRoundConflicts', () => {
   it('returns empty array when no conflicts', async () => {
     const db = createMockDb();
     (db.getAll as jest.Mock).mockResolvedValue([]);
 
-    const result = await getRoundConflicts(db, 'round1');
+    const result = await smcGetRoundConflicts(db, 'round1');
     expect(result).toEqual([]);
   });
 
@@ -110,7 +110,7 @@ describe('getRoundConflicts', () => {
       .mockResolvedValueOnce(dupes)
       .mockResolvedValueOnce(allResults);
 
-    const result = await getRoundConflicts(db, 'round1');
+    const result = await smcGetRoundConflicts(db, 'round1');
 
     expect(result).toHaveLength(1);
     expect(result[0].records).toHaveLength(2);
@@ -119,7 +119,7 @@ describe('getRoundConflicts', () => {
   });
 });
 
-describe('resolveConflict', () => {
+describe('smcResolveConflict', () => {
   it('deletes specified IDs in a transaction', async () => {
     const db = createMockDb();
     const txExecute = jest.fn().mockResolvedValue(undefined);
@@ -127,7 +127,7 @@ describe('resolveConflict', () => {
       await cb({ execute: txExecute });
     });
 
-    await resolveConflict(db, 'keep1', ['del1', 'del2']);
+    await smcResolveConflict(db, 'keep1', ['del1', 'del2']);
 
     expect(txExecute).toHaveBeenCalledTimes(2);
     expect(txExecute).toHaveBeenCalledWith('DELETE FROM target_results WHERE id = ?', ['del1']);
