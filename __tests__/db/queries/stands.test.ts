@@ -1,12 +1,12 @@
 import { createMockDb } from '../../helpers/mockDb';
-import { updateStand } from '@/db/queries/stands';
+import { smcUpdateStand } from '@/db/queries/smc-stands';
 import { TargetConfig, PresentationType } from '@/lib/types';
 
-describe('updateStand', () => {
+describe('smcUpdateStand', () => {
   it('builds dynamic SQL for partial updates', async () => {
     const db = createMockDb();
 
-    await updateStand(db, 'stand1', {
+    await smcUpdateStand(db, 'stand1', {
       num_targets: 5,
       presentation: PresentationType.DRIVEN,
     });
@@ -23,7 +23,7 @@ describe('updateStand', () => {
   it('does not execute when no params provided', async () => {
     const db = createMockDb();
 
-    await updateStand(db, 'stand1', {});
+    await smcUpdateStand(db, 'stand1', {});
 
     expect(db.execute).not.toHaveBeenCalled();
   });
@@ -31,7 +31,7 @@ describe('updateStand', () => {
   it('handles single field update', async () => {
     const db = createMockDb();
 
-    await updateStand(db, 'stand1', { target_config: TargetConfig.REPORT_PAIR });
+    await smcUpdateStand(db, 'stand1', { target_config: TargetConfig.REPORT_PAIR });
 
     const [sql, params] = (db.execute as jest.Mock).mock.calls[0];
     expect(sql).toBe('UPDATE stands SET target_config = ? WHERE id = ?');

@@ -14,12 +14,12 @@ import * as Crypto from 'expo-crypto';
 import { Ionicons } from '@expo/vector-icons';
 import { deterministicUUID } from '@/lib/uuid';
 import { useAuth } from '@/providers/AuthProvider';
-import { getRound } from '@/db/queries/rounds';
-import { getSquadByRound, listShooterEntriesWithUsers } from '@/db/queries/squads';
-import { listStands, createStand } from '@/db/queries/stands';
-import { recordTargetResult, getResultsForStandAndShooter, getRoundConflicts, type ConflictedShotGroup } from '@/db/queries/scoring';
-import { updateRoundStatus } from '@/db/queries/rounds';
-import { getClubWithDetails } from '@/db/queries/clubs';
+import { smcGetRound } from '@/db/queries/smc-rounds';
+import { smcGetSquadByRound, smcListShooterEntriesWithUsers } from '@/db/queries/smc-squads';
+import { smcListStands, smcCreateStand } from '@/db/queries/smc-stands';
+import { smcRecordTargetResult, smcGetResultsForStandAndShooter, smcGetRoundConflicts, type ConflictedShotGroup } from '@/db/queries/smc-scoring';
+import { smcUpdateRoundStatus } from '@/db/queries/smc-rounds';
+import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import PositionPicker, { type PositionStatus } from '@/components/PositionPicker';
@@ -91,23 +91,23 @@ export default function ScoringScreen() {
   useEffect(() => {
     (async () => {
       if (!roundId) return;
-      const r = await getRound(db, roundId);
+      const r = await smcGetRound(db, roundId);
       setRound(r);
 
-      const squad = await getSquadByRound(db, roundId);
+      const squad = await smcGetSquadByRound(db, roundId);
       if (squad) {
         setSquadId(squad.id);
-        const entries = await listShooterEntriesWithUsers(db, squad.id);
+        const entries = await smcListShooterEntriesWithUsers(db, squad.id);
         setShooters(entries);
       }
 
       if (r?.club_id) {
-        const clubData = await getClubWithDetails(db, r.club_id);
+        const clubData = await smcGetClubWithDetails(db, r.club_id);
         if (clubData) {
           setClubPositions(clubData.positions);
         }
         // Load existing stands (for resume)
-        const existingStands = await listStands(db, roundId);
+        const existingStands = await smcListStands(db, roundId);
         const standMap = new Map<string, string>();
         for (const s of existingStands) {
           if (s.club_stand_id) {
@@ -119,7 +119,7 @@ export default function ScoringScreen() {
       }
 
       // Load conflicts for this round
-      const c = await getRoundConflicts(db, roundId);
+      const c = await smcGetRoundConflicts(db, roundId);
       setConflicts(c);
 
       setIsLoading(false);
@@ -156,7 +156,7 @@ export default function ScoringScreen() {
       const totalShots = (stand.num_targets ?? 0) * birdsPerTarget(stand.target_config as TargetConfig);
 
       for (const shooter of shooters) {
-        const results = await getResultsForStandAndShooter(db, stand.id, shooter.id);
+        const results = await smcGetResultsForStandAndShooter(db, stand.id, shooter.id);
         const recorded = results.length;
         progress[shooter.id] = { recorded, total: totalShots };
         if (recorded === 0) {
@@ -227,7 +227,7 @@ export default function ScoringScreen() {
       [currentStand.id, currentShooter.id],
       {
         async onResult() {
-          const existing = await getResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
+          const existing = await smcGetResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
           const kills = existing.filter((r) => r.result === ShotResult.KILL).length;
           setKillCount(kills);
           setTotalRecorded(existing.length);
@@ -257,7 +257,7 @@ export default function ScoringScreen() {
   useEffect(() => {
     if (!currentStand || !currentShooter) return;
     (async () => {
-      const existing = await getResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
+      const existing = await smcGetResultsForStandAndShooter(db, currentStand.id, currentShooter.id);
       if (existing.length > 0) {
         const lastResult = existing[existing.length - 1];
         const kills = existing.filter((r) => r.result === ShotResult.KILL).length;
@@ -357,7 +357,7 @@ export default function ScoringScreen() {
       if (!currentStand || !currentShooter || !user || standComplete) return;
       triggerHaptic();
 
-      await recordTargetResult(db, {
+      await smcRecordTargetResult(db, {
         id: Crypto.randomUUID(),
         stand_id: currentStand.id,
         round_id: roundId!,
@@ -406,7 +406,7 @@ export default function ScoringScreen() {
     // Create the round stand from club template if it doesn't exist yet
     if (!standId) {
       standId = await deterministicUUID(`${roundId}:${clubStand.id}`);
-      await createStand(db, {
+      await smcCreateStand(db, {
         id: standId,
         round_id: roundId,
         stand_number: clubStand.stand_number,
@@ -455,7 +455,7 @@ export default function ScoringScreen() {
   }
   async function handleFinish() {
     if (!roundId) return;
-    await updateRoundStatus(db, roundId, RoundStatus.COMPLETED);
+    await smcUpdateRoundStatus(db, roundId, RoundStatus.COMPLETED);
     router.replace(`/round/${roundId}/summary`);
   }
 

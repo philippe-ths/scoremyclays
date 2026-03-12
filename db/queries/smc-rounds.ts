@@ -1,7 +1,7 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
 import { RoundStatus, type Round } from '@/lib/types';
 
-export async function createRound(
+export async function smcCreateRound(
   db: AbstractPowerSyncDatabase,
   params: {
     id: string;
@@ -19,11 +19,11 @@ export async function createRound(
   );
 }
 
-export async function getRound(db: AbstractPowerSyncDatabase, id: string): Promise<Round | null> {
+export async function smcGetRound(db: AbstractPowerSyncDatabase, id: string): Promise<Round | null> {
   return db.getOptional<Round>('SELECT * FROM rounds WHERE id = ?', [id]);
 }
 
-export async function listRounds(db: AbstractPowerSyncDatabase, userId: string): Promise<Round[]> {
+export async function smcListRounds(db: AbstractPowerSyncDatabase, userId: string): Promise<Round[]> {
   return db.getAll<Round>(
     `SELECT DISTINCT r.* FROM rounds r
      LEFT JOIN shooter_entries se ON se.round_id = r.id
@@ -33,7 +33,7 @@ export async function listRounds(db: AbstractPowerSyncDatabase, userId: string):
   );
 }
 
-export async function updateRoundStatus(
+export async function smcUpdateRoundStatus(
   db: AbstractPowerSyncDatabase,
   id: string,
   status: RoundStatus,
@@ -42,7 +42,7 @@ export async function updateRoundStatus(
   await db.execute('UPDATE rounds SET status = ?, updated_at = ? WHERE id = ?', [status, now, id]);
 }
 
-export async function updateRoundNotes(
+export async function smcUpdateRoundNotes(
   db: AbstractPowerSyncDatabase,
   id: string,
   notes: string,

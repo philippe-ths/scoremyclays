@@ -16,7 +16,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { usePowerSync } from '@powersync/react';
 import { Colors } from '@/lib/constants';
 import type { Club } from '@/lib/types';
-import { updateUserProfile } from '@/db/queries/users';
+import { smcUpdateUserProfile } from '@/db/queries/smc-users';
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -71,7 +71,7 @@ export default function EditProfileScreen() {
     setLoading(true);
 
     try {
-      await updateUserProfile(db, user.id, {
+      await smcUpdateUserProfile(db, user.id, {
         display_name: displayName,
         discoverable: discoverable ? 1 : 0,
         favourite_club_ids: JSON.stringify(selectedClubIds),

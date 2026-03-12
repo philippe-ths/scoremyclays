@@ -1,5 +1,5 @@
 import { createMockDb } from '../../helpers/mockDb';
-import { checkDuplicateInvite, listIncomingInvitesForUser } from '@/db/queries/invites';
+import { smcCheckDuplicateInvite, smcListIncomingInvitesForUser } from '@/db/queries/smc-invites';
 import { InviteStatus, type Invite } from '@/lib/types';
 
 const mockInvite: Invite = {
@@ -12,12 +12,12 @@ const mockInvite: Invite = {
   created_at: '2026-01-01T00:00:00Z',
 };
 
-describe('checkDuplicateInvite', () => {
+describe('smcCheckDuplicateInvite', () => {
   it('returns existing invite when duplicate found', async () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock).mockResolvedValue(mockInvite);
 
-    const result = await checkDuplicateInvite(db, 'round1', '@phil');
+    const result = await smcCheckDuplicateInvite(db, 'round1', '@phil');
 
     expect(result).toEqual(mockInvite);
     expect(db.getOptional).toHaveBeenCalledWith(
@@ -30,17 +30,17 @@ describe('checkDuplicateInvite', () => {
     const db = createMockDb();
     (db.getOptional as jest.Mock).mockResolvedValue(null);
 
-    const result = await checkDuplicateInvite(db, 'round1', '@new_user');
+    const result = await smcCheckDuplicateInvite(db, 'round1', '@new_user');
     expect(result).toBeNull();
   });
 });
 
-describe('listIncomingInvitesForUser', () => {
+describe('smcListIncomingInvitesForUser', () => {
   it('filters by status when provided', async () => {
     const db = createMockDb();
     (db.getAll as jest.Mock).mockResolvedValue([mockInvite]);
 
-    await listIncomingInvitesForUser(db, '@phil', InviteStatus.PENDING);
+    await smcListIncomingInvitesForUser(db, '@phil', InviteStatus.PENDING);
 
     const [sql, params] = (db.getAll as jest.Mock).mock.calls[0];
     expect(sql).toContain('status = ?');
@@ -51,7 +51,7 @@ describe('listIncomingInvitesForUser', () => {
     const db = createMockDb();
     (db.getAll as jest.Mock).mockResolvedValue([mockInvite]);
 
-    await listIncomingInvitesForUser(db, '@phil');
+    await smcListIncomingInvitesForUser(db, '@phil');
 
     const [sql, params] = (db.getAll as jest.Mock).mock.calls[0];
     expect(sql).not.toContain('status = ?');

@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
-import { listClubs } from '@/db/queries/clubs';
+import { smcListClubs } from '@/db/queries/smc-clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import type { Club } from '@/lib/types';
@@ -22,7 +22,7 @@ export default function ClubsScreen() {
   const [isLoading, setIsLoading] = useState(true);
 
   const loadClubs = useCallback(async () => {
-    const results = await listClubs(db, search || undefined);
+    const results = await smcListClubs(db, search || undefined);
     setClubs(results);
     setIsLoading(false);
   }, [db, search]);

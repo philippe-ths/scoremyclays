@@ -1,7 +1,7 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
 import type { Club, ClubPosition, ClubStand } from '@/lib/types';
 
-export async function listClubs(
+export async function smcListClubs(
   db: AbstractPowerSyncDatabase,
   search?: string,
 ): Promise<Club[]> {
@@ -15,14 +15,14 @@ export async function listClubs(
   return db.getAll<Club>('SELECT * FROM clubs ORDER BY name');
 }
 
-export async function getClub(
+export async function smcGetClub(
   db: AbstractPowerSyncDatabase,
   id: string,
 ): Promise<Club | null> {
   return db.getOptional<Club>('SELECT * FROM clubs WHERE id = ?', [id]);
 }
 
-export async function getClubPositions(
+export async function smcGetClubPositions(
   db: AbstractPowerSyncDatabase,
   clubId: string,
 ): Promise<ClubPosition[]> {
@@ -32,7 +32,7 @@ export async function getClubPositions(
   );
 }
 
-export async function getClubStandsByPosition(
+export async function smcGetClubStandsByPosition(
   db: AbstractPowerSyncDatabase,
   positionId: string,
 ): Promise<ClubStand[]> {
@@ -42,20 +42,20 @@ export async function getClubStandsByPosition(
   );
 }
 
-export async function getClubWithDetails(
+export async function smcGetClubWithDetails(
   db: AbstractPowerSyncDatabase,
   clubId: string,
 ): Promise<{
   club: Club;
   positions: (ClubPosition & { stands: ClubStand[] })[];
 } | null> {
-  const club = await getClub(db, clubId);
+  const club = await smcGetClub(db, clubId);
   if (!club) return null;
 
-  const positions = await getClubPositions(db, clubId);
+  const positions = await smcGetClubPositions(db, clubId);
   const positionsWithStands = await Promise.all(
     positions.map(async (pos) => {
-      const stands = await getClubStandsByPosition(db, pos.id);
+      const stands = await smcGetClubStandsByPosition(db, pos.id);
       return { ...pos, stands };
     }),
   );

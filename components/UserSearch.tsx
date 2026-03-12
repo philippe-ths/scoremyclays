@@ -11,7 +11,7 @@ import {
 import { usePowerSync } from '@powersync/react';
 import { Colors } from '@/lib/constants';
 import type { User } from '@/lib/types';
-import { searchUsersByDisplayName, searchUsersByUserId } from '@/db/queries/users';
+import { smcSearchUsersByDisplayName, smcSearchUsersByUserId } from '@/db/queries/smc-users';
 
 interface UserSearchProps {
   onSelectUser: (user: User) => void;
@@ -51,13 +51,13 @@ export function UserSearch({ onSelectUser, excludeUserId, currentUserInternalId 
       // If query starts with @, search for partial user_id match
       if (query.startsWith('@')) {
         const userIdHandle = query.slice(1);
-        foundUsers = await searchUsersByUserId(db, userIdHandle);
+        foundUsers = await smcSearchUsersByUserId(db, userIdHandle);
         if (foundUsers.length === 0) {
           setMessage(`No user found matching @${userIdHandle}`);
         }
       } else {
         // Search by display name (only discoverable users)
-        foundUsers = await searchUsersByDisplayName(db, query);
+        foundUsers = await smcSearchUsersByDisplayName(db, query);
         if (foundUsers.length === 0) {
           setMessage('No users found. Try searching by exact User ID (e.g., @username).');
         }

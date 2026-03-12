@@ -18,13 +18,13 @@ import { useAuth } from '@/providers/AuthProvider';
 import { Colors } from '@/lib/constants';
 import { InviteStatus, RoundStatus, type Invite, type User, type Round } from '@/lib/types';
 import {
-  listIncomingInvitesForUser,
-  updateInviteStatus,
-} from '@/db/queries/invites';
-import { getUserById } from '@/db/queries/users';
-import { getRound } from '@/db/queries/rounds';
+  smcListIncomingInvitesForUser,
+  smcUpdateInviteStatus,
+} from '@/db/queries/smc-invites';
+import { smcGetUserById } from '@/db/queries/smc-users';
+import { smcGetRound } from '@/db/queries/smc-rounds';
 import * as Crypto from 'expo-crypto';
-import { addShooterEntry, getSquadByRound } from '@/db/queries/squads';
+import { smcAddShooterEntry, smcGetSquadByRound } from '@/db/queries/smc-squads';
 
 export default function InvitesScreen() {
   const { user } = useAuth();
@@ -41,7 +41,7 @@ export default function InvitesScreen() {
     if (!user?.user_id) return;
 
     try {
-      const pendingInvites = await listIncomingInvitesForUser(
+      const pendingInvites = await smcListIncomingInvitesForUser(
         db,
         user.user_id,
         InviteStatus.PENDING
@@ -52,7 +52,7 @@ export default function InvitesScreen() {
       const details: Record<string, { inviter: User | null; round: Round | null }> = {};
       for (const invite of pendingInvites) {
         try {
-          const inviter = await getUserById(db, invite.inviter_id);
+          const inviter = await smcGetUserById(db, invite.inviter_id);
           const round = await db.getOptional<Round>(
             'SELECT * FROM rounds WHERE id = ?',
             [invite.round_id]
@@ -82,7 +82,7 @@ export default function InvitesScreen() {
   const handleAcceptInvite = async (invite: Invite) => {
     try {
       // Get the squad for this round
-      const squad = await getSquadByRound(db, invite.round_id);
+      const squad = await smcGetSquadByRound(db, invite.round_id);
       if (!squad) {
         if (Platform.OS === 'web') window.alert('Could not find squad for this round');
         else Alert.alert('Error', 'Could not find squad for this round');
@@ -109,7 +109,7 @@ export default function InvitesScreen() {
       const nextPosition = (maxPosition?.max_pos || 0) + 1;
 
       // Create shooter entry with user's UUID (not handle) so sync rules match
-      await addShooterEntry(db, {
+      await smcAddShooterEntry(db, {
         id: Crypto.randomUUID(),
         squad_id: squad.id,
         round_id: invite.round_id,
@@ -119,10 +119,10 @@ export default function InvitesScreen() {
       });
 
       // Update invite status
-      await updateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
+      await smcUpdateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
 
       // Route based on round status: in-progress → scoring, completed → summary
-      const round = await getRound(db, invite.round_id);
+      const round = await smcGetRound(db, invite.round_id);
       const destination = round?.status === RoundStatus.IN_PROGRESS
         ? `/round/${invite.round_id}/score`
         : `/round/${invite.round_id}/summary`;
@@ -150,7 +150,7 @@ export default function InvitesScreen() {
 
   const handleDeclineInvite = async (inviteId: string) => {
     try {
-      await updateInviteStatus(db, inviteId, InviteStatus.DECLINED);
+      await smcUpdateInviteStatus(db, inviteId, InviteStatus.DECLINED);
       if (Platform.OS === 'web') window.alert('Invite declined');
       else Alert.alert('Success', 'Invite declined');
       loadInvites();

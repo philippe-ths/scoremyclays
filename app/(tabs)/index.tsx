@@ -9,8 +9,8 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
-import { listRounds } from '@/db/queries/rounds';
-import { listIncomingInvitesForUser } from '@/db/queries/invites';
+import { smcListRounds } from '@/db/queries/smc-rounds';
+import { smcListIncomingInvitesForUser } from '@/db/queries/smc-invites';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import { RoundStatus, InviteStatus, type Round } from '@/lib/types';
 
@@ -24,9 +24,9 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
-      listRounds(db, user.id).then((all) => setRecent(all.slice(0, 5)));
+      smcListRounds(db, user.id).then((all) => setRecent(all.slice(0, 5)));
       if (user.user_id) {
-        listIncomingInvitesForUser(db, user.user_id, InviteStatus.PENDING)
+        smcListIncomingInvitesForUser(db, user.user_id, InviteStatus.PENDING)
           .then((invites) => setPendingInviteCount(invites.length));
       }
     }, [db, user]),
