@@ -11,5 +11,6 @@ An **offline-first mobile app** for clay pigeon shooting scoring and personal pe
 | [Screens and Routing](docs/screens-and-routing.md) | All routes, screen purposes, navigation flow |
 | [Scoring Flow](docs/scoring-flow.md) | How the scoring state machine works |
 | [Offline-First](docs/offline-first.md) | PowerSync architecture, platform split, sync strategy |
+| [Testing](docs/testing.md) | How to run, write, and maintain tests |
 | [Getting Started](docs/getting-started.md) | Prerequisites, setup, run commands, common issues |
 
