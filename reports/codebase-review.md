@@ -462,7 +462,7 @@ Key design decisions in the upload flow:
 
 ### 6.9.1 Offline Queue and Connectivity Resume
 
-The CRUD upload queue is central to the app's offline-first design. When the device has no connectivity, writes continue locally and queue up. When connectivity returns, the queue drains. Here is what has been **verified in the app's code** versus what is **assumed SDK behaviour** pending review (#72):
+The CRUD upload queue is central to the app's offline-first design. When the device has no connectivity, writes continue locally and queue up. When connectivity returns, the queue drains.
 
 **Verified in app code (`powersync-connector.ts`, `DatabaseProvider.tsx`):**
 
@@ -471,13 +471,23 @@ The CRUD upload queue is central to the app's offline-first design. When the dev
 - Non-retryable errors (RLS violations, constraint failures) are caught and logged — the connector moves to the next operation rather than blocking the queue
 - `db.connect(connector)` is called on auth sign-in, `db.disconnect()` on sign-out — the app delegates connection lifecycle to the SDK after that
 
-**Assumed SDK behaviour (not yet verified against SDK source — see #72):**
+**Verified SDK behaviour (confirmed against SDK source and documentation, #72):**
 
-- The SDK automatically detects connectivity changes and triggers queue drain
-- The SDK calls `uploadData()` in a loop until the queue is empty
-- Transient network failures during drain trigger automatic backoff and retry
-- The CRUD queue persists in local SQLite and survives app restarts
-- All of the above works identically across iOS, Android, and web
+1. **Automatic connectivity detection** — The SDK does NOT use platform network APIs (e.g. `navigator.onLine`, React Native `NetInfo`). Connectivity is derived from the sync stream itself: when the WebSocket connection to the PowerSync service reconnects after a network outage, the SDK sets `connected: true` via `updateSyncStatus()`, which restarts CRUD uploads. There is a brief window between "network returns" and "WebSocket reconnects" where uploads remain paused — this is by design, not a gap the app needs to fill. Source: [`AbstractStreamingSyncImplementation.ts`](https://github.com/powersync-ja/powersync-js/blob/main/packages/common/src/client/sync/stream/AbstractStreamingSyncImplementation.ts), method `_uploadAllCrud()` checks `this.isConnected`.
+
+2. **Queue drain loop** — The SDK calls `uploadData()` in a `while` loop inside `_uploadAllCrud()`. Each iteration calls `nextCrudItem()` to check for pending items; if items exist, it invokes `uploadData()` (the connector's implementation). On success, it loops immediately. When the queue is empty, it breaks. The loop is triggered via `triggerCrudUpload`, which is throttled by `crudUploadThrottleMs` (default: 1000ms) — meaning after a local write, there is up to a 1-second delay before the drain loop starts, but once running it processes continuously. Source: `AbstractStreamingSyncImplementation.ts`, methods `_uploadAllCrud()` and `triggerCrudUpload`.
+
+3. **Transient failure retry** — When `uploadData()` throws an error, the SDK waits `retryDelayMs` (default: 5000ms / 5 seconds) then retries. This is a **fixed-interval retry, not exponential backoff**. When `uploadData()` completes normally, the next item is processed immediately with no delay. If the connection drops during an error retry, the loop exits entirely. Both `retryDelayMs` and `crudUploadThrottleMs` are configurable via `db.connect()` options. Source: `AbstractStreamingSyncImplementation.ts` catch block + `delayRetry()`. Documentation: [Handling Write/Validation Errors](https://docs.powersync.com/usage/lifecycle-maintenance/handling-write-validation-errors).
+
+4. **Queue persistence across restarts** — The CRUD queue is stored in the `ps_crud` SQLite table with columns `id` (auto-increment PK enforcing FIFO), `tx_id` (transaction grouping), and `data` (JSON-serialised operation). This table persists across app kills, restarts, device reboots, and SDK version upgrades — it is the only internal table that is NOT dropped and recreated on upgrade. On restart, calling `db.connect()` re-reads `ps_crud` and resumes uploads. Source: `AbstractPowerSyncDatabase.ts`, methods `getCrudBatch()` and `getNextCrudTransaction()`. Documentation: [Client Architecture](https://docs.powersync.com/architecture/client-architecture).
+
+5. **Platform consistency** — The CRUD queue logic (drain loop, retry, persistence) lives entirely in `@powersync/common`, which both `@powersync/react-native` and `@powersync/web` extend. Queue behaviour is identical across platforms. Platform-specific differences are limited to:
+   - **SQLite driver**: React Native uses `op-sqlite` (native C++ via JSI); Web uses `wa-sqlite` (WebAssembly) with OPFS or IndexedDB storage
+   - **Transport**: Both default to WebSocket; React Native had an iOS-specific reconnection bug fixed in v1.21.0
+   - **Sync worker**: Web runs sync in a shared web worker for multi-tab coordination; React Native runs in-process
+   - **Web storage caveat**: Users clearing browser storage will lose the queue — a web platform constraint, not a PowerSync limitation
+
+**App-level duplication review:** No app-level code duplicates SDK behaviour. `DatabaseProvider.tsx` manages auth lifecycle (connect on sign-in, disconnect on sign-out), not connectivity detection. The SDK handles network reconnection and queue drain internally after `db.connect()` is called.
 
 ### 6.10 How Supabase Is Used
 
