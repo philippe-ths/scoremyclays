@@ -502,7 +502,7 @@ This standard incorporates patterns from:
 - Event sourcing for append-only execution logs
 - Swarm handoff primitives for agent coordination
 
-**Version 2 updates** based on Phase 1 execution lessons (see `research/phase1-execution-gaps-analysis.md`):
+**Version 2 updates** based on Phase 1 execution lessons:
 - Added validation gate requirements (Core Rule 7, Validation Gate section)
 - Added human intervention task handling
 - Added post-execution and rollback verification
