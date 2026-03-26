@@ -24,7 +24,7 @@ export default function HomeScreen() {
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
-      smcListRounds(db, user.id).then((all) => setRecent(all.slice(0, 5)));
+      smcListRounds(db, user.id).then((all) => setRecent(all.slice(0, 3)));
       if (user.user_id) {
         smcListIncomingInvitesForUser(db, user.user_id, InviteStatus.PENDING)
           .then((invites) => setPendingInviteCount(invites.length));
