@@ -12,7 +12,10 @@ Do not reorder steps.
 
 1. **Confirm the task and inputs.**
    - AI confirms the GitHub issue number and reads the issue.
+   - If the issue has sub-issues, stop and ask which sub-issue to work on. See [Handling Parent and Sub-Issues](#handling-parent-and-sub-issues).
+   - If the issue is a sub-issue, read the parent issue for context.
    - AI confirms the current branch is not `main`.
+   - AI confirms the current branch name is relevant to the issue being worked on.
    - AI confirms the task is clear enough to define a bounded change.
    - If any input is missing or unclear, stop and ask before continuing.
 
@@ -54,10 +57,11 @@ Do not reorder steps.
 9. **Summarise and close.**
    - AI reports: what changed, what was tested, what was not tested, and any remaining risks or follow-up work.
    - AI flags any follow-up work the change surfaced but that is out of scope.
+   - If this is the last open sub-issue under a parent issue, flag this to the human.
    - AI updates `project-spec.md` if the work changes domain concepts, scope, constraints, or architecture.
    - AI updates relevant files in `docs/` if the work changes behaviour, structure, or workflow assumptions.
    - Do not push or create a pull request until the human confirms the work is ready.
-   - AI creates a pull request for review.
+   - If the human confirms the work is ready, the AI may create a pull request for review.
    - Human reviews the PR and decides whether the work is complete.
 
 ## Planning Requirements
@@ -107,7 +111,7 @@ Run the following checks after every code change, in order:
 4. **New tests.** If the change introduces behaviour that is not covered by existing tests, add tests. Run them and report results.
 
 Smoke tests and the global test suite must not be modified unless the task explicitly requires it.
-Run steps 1 and 2 after every code update, not just at the end of implementation.
+Run smoke tests and the global test suite after each meaningful implementation pass, not only at the end of the task.
 
 Report clearly:
 - What was tested and what passed.
@@ -118,7 +122,7 @@ Do not claim completion if relevant tests are failing.
 
 ## Logging and Observability
 
-Add logging when the change introduces user-facing flows, data writes, sync operations, state transitions, error handling paths that could fail silently, or integration points between layers.
+Consider whether additional logging or observability is needed when the change introduces user-facing flows, data writes, sync operations, state transitions, error handling paths that could fail silently, or integration points between layers.
 
 Do not add logging for trivial operations or where it would expose sensitive user data.
 
@@ -134,9 +138,26 @@ Rules:
 - Every task must be linked to a GitHub issue.
 - Do not work directly on `main`.
 - Create a branch for the issue before starting work.
+- If the branch name does not match the issue or task, stop and create or switch to an appropriate branch before continuing.
 - Branch naming format: `type/short-description`. Use `feature/` for new functionality, `fix/` for bug fixes, `refactor/` for refactors.
 - Keep branch work focused on the issue scope.
 - If the task changes significantly during implementation, update the issue or flag the mismatch.
+
+## Handling Parent and Sub-Issues
+
+Some work may be organised into parent issues and sub-issues in GitHub.
+
+When this structure is used:
+
+- A parent issue provides broader context and may list sub-issues.
+- A sub-issue is a single bounded work item.
+
+Rules:
+
+- If the provided issue is a parent issue with sub-issues, do not implement the full parent scope. Stop and ask which sub-issue to work on.
+- If the provided issue is a sub-issue, read the parent issue for context and implement only the sub-issue scope.
+- If the provided issue has no sub-issues, treat it as a standalone work item.
+- When completing a sub-issue, check whether it is the last open sub-issue under the parent. If it is, flag this to the human.
 
 ## Ask First
 
@@ -171,6 +192,7 @@ Stop and ask the human before doing any of the following:
 ### The human is responsible for:
 
 - Defining and scoping the task before it reaches the AI.
+- Decomposing larger work into sub-issues and providing a sub-issue (not the parent) as the starting input.
 - Providing a well-formed GitHub issue as the starting input.
 - Ensuring the right project context is available.
 - Reviewing and approving the plan before coding starts.
