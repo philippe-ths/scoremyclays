@@ -35,6 +35,8 @@ export default function HomeScreen() {
   function handlePress(round: Round) {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
+    } else if (round.status === RoundStatus.SETUP) {
+      router.push(`/round/${round.id}/setup`);
     } else {
       router.push(`/round/${round.id}/summary`);
     }
@@ -80,9 +82,10 @@ export default function HomeScreen() {
                   styles.status,
                   item.status === RoundStatus.COMPLETED && { color: Colors.hit },
                   item.status === RoundStatus.IN_PROGRESS && { color: Colors.primary },
+                  item.status === RoundStatus.SETUP && { color: Colors.textMuted },
                 ]}
               >
-                {item.status === RoundStatus.COMPLETED ? 'Done' : 'In Progress'}
+                {item.status === RoundStatus.COMPLETED ? 'Done' : item.status === RoundStatus.SETUP ? 'Setup' : 'In Progress'}
               </Text>
             </View>
             <Text style={styles.detail}>

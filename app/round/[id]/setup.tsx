@@ -12,14 +12,14 @@ import {
 import { usePowerSync, useQuery } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
-import { smcGetRound } from '@/db/queries/smc-rounds';
+import { smcGetRound, smcUpdateRoundStatus } from '@/db/queries/smc-rounds';
 import { smcGetSquadByRound, smcAddShooterEntry, smcListShooterEntries, smcRemoveShooterEntry } from '@/db/queries/smc-squads';
 import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import { smcCreateInvite, smcCheckDuplicateInvite } from '@/db/queries/smc-invites';
 import { smcGetUserByUserId } from '@/db/queries/smc-users';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
-import { InviteStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
+import { InviteStatus, RoundStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
 import { UserSearch } from '@/components/UserSearch';
 
 export default function RoundSetupScreen() {
@@ -142,11 +142,12 @@ export default function RoundSetupScreen() {
     await reload();
   }
 
-  function handleStartScoring() {
+  async function handleStartScoring() {
     if (shooters.length === 0) {
       Alert.alert('Add shooters', 'At least one shooter is required.');
       return;
     }
+    await smcUpdateRoundStatus(db, roundId!, RoundStatus.IN_PROGRESS);
     router.push(`/round/${roundId}/score`);
   }
 
