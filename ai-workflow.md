@@ -7,6 +7,9 @@ The human reviews and approves at defined checkpoints.
 Follow this workflow for every implementation task.
 Do not skip steps.
 Do not reorder steps.
+The issue provides intent.
+The codebase provides implementation truth.
+Runtime behaviour is the final source of truth.
 
 ## Workflow Overview
 
@@ -23,6 +26,13 @@ Do not reorder steps.
    - AI reads `project-spec.md` and any files relevant to the task.
    - AI reviews the areas of the codebase the task is likely to touch.
    - Human ensures the right context is available.
+   - Treat the issue goal as authoritative, but treat suggested implementation details as provisional until confirmed against the current codebase.
+   - Do not assume the files, data flow, or control points named in the issue are the real execution path.
+   - If the issue and the current codebase disagree, prioritise the codebase and flag the mismatch to the human.
+   - If the issue is implementation-specific, extract the intended outcome before planning the change.
+   - The AI must extract the intended outcome from the issue before using any implementation suggestions.
+   - The AI must verify all issue-suggested implementation details against the current codebase before relying on them.
+   - If the issue suggests a structure that the current codebase does not follow, the AI must plan against the real structure and flag the mismatch.
 
 3. **Produce a code-aware plan.**
    - AI writes the plan. See [Planning Requirements](#planning-requirements).
@@ -47,12 +57,18 @@ Do not reorder steps.
    - AI suggests specific things the human should verify, based on the change.
    - AI stops and waits for the human to confirm before continuing, even if the change appears trivial.
    - Human performs manual checks where needed, or confirms no manual checks are required.
+   - Manual verification is a primary source of truth for user-visible behaviour, not a final formality.
+   - When suggesting manual checks, include the exact success signal and the exact failure signal.
+   - If a manual check fails, the AI must restate the contradiction before proposing the next step.
 
 8. **Fix and revalidate.**
    - Human reports issues found during manual verification or review.
    - AI fixes the reported issues.
    - AI reruns relevant validation checks after each fix.
    - Repeat until no issues remain.
+   - Do not stack multiple speculative fixes without new evidence between them.
+   - After a failed manual check, each new fix must be tied to a specific hypothesis.
+   - If repeated fixes are attempted under the same theory without changing the evidence, stop and reassess the theory.
 
 9. **Summarise and close.**
    - AI reports: what changed, what was tested, what was not tested, and any remaining risks or follow-up work.
@@ -76,6 +92,12 @@ Before implementation, produce a plan that includes:
 - Risks and edge cases.
 - Validation approach. See [Validation Requirements](#validation-requirements).
 - Any logging or observability changes needed. See [Logging and Observability](#logging-and-observability).
+- Include the user-visible behaviour that must change, not only the code changes proposed.
+- List the assumptions that come from the issue separately from assumptions confirmed in the codebase.
+- For each critical assumption, state how it will be verified.
+- If the change affects routing, persistence, sync, caching, reactive subscriptions, or state transitions, mark it as a higher-risk change.
+- For higher-risk changes, include at least one runtime validation step that proves the intended user behaviour.
+- Do not treat issue-proposed file edits as requirements unless the current codebase confirms them.
 
 Keep the plan concise.
 Do not produce long speculative plans.
@@ -112,6 +134,11 @@ Run the following checks after every code change, in order:
 
 Smoke tests and the global test suite must not be modified unless the task explicitly requires it.
 Run smoke tests and the global test suite after each meaningful implementation pass, not only at the end of the task.
+Passing smoke tests and the global test suite does not prove that the requested behaviour works.
+Treat existing passing tests as evidence of stability, not proof of correctness for the new behaviour.
+When the change affects state transitions, sync, routing, caching, or reactive UI updates, include validation that follows the full user path.
+If no automated test exercises the real user path, say so explicitly.
+If manual verification fails, stop implementation mode and enter failure analysis mode before making more code changes.
 
 Report clearly:
 - What was tested and what passed.
@@ -132,6 +159,23 @@ Rules:
 - Include enough context to trace a problem without a debugger.
 - Do not log full data payloads unless explicitly needed.
 - Do not introduce a new logging library or pattern without approval.
+- When a change affects writes, sync behaviour, state transitions, or reactive screens, decide explicitly whether temporary diagnostic logging is needed to verify the runtime path.
+- Prefer logs or probes that confirm which code path executed, which identifiers were used, and which state transition occurred.
+- If observability is too weak to distinguish between competing hypotheses, flag that before continuing.
+- Remove temporary diagnostics before completion unless the human approves keeping them.
+
+## Failure Analysis Mode
+
+- Enter failure analysis mode when manual verification fails, runtime behaviour contradicts the implementation, or test results conflict with observed behaviour.
+- In failure analysis mode, stop making speculative fixes until the contradiction is described clearly.
+- State the observed behaviour in user terms.
+- State the expected behaviour in user terms.
+- List the assumptions the implementation relied on.
+- Mark each assumption as verified, unverified, or disproved.
+- List plausible failure causes across issue interpretation, code path selection, persistence, sync, caching, routing, UI binding, environment, test coverage, and observability.
+- Identify the cheapest next observation that can eliminate one or more hypotheses.
+- Gather evidence before proposing another fix.
+- Do not claim the issue is nearly complete while the root cause is still unknown.
 
 ## GitHub Workflow
 
