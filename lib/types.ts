@@ -26,6 +26,7 @@ export enum TargetConfig {
 }
 
 export enum RoundStatus {
+  SETUP = 'SETUP',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   ABANDONED = 'ABANDONED',

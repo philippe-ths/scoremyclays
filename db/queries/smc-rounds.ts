@@ -15,7 +15,7 @@ export async function smcCreateRound(
   const now = new Date().toISOString();
   await db.execute(
     'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [params.id, params.created_by, params.ground_name, params.date, params.total_targets, RoundStatus.IN_PROGRESS, null, params.club_id ?? null, now, now],
+    [params.id, params.created_by, params.ground_name, params.date, params.total_targets, RoundStatus.SETUP, null, params.club_id ?? null, now, now],
   );
 }
 
