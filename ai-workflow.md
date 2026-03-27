@@ -60,6 +60,7 @@ Runtime behaviour is the final source of truth.
    - Manual verification is a primary source of truth for user-visible behaviour, not a final formality.
    - When suggesting manual checks, include the exact success signal and the exact failure signal.
    - If a manual check fails, the AI must restate the contradiction before proposing the next step.
+   - If a manual check fails, the AI must not convert the failed check into a request for the human to repeat the same check unless new evidence justifies the retry.
 
 8. **Fix and revalidate.**
    - Human reports issues found during manual verification or review.
@@ -69,6 +70,7 @@ Runtime behaviour is the final source of truth.
    - Do not stack multiple speculative fixes without new evidence between them.
    - After a failed manual check, each new fix must be tied to a specific hypothesis.
    - If repeated fixes are attempted under the same theory without changing the evidence, stop and reassess the theory.
+   - A retry of the same user flow counts as a new validation step only if the AI has gathered new evidence or changed the relevant hypothesis.
 
 9. **Summarise and close.**
    - AI reports: what changed, what was tested, what was not tested, and any remaining risks or follow-up work.
@@ -163,6 +165,7 @@ Rules:
 - Prefer logs or probes that confirm which code path executed, which identifiers were used, and which state transition occurred.
 - If observability is too weak to distinguish between competing hypotheses, flag that before continuing.
 - Remove temporary diagnostics before completion unless the human approves keeping them.
+- For higher-risk changes, if manual verification fails and the runtime path is not yet proven, decide whether temporary diagnostics or another direct observation method is needed before asking the human to retry.
 
 ## Failure Analysis Mode
 
@@ -176,6 +179,13 @@ Rules:
 - Identify the cheapest next observation that can eliminate one or more hypotheses.
 - Gather evidence before proposing another fix.
 - Do not claim the issue is nearly complete while the root cause is still unknown.
+- Do not ask the human to retry the flow, refresh the app, clear cache, restart the dev server, or repeat manual verification until at least one concrete hypothesis has been tested with new evidence.
+- Do not treat environment or caching as the leading explanation unless evidence makes it more likely than code path, persistence, sync, routing, or UI binding failures.
+- When multiple hypotheses exist, prefer the next observation that distinguishes between wrong code path, wrong write, later overwrite, sync overwrite, and stale runtime.
+- If the contradiction involves a write, state transition, sync boundary, or reactive screen, prefer temporary diagnostics or direct observation over a retry request.
+- Before proposing the next step, name the single leading hypothesis and the evidence that currently supports it.
+- Restate the contradiction in one short block before any reasoning.
+- Use the format: observed behaviour, expected behaviour, strongest conflicting evidence, and what remains unknown.
 
 ## GitHub Workflow
 
