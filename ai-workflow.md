@@ -15,6 +15,7 @@ Runtime behaviour is the final source of truth.
 
 1. **Confirm the task and inputs.**
    - AI confirms the GitHub issue number and reads the issue.
+   - Search for issues that reference or are referenced by the issue to identify possible parent, child, or related sub-issues when direct sub-issue relationship data is unavailable.
    - If the issue has sub-issues, stop and ask which sub-issue to work on. See [Handling Parent and Sub-Issues](#handling-parent-and-sub-issues).
    - If the issue is a sub-issue, read the parent issue for context.
    - AI confirms the current branch is not `main`.
