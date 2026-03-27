@@ -13,8 +13,7 @@ import { smcListRounds } from '@/db/queries/smc-rounds';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
 import { RoundStatus, type Round } from '@/lib/types';
 
-const STATUS_LABELS: Record<string, string> = {
-  [RoundStatus.COMPLETED]: 'Completed',
+const STATUS_LABELS: Record<string, string> = {  [RoundStatus.SETUP]: 'Setup',  [RoundStatus.COMPLETED]: 'Completed',
   [RoundStatus.IN_PROGRESS]: 'In Progress',
   [RoundStatus.ABANDONED]: 'Abandoned',
 };
@@ -35,6 +34,8 @@ export default function HistoryScreen() {
   function handlePress(round: Round) {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
+    } else if (round.status === RoundStatus.SETUP) {
+      router.push(`/round/${round.id}/setup`);
     } else {
       router.push(`/round/${round.id}/summary`);
     }
@@ -61,6 +62,7 @@ export default function HistoryScreen() {
                   styles.status,
                   item.status === RoundStatus.COMPLETED && styles.statusCompleted,
                   item.status === RoundStatus.IN_PROGRESS && styles.statusInProgress,
+                  item.status === RoundStatus.SETUP && styles.statusSetup,
                 ]}
               >
                 {STATUS_LABELS[item.status] ?? item.status}
@@ -132,6 +134,9 @@ const styles = StyleSheet.create({
   },
   statusInProgress: {
     color: Colors.primary,
+  },
+  statusSetup: {
+    color: Colors.textMuted,
   },
   detail: {
     fontSize: FontSize.sm,

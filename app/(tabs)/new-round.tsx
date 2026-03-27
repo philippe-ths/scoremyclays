@@ -15,7 +15,7 @@ import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcListClubs, smcGetClub } from '@/db/queries/smc-clubs';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
-import type { Club } from '@/lib/types';
+import { RoundStatus, type Club } from '@/lib/types';
 
 export default function NewRoundScreen() {
   const router = useRouter();
@@ -87,7 +87,7 @@ export default function NewRoundScreen() {
       await db.writeTransaction(async (tx) => {
         await tx.execute(
           'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [roundId, user.id, selectedClub.name, today, 0, 'IN_PROGRESS', null, selectedClub.id, new Date().toISOString(), new Date().toISOString()],
+          [roundId, user.id, selectedClub.name, today, 0, RoundStatus.SETUP, null, selectedClub.id, new Date().toISOString(), new Date().toISOString()],
         );
         await tx.execute(
           'INSERT INTO squads (id, round_id) VALUES (?, ?)',
