@@ -35,7 +35,9 @@ export default function HistoryScreen() {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
     } else if (round.status === RoundStatus.SETUP) {
-      router.push(`/round/${round.id}/setup`);
+      // Owner goes to setup, invitees go to waiting
+      const isOwner = round.created_by === user?.id;
+      router.push(isOwner ? `/round/${round.id}/setup` : `/round/${round.id}/waiting`);
     } else {
       router.push(`/round/${round.id}/summary`);
     }

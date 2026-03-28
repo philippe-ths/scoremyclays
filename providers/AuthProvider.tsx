@@ -34,6 +34,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  // Track current user ID in a ref so the auth callback can access it without stale closure
+  const userIdRef = useRef<string | null>(null);
+
+  // Keep userIdRef in sync with user state
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user]);
 
   // Initialize auth state and listen to changes
   useEffect(() => {
@@ -52,6 +59,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(newSession);
 
       if (newSession?.user && event !== 'SIGNED_OUT') {
+        // SIGNED_IN and TOKEN_REFRESHED fire on visibility change — skip re-sync if user is already loaded
+        // to avoid transient loading states that unmount the router and reset navigation
+        if ((event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') && userIdRef.current === newSession.user.id) {
+          return;
+        }
         // Keep the router from acting while we resolve the user record
         setIsLoading(true);
         await syncUserWithDatabase(newSession.user.id, newSession.user.email || null);
