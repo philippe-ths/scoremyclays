@@ -71,6 +71,10 @@ export interface Round {
   updated_at: string;
 }
 
+export interface RoundListItem extends Round {
+  has_unresolved_conflicts: number;
+}
+
 export interface Squad {
   id: string;
   round_id: string;

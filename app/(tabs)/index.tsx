@@ -12,13 +12,13 @@ import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
 import { smcListIncomingInvitesForUser } from '@/db/queries/smc-invites';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
-import { RoundStatus, InviteStatus, type Round } from '@/lib/types';
+import { RoundStatus, InviteStatus, type RoundListItem } from '@/lib/types';
 
 export default function HomeScreen() {
   const db = usePowerSync();
   const { user } = useAuth();
   const router = useRouter();
-  const [recent, setRecent] = useState<Round[]>([]);
+  const [recent, setRecent] = useState<RoundListItem[]>([]);
   const [pendingInviteCount, setPendingInviteCount] = useState(0);
 
   useFocusEffect(
@@ -32,7 +32,7 @@ export default function HomeScreen() {
     }, [db, user]),
   );
 
-  function handlePress(round: Round) {
+  function handlePress(round: RoundListItem) {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
     } else if (round.status === RoundStatus.SETUP) {
@@ -82,12 +82,19 @@ export default function HomeScreen() {
               <Text
                 style={[
                   styles.status,
-                  item.status === RoundStatus.COMPLETED && { color: Colors.hit },
-                  item.status === RoundStatus.IN_PROGRESS && { color: Colors.primary },
-                  item.status === RoundStatus.SETUP && { color: Colors.textMuted },
+                  item.has_unresolved_conflicts === 1 && { color: Colors.miss },
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.COMPLETED && { color: Colors.hit },
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.IN_PROGRESS && { color: Colors.primary },
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.SETUP && { color: Colors.textMuted },
                 ]}
               >
-                {item.status === RoundStatus.COMPLETED ? 'Done' : item.status === RoundStatus.SETUP ? 'Setup' : 'In Progress'}
+                {item.has_unresolved_conflicts === 1
+                  ? 'Conflicted'
+                  : item.status === RoundStatus.COMPLETED
+                    ? 'Done'
+                    : item.status === RoundStatus.SETUP
+                      ? 'Setup'
+                      : 'In Progress'}
               </Text>
             </View>
             <Text style={styles.detail}>
