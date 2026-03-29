@@ -1,5 +1,5 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
-import { RoundStatus, type Round } from '@/lib/types';
+import { RoundStatus, type Round, type RoundListItem } from '@/lib/types';
 
 export async function smcCreateRound(
   db: AbstractPowerSyncDatabase,
@@ -23,9 +23,21 @@ export async function smcGetRound(db: AbstractPowerSyncDatabase, id: string): Pr
   return db.getOptional<Round>('SELECT * FROM rounds WHERE id = ?', [id]);
 }
 
-export async function smcListRounds(db: AbstractPowerSyncDatabase, userId: string): Promise<Round[]> {
-  return db.getAll<Round>(
-    `SELECT DISTINCT r.* FROM rounds r
+export async function smcListRounds(db: AbstractPowerSyncDatabase, userId: string): Promise<RoundListItem[]> {
+  return db.getAll<RoundListItem>(
+    `SELECT DISTINCT
+       r.*,
+       CASE
+         WHEN EXISTS (
+           SELECT 1
+           FROM target_results tr
+           WHERE tr.round_id = r.id
+           GROUP BY tr.shooter_entry_id, tr.target_number, tr.bird_number
+           HAVING COUNT(*) > 1
+         ) THEN 1
+         ELSE 0
+       END AS has_unresolved_conflicts
+     FROM rounds r
      LEFT JOIN shooter_entries se ON se.round_id = r.id
      WHERE r.created_by = ? OR se.user_id = ?
      ORDER BY r.created_at DESC`,
