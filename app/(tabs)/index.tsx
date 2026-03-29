@@ -12,6 +12,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
 import { smcListIncomingInvitesForUser } from '@/db/queries/smc-invites';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { formatRoundStatusLabel } from '@/lib/formatting';
 import { RoundStatus, InviteStatus, type RoundListItem } from '@/lib/types';
 
 export default function HomeScreen() {
@@ -90,11 +91,7 @@ export default function HomeScreen() {
               >
                 {item.has_unresolved_conflicts === 1
                   ? 'Conflicted'
-                  : item.status === RoundStatus.COMPLETED
-                    ? 'Done'
-                    : item.status === RoundStatus.SETUP
-                      ? 'Setup'
-                      : 'In Progress'}
+                  : formatRoundStatusLabel(item.status)}
               </Text>
             </View>
             <Text style={styles.detail}>

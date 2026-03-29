@@ -11,12 +11,8 @@ import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { formatRoundStatusLabel } from '@/lib/formatting';
 import { RoundStatus, type RoundListItem } from '@/lib/types';
-
-const STATUS_LABELS: Record<string, string> = {  [RoundStatus.SETUP]: 'Setup',  [RoundStatus.COMPLETED]: 'Completed',
-  [RoundStatus.IN_PROGRESS]: 'In Progress',
-  [RoundStatus.ABANDONED]: 'Abandoned',
-};
 
 export default function HistoryScreen() {
   const db = usePowerSync();
@@ -68,7 +64,7 @@ export default function HistoryScreen() {
                   item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.SETUP && styles.statusSetup,
                 ]}
               >
-                {item.has_unresolved_conflicts === 1 ? 'Conflicted' : (STATUS_LABELS[item.status] ?? item.status)}
+                {item.has_unresolved_conflicts === 1 ? 'Conflicted' : formatRoundStatusLabel(item.status)}
               </Text>
             </View>
             <Text style={styles.detail}>
