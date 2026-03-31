@@ -1,5 +1,7 @@
 # AI Workflow
 
+Version: 1.0.2
+
 This file defines the workflow for AI-assisted coding on this project.
 It is written for the AI coding agent.
 The human reviews and approves at defined checkpoints.
@@ -19,6 +21,9 @@ The human reviews and approves at defined checkpoints.
    - See [Handling Parent and Sub-Issues](#handling-parent-and-sub-issues).
    - Check branch state.
    - See [GitHub Workflow](#github-workflow).
+   - Rebase onto the target branch.
+   - Run baseline validation.
+   - See [Validation Requirements](#validation-requirements).
    - Confirm the task is a bounded change.
    - See [Scope Control](#scope-control).
    - Complete this step before analysing implementation details.
@@ -65,16 +70,26 @@ The human reviews and approves at defined checkpoints.
    - Enter [Failure Analysis Mode](#failure-analysis-mode) if a fix fails.
    - Enter [Failure Analysis Mode](#failure-analysis-mode) if manual verification fails.
 
-10. **Summarise and close.**
 
-    - Report what changed.
-    - Report what was tested.
-    - Report what was not tested.
-    - Report remaining risks and follow-up work.
-    - Check parent and sub-issue closure status.
-    - See [Handling Parent and Sub-Issues](#handling-parent-and-sub-issues).
-    - Suggest the next GitHub step when the work appears complete.
-    - See [GitHub Workflow](#github-workflow).
+10. **Summarise and prepare handoff.**
+
+   - Report what changed.
+   - Report what was tested.
+   - Report what was not tested.
+   - Report remaining risks and follow-up work.
+   - Check parent and sub-issue closure status.
+   - See [Handling Parent and Sub-Issues](#handling-parent-and-sub-issues).
+   - State which GitHub action would be next if the human wants to publish the work.
+   - See [GitHub Workflow](#github-workflow).
+
+11. **Checkpoint: human approves the next GitHub action.**
+
+   - Stop after the summary until the human explicitly approves the next GitHub action in the current session.
+
+12. **Run the approved GitHub action and stop.**
+
+   - Run only the single GitHub action the human explicitly approved.
+   - See [GitHub Workflow](#github-workflow).
 
 ## Planning Requirements
 
@@ -126,30 +141,41 @@ Keep the change focused on the approved task:
 
 ## Validation Requirements
 
+Before implementation, run a baseline validation:
+
+1. Run smoke tests.
+2. Run the global test suite.
+3. Record which tests pass and which tests fail.
+4. Treat any pre-existing failure as a known failure for the duration of the task.
+5. Do not attempt to fix pre-existing failures unless the task requires it.
+
+When comparing post-implementation results against the baseline:
+
+- If a test that passed in the baseline now fails, treat the change as the cause until proven otherwise.
+- If a test that failed in the baseline still fails, do not attribute it to the change.
+- Report pre-existing failures separately from change-related failures.
+
 Run validation after every code change.
 Run the following checks in order:
 
 1. **Smoke tests.**
-
    - Confirm the app builds and starts without errors.
 
 2. **Global test suite.**
-
    - Run the full existing test suite.
 
 3. **Targeted tests.**
-
    - Run tests specific to the changed area.
    - If no targeted tests exist, flag this.
 
 4. **New tests.**
-
    - Add tests if the change introduces behaviour that existing tests do not cover.
    - Run the new tests.
 
 When running validation:
 
 - Do not modify smoke tests or the global test suite unless the task explicitly requires it.
+- Do not run validation commands in parallel when they can share ports, build outputs, caches, or runtime state.
 - If a previously passing test fails after the change, treat the change as wrong until proven otherwise.
 - Run smoke tests and the global test suite after each meaningful implementation pass.
 - Do not treat passing smoke tests and the global test suite as proof that the requested behaviour works.
@@ -258,16 +284,23 @@ Every task must follow the GitHub branching workflow:
 
 - Link every task to a GitHub issue before implementation.
 - Do not work directly on `main`.
-- Create a branch for the issue before starting work.
-- If the branch name does not match the issue or task, stop and create or switch to an appropriate branch before continuing.
+- If the current branch is `main`, stop before implementation and create or switch to an issue-scoped branch.
+- Do not edit files, run issue validation, or make commits until the issue-scoped branch is active.
 - Use the branch naming format `type/short-description`.
 - Use `feature/` for new functionality.
 - Use `fix/` for bug fixes.
 - Use `refactor/` for refactors.
 - Keep branch work focused on the issue scope.
+- Rebase the issue branch onto the target branch before starting implementation.
+- Rebase the issue branch onto the target branch before creating a pull request.
+- If new commits have landed on the target branch since the last rebase, rebase again before the next remote GitHub action.
 - If the task changes significantly during implementation, update the issue or flag the mismatch to the human.
-- Do not push to remote without explicit human confirmation.
-- Do not create a pull request without explicit human confirmation.
+- Treat commit creation, push to remote, and pull request creation as separate GitHub actions.
+- Do not infer approval for one GitHub action from approval for another GitHub action.
+- Do not push to remote without explicit human confirmation in the current session.
+- Do not create a pull request without explicit human confirmation in the current session.
+- If new commits are added after approval, stop and ask again before the next remote GitHub action.
+- After running an approved GitHub action, stop and report the result.
 
 ## Handling Parent and Sub-Issues
 
