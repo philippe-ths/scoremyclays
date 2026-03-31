@@ -26,12 +26,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="clubs"
-        options={{
-          title: 'Clubs',
-        }}
-      />
-      <Tabs.Screen
         name="history"
         options={{
           title: 'History',
@@ -41,6 +35,12 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
+        }}
+      />
+      <Tabs.Screen
+        name="clubs"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
