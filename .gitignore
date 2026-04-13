@@ -128,4 +128,16 @@ expo-env.d.ts
 ios/
 android/
 
-.ai-policy/state/validation.status
+# AI workflow 
+.ai-policy/
+.claude/
+.codex/
+.gemini/
+.githooks/
+.github/
+.vscode/
+CLAUDE.md
+GEMINI.md
+AGENTS.md
+ai-workflow.md
+project-spec.md
