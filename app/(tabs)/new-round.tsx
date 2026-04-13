@@ -150,11 +150,6 @@ export default function NewRoundScreen() {
         )}
       </View>
 
-      <Text style={styles.label}>Date</Text>
-      <View style={styles.dateBox}>
-        <Text style={styles.dateText}>{today}</Text>
-      </View>
-
       <TouchableOpacity
         style={[styles.createBtn, isCreating && styles.createBtnDisabled]}
         onPress={handleCreate}
@@ -191,17 +186,6 @@ const styles = StyleSheet.create({
     fontSize: FontSize.base,
     color: Colors.textPrimary,
     backgroundColor: Colors.bgSecondary,
-  },
-  dateBox: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    backgroundColor: Colors.bgTertiary,
-  },
-  dateText: {
-    fontSize: FontSize.base,
-    color: Colors.textPrimary,
   },
   createBtn: {
     marginTop: Spacing.xl,
