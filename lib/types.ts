@@ -26,6 +26,7 @@ export enum TargetConfig {
 }
 
 export enum RoundStatus {
+  SETUP = 'SETUP',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
   ABANDONED = 'ABANDONED',
@@ -68,6 +69,10 @@ export interface Round {
   club_id: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface RoundListItem extends Round {
+  has_unresolved_conflicts: number;
 }
 
 export interface Squad {

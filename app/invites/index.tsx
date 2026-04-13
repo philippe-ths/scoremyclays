@@ -121,11 +121,16 @@ export default function InvitesScreen() {
       // Update invite status
       await smcUpdateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
 
-      // Route based on round status: in-progress → scoring, completed → summary
+      // Route based on round status: setup → waiting, in-progress → scoring, completed → summary
       const round = await smcGetRound(db, invite.round_id);
-      const destination = round?.status === RoundStatus.IN_PROGRESS
-        ? `/round/${invite.round_id}/score`
-        : `/round/${invite.round_id}/summary`;
+      let destination: string;
+      if (round?.status === RoundStatus.SETUP) {
+        destination = `/round/${invite.round_id}/waiting`;
+      } else if (round?.status === RoundStatus.IN_PROGRESS) {
+        destination = `/round/${invite.round_id}/score`;
+      } else {
+        destination = `/round/${invite.round_id}/summary`;
+      }
 
       if (Platform.OS === 'web') {
         window.alert('You have joined the round!');

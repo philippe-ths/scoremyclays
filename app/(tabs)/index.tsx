@@ -12,19 +12,20 @@ import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
 import { smcListIncomingInvitesForUser } from '@/db/queries/smc-invites';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
-import { RoundStatus, InviteStatus, type Round } from '@/lib/types';
+import { formatRoundStatusLabel } from '@/lib/formatting';
+import { RoundStatus, InviteStatus, type RoundListItem } from '@/lib/types';
 
 export default function HomeScreen() {
   const db = usePowerSync();
   const { user } = useAuth();
   const router = useRouter();
-  const [recent, setRecent] = useState<Round[]>([]);
+  const [recent, setRecent] = useState<RoundListItem[]>([]);
   const [pendingInviteCount, setPendingInviteCount] = useState(0);
 
   useFocusEffect(
     useCallback(() => {
       if (!user) return;
-      smcListRounds(db, user.id).then((all) => setRecent(all.slice(0, 5)));
+      smcListRounds(db, user.id).then((all) => setRecent(all.slice(0, 3)));
       if (user.user_id) {
         smcListIncomingInvitesForUser(db, user.user_id, InviteStatus.PENDING)
           .then((invites) => setPendingInviteCount(invites.length));
@@ -32,9 +33,13 @@ export default function HomeScreen() {
     }, [db, user]),
   );
 
-  function handlePress(round: Round) {
+  function handlePress(round: RoundListItem) {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
+    } else if (round.status === RoundStatus.SETUP) {
+      // Owner goes to setup, invitees go to waiting
+      const isOwner = round.created_by === user?.id;
+      router.push(isOwner ? `/round/${round.id}/setup` : `/round/${round.id}/waiting`);
     } else {
       router.push(`/round/${round.id}/summary`);
     }
@@ -78,11 +83,15 @@ export default function HomeScreen() {
               <Text
                 style={[
                   styles.status,
-                  item.status === RoundStatus.COMPLETED && { color: Colors.hit },
-                  item.status === RoundStatus.IN_PROGRESS && { color: Colors.primary },
+                  item.has_unresolved_conflicts === 1 && { color: Colors.miss },
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.COMPLETED && { color: Colors.hit },
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.IN_PROGRESS && { color: Colors.primary },
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.SETUP && { color: Colors.textMuted },
                 ]}
               >
-                {item.status === RoundStatus.COMPLETED ? 'Done' : 'In Progress'}
+                {item.has_unresolved_conflicts === 1
+                  ? 'Conflicted'
+                  : formatRoundStatusLabel(item.status)}
               </Text>
             </View>
             <Text style={styles.detail}>

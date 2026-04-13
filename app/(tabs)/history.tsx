@@ -11,19 +11,14 @@ import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
 import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
-import { RoundStatus, type Round } from '@/lib/types';
-
-const STATUS_LABELS: Record<string, string> = {
-  [RoundStatus.COMPLETED]: 'Completed',
-  [RoundStatus.IN_PROGRESS]: 'In Progress',
-  [RoundStatus.ABANDONED]: 'Abandoned',
-};
+import { formatRoundStatusLabel } from '@/lib/formatting';
+import { RoundStatus, type RoundListItem } from '@/lib/types';
 
 export default function HistoryScreen() {
   const db = usePowerSync();
   const { user } = useAuth();
   const router = useRouter();
-  const [rounds, setRounds] = useState<Round[]>([]);
+  const [rounds, setRounds] = useState<RoundListItem[]>([]);
 
   useFocusEffect(
     useCallback(() => {
@@ -32,9 +27,13 @@ export default function HistoryScreen() {
     }, [db, user]),
   );
 
-  function handlePress(round: Round) {
+  function handlePress(round: RoundListItem) {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
+    } else if (round.status === RoundStatus.SETUP) {
+      // Owner goes to setup, invitees go to waiting
+      const isOwner = round.created_by === user?.id;
+      router.push(isOwner ? `/round/${round.id}/setup` : `/round/${round.id}/waiting`);
     } else {
       router.push(`/round/${round.id}/summary`);
     }
@@ -59,11 +58,13 @@ export default function HistoryScreen() {
               <Text
                 style={[
                   styles.status,
-                  item.status === RoundStatus.COMPLETED && styles.statusCompleted,
-                  item.status === RoundStatus.IN_PROGRESS && styles.statusInProgress,
+                  item.has_unresolved_conflicts === 1 && styles.statusConflicted,
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.COMPLETED && styles.statusCompleted,
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.IN_PROGRESS && styles.statusInProgress,
+                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.SETUP && styles.statusSetup,
                 ]}
               >
-                {STATUS_LABELS[item.status] ?? item.status}
+                {item.has_unresolved_conflicts === 1 ? 'Conflicted' : formatRoundStatusLabel(item.status)}
               </Text>
             </View>
             <Text style={styles.detail}>
@@ -127,11 +128,17 @@ const styles = StyleSheet.create({
     color: Colors.textMuted,
     textTransform: 'uppercase',
   },
+  statusConflicted: {
+    color: Colors.miss,
+  },
   statusCompleted: {
     color: Colors.hit,
   },
   statusInProgress: {
     color: Colors.primary,
+  },
+  statusSetup: {
+    color: Colors.textMuted,
   },
   detail: {
     fontSize: FontSize.sm,
