@@ -3,6 +3,13 @@
   "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
   "framework": null,
+  "rewrites": [
+    { "source": "/:path+/wa-sqlite.wasm", "destination": "/wa-sqlite.wasm" },
+    { "source": "/:path+/wa-sqlite-async.wasm", "destination": "/wa-sqlite-async.wasm" },
+    { "source": "/:path+/mc-wa-sqlite.wasm", "destination": "/mc-wa-sqlite.wasm" },
+    { "source": "/:path+/mc-wa-sqlite-async.wasm", "destination": "/mc-wa-sqlite-async.wasm" },
+    { "source": "/((?!.*\\.).*)", "destination": "/" }
+  ],
   "headers": [
     {
       "source": "/sw.js",

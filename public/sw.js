@@ -8,7 +8,7 @@
 //   shell loads offline. The web build is `output: "single"`, so a single index.html
 //   serves every route.
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const STATIC_CACHE = `smc-static-${VERSION}`;
 const RUNTIME_CACHE = `smc-runtime-${VERSION}`;
 
@@ -18,7 +18,10 @@ const PRECACHE_URLS = [
   '/apple-touch-icon.png',
   '/icon-192.png',
   '/icon-512.png',
+  '/wa-sqlite.wasm',
   '/wa-sqlite-async.wasm',
+  '/mc-wa-sqlite.wasm',
+  '/mc-wa-sqlite-async.wasm',
 ];
 
 self.addEventListener('install', (event) => {

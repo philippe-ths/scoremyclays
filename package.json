@@ -11,7 +11,7 @@
     "web": "expo start --web",
     "test": "jest",
     "build:web": "npx expo export --platform web && node scripts/inject-pwa-head.mjs",
-    "postinstall": "npx powersync-web copy-assets --output public && cp node_modules/@journeyapps/wa-sqlite/dist/wa-sqlite-async.wasm public/"
+    "postinstall": "npx powersync-web copy-assets --output public && cp node_modules/@journeyapps/wa-sqlite/dist/wa-sqlite.wasm node_modules/@journeyapps/wa-sqlite/dist/wa-sqlite-async.wasm node_modules/@journeyapps/wa-sqlite/dist/mc-wa-sqlite.wasm node_modules/@journeyapps/wa-sqlite/dist/mc-wa-sqlite-async.wasm public/"
   },
   "dependencies": {
     "@journeyapps/react-native-quick-sqlite": "^2.5.1",
