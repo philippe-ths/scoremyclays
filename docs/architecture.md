@@ -99,14 +99,14 @@ components/       Reusable UI components
   LoadingPlaceholder  Centered spinner with optional message
 db/               Database layer
   schema.ts       PowerSync schema definition (10 tables)
-  queries/        Typed SQL query functions
-    rounds.ts       Round CRUD
-    squads.ts       Squad and shooter entry management
-    stands.ts       Stand CRUD
-    scoring.ts      Target results, conflict detection
-    clubs.ts        Club, position, and stand lookups
-    invites.ts      Invite CRUD and duplicate checks
-    users.ts        User search by handle
+  queries/        Typed SQL query functions (all files prefixed smc-, all exports prefixed smc)
+    smc-rounds.ts    Round CRUD
+    smc-squads.ts    Squad and shooter entry management
+    smc-stands.ts    Stand CRUD
+    smc-scoring.ts   Target results, conflict detection
+    smc-clubs.ts     Club, position, and stand lookups
+    smc-invites.ts   Invite CRUD and duplicate checks
+    smc-users.ts     User search by handle
   openDatabase.*  Platform-specific database initialisation
 lib/              Utilities, constants, and types
   types.ts        Domain enums and entity interfaces
@@ -115,6 +115,7 @@ lib/              Utilities, constants, and types
   uuid.ts         Deterministic UUID generation from SHA-256 hashes
   supabase.ts     Supabase client configuration
   powersync-connector.ts  PowerSync ↔ Supabase sync connector
+  round-guards.ts  Role/status access guards for round setup and scoring screens
 providers/        React context providers
   DatabaseProvider.tsx  ← PowerSync init
   AuthProvider.tsx      ← Supabase auth state + user record sync

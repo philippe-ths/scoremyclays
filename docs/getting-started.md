@@ -48,6 +48,7 @@ The `supabase/migrations/` directory contains migration files that define the fu
 | `007_allow_invitee_shooter_entry.sql` | Allow invited users to be added as shooters |
 | `008_allow_squad_scoring.sql` | Allow squad members to record scores |
 | `010_unique_club_stand_per_round.sql` | Unique index preventing duplicate stands per club stand per round |
+| `011_allow_squad_stand_writes.sql` | RLS policy allowing squad members to write stand records |
 
 If setting up a fresh Supabase project, apply these migrations in order. PowerSync sync rules are defined in `supabase/powersync-sync-rules.yaml`.
 

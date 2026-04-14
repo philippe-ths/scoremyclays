@@ -4,13 +4,15 @@ The query layer lives in `db/queries/`. Every function takes an `AbstractPowerSy
 
 All functions are async. All reads return data from the local SQLite database (never from the network). All writes go to local SQLite and are queued for sync via the PowerSync CRUD upload queue.
 
+All exported functions are prefixed with `smc` and live in files prefixed with `smc-` (e.g. `db/queries/smc-clubs.ts`).
+
 ---
 
-## clubs.ts
+## smc-clubs.ts
 
 Functions for reading club reference data (clubs, positions, stands). This data is read-only — it's seeded via Supabase migrations and synced down to devices.
 
-### `listClubs(db, search?): Promise<Club[]>`
+### `smcListClubs(db, search?): Promise<Club[]>`
 
 Returns all clubs ordered by name. If `search` is provided, filters by `name LIKE %search%`.
 
@@ -19,21 +21,21 @@ Returns all clubs ordered by name. If `search` is provided, filters by `name LIK
 | `db` | `AbstractPowerSyncDatabase` | Yes | Database instance |
 | `search` | `string` | No | Filter clubs by name (case-insensitive LIKE) |
 
-### `getClub(db, id): Promise<Club | null>`
+### `smcGetClub(db, id): Promise<Club | null>`
 
 Returns a single club by ID, or null if not found.
 
-### `getClubPositions(db, clubId): Promise<ClubPosition[]>`
+### `smcGetClubPositions(db, clubId): Promise<ClubPosition[]>`
 
 Returns all positions for a club, ordered by `position_number`.
 
-### `getClubStandsByPosition(db, positionId): Promise<ClubStand[]>`
+### `smcGetClubStandsByPosition(db, positionId): Promise<ClubStand[]>`
 
 Returns all stands within a position, ordered by `stand_number`.
 
-### `getClubWithDetails(db, clubId): Promise<{ club, positions } | null>`
+### `smcGetClubWithDetails(db, clubId): Promise<{ club, positions } | null>`
 
-Returns a club with all its positions and stands nested. Convenience function that calls `getClub`, `getClubPositions`, and `getClubStandsByPosition` in sequence.
+Returns a club with all its positions and stands nested. Convenience function that calls `smcGetClub`, `smcGetClubPositions`, and `smcGetClubStandsByPosition` in sequence.
 
 **Return shape:**
 ```ts
@@ -45,13 +47,13 @@ Returns a club with all its positions and stands nested. Convenience function th
 
 ---
 
-## rounds.ts
+## smc-rounds.ts
 
 Functions for creating and managing rounds.
 
-### `createRound(db, params): Promise<void>`
+### `smcCreateRound(db, params): Promise<void>`
 
-Creates a new round with status `IN_PROGRESS`. Sets `created_at` and `updated_at` to the current timestamp.
+Creates a new round with status `SETUP`. Sets `created_at` and `updated_at` to the current timestamp.
 
 | Param | Type | Required | Description |
 |:------|:-----|:---------|:------------|
@@ -62,33 +64,33 @@ Creates a new round with status `IN_PROGRESS`. Sets `created_at` and `updated_at
 | `params.total_targets` | `number` | Yes | Total target count (25, 50, 75, or 100) |
 | `params.club_id` | `string \| null` | No | Club ID if this is a club round |
 
-### `getRound(db, id): Promise<Round | null>`
+### `smcGetRound(db, id): Promise<Round | null>`
 
 Returns a single round by ID, or null if not found.
 
-### `listRounds(db, userId): Promise<Round[]>`
+### `smcListRounds(db, userId): Promise<RoundListItem[]>`
 
-Returns all rounds where the user is either the creator or a shooter in the squad. Ordered by `created_at DESC` (newest first). Uses a `LEFT JOIN` on `shooter_entries` and `DISTINCT` to avoid duplicates.
+Returns all rounds where the user is either the creator or a shooter in the squad. Ordered by `created_at DESC` (newest first). Uses a `LEFT JOIN` on `shooter_entries` and `DISTINCT` to avoid duplicates. Each row includes a computed `has_unresolved_conflicts` flag derived from duplicate target-result groups on the round.
 
-### `updateRoundStatus(db, id, status): Promise<void>`
+### `smcUpdateRoundStatus(db, id, status): Promise<void>`
 
 Updates a round's status. Sets `updated_at` to the current timestamp.
 
 | Param | Type | Description |
 |:------|:-----|:------------|
-| `status` | `RoundStatus` | `IN_PROGRESS`, `COMPLETED`, or `ABANDONED` |
+| `status` | `RoundStatus` | `SETUP`, `IN_PROGRESS`, `COMPLETED`, or `ABANDONED` |
 
-### `updateRoundNotes(db, id, notes): Promise<void>`
+### `smcUpdateRoundNotes(db, id, notes): Promise<void>`
 
 Updates a round's notes field. Sets `updated_at` to the current timestamp.
 
 ---
 
-## squads.ts
+## smc-squads.ts
 
 Functions for managing squads and shooter entries within a round.
 
-### `createSquad(db, params): Promise<void>`
+### `smcCreateSquad(db, params): Promise<void>`
 
 Creates a new squad linked to a round.
 
@@ -97,11 +99,11 @@ Creates a new squad linked to a round.
 | `params.id` | `string` | UUID for the new squad |
 | `params.round_id` | `string` | Round this squad belongs to |
 
-### `getSquadByRound(db, roundId): Promise<Squad | null>`
+### `smcGetSquadByRound(db, roundId): Promise<Squad | null>`
 
 Returns the squad for a round, or null if none exists. Each round has exactly one squad.
 
-### `addShooterEntry(db, params): Promise<void>`
+### `smcAddShooterEntry(db, params): Promise<void>`
 
 Adds a shooter to a squad.
 
@@ -114,25 +116,25 @@ Adds a shooter to a squad.
 | `params.shooter_name` | `string` | Yes | Display name for the shooter |
 | `params.position_in_squad` | `number` | Yes | Position number (1-based) |
 
-### `listShooterEntries(db, squadId): Promise<ShooterEntry[]>`
+### `smcListShooterEntries(db, squadId): Promise<ShooterEntry[]>`
 
 Returns all shooters in a squad, ordered by `position_in_squad`.
 
-### `listShooterEntriesWithUsers(db, squadId): Promise<EnrichedShooterEntry[]>`
+### `smcListShooterEntriesWithUsers(db, squadId): Promise<EnrichedShooterEntry[]>`
 
 Returns all shooters in a squad with their `user_handle` (the `@handle` from the `users` table). Uses a `LEFT JOIN` on `users`. The `user_handle` field is null for guest shooters.
 
-### `removeShooterEntry(db, id): Promise<void>`
+### `smcRemoveShooterEntry(db, id): Promise<void>`
 
 Deletes a shooter entry by ID.
 
 ---
 
-## stands.ts
+## smc-stands.ts
 
 Functions for managing stands within a round.
 
-### `createStand(db, params): Promise<void>`
+### `smcCreateStand(db, params): Promise<void>`
 
 Creates a new stand. Uses `INSERT OR IGNORE` for idempotency — if a stand with the same ID already exists (e.g. from sync), the insert is silently skipped. This is critical for club rounds where multiple devices generate the same deterministic stand ID.
 
@@ -148,15 +150,15 @@ Creates a new stand. Uses `INSERT OR IGNORE` for idempotency — if a stand with
 | `params.club_stand_id` | `string \| null` | No | Club stand reference (club rounds only) |
 | `params.club_position_id` | `string \| null` | No | Club position reference (club rounds only) |
 
-### `listStands(db, roundId): Promise<Stand[]>`
+### `smcListStands(db, roundId): Promise<Stand[]>`
 
 Returns all stands for a round, ordered by `stand_number`.
 
-### `getStand(db, id): Promise<Stand | null>`
+### `smcGetStand(db, id): Promise<Stand | null>`
 
 Returns a single stand by ID, or null if not found.
 
-### `updateStand(db, id, params): Promise<void>`
+### `smcUpdateStand(db, id, params): Promise<void>`
 
 Partially updates a stand. Only the provided fields are updated — omitted fields are unchanged.
 
@@ -169,11 +171,11 @@ Partially updates a stand. Only the provided fields are updated — omitted fiel
 
 ---
 
-## scoring.ts
+## smc-scoring.ts
 
 Functions for recording and querying shot results, calculating scores, and handling conflicts.
 
-### `recordTargetResult(db, params): Promise<void>`
+### `smcRecordTargetResult(db, params): Promise<void>`
 
 Records a single shot result. Sets `created_at` to the current timestamp. This is the most frequently called write in the app — one call per button tap during scoring.
 
@@ -189,23 +191,23 @@ Records a single shot result. Sets `created_at` to the current timestamp. This i
 | `params.recorded_by` | `string` | User ID of the person recording (may differ from shooter) |
 | `params.device_id` | `string` | Device identifier for conflict resolution |
 
-### `getResultsForStandAndShooter(db, standId, shooterEntryId): Promise<TargetResultRecord[]>`
+### `smcGetResultsForStandAndShooter(db, standId, shooterEntryId): Promise<TargetResultRecord[]>`
 
 Returns shot results for a specific shooter at a specific stand. **Deduplicates** by `(target_number, bird_number)` — if multiple records exist for the same shot (from sync conflicts), only the earliest (`created_at ASC`) is returned. This keeps the scoring state machine stable during active scoring.
 
-### `getResultsForStand(db, standId): Promise<TargetResultRecord[]>`
+### `smcGetResultsForStand(db, standId): Promise<TargetResultRecord[]>`
 
 Returns all shot results for a stand (all shooters). No deduplication — returns raw rows.
 
-### `getResultsForRound(db, roundId): Promise<TargetResultRecord[]>`
+### `smcGetResultsForRound(db, roundId): Promise<TargetResultRecord[]>`
 
 Returns all shot results for a round via a join on `stands`. Ordered by `stand_number`, `target_number`, `bird_number`. No deduplication.
 
-### `updateTargetResult(db, id, result): Promise<void>`
+### `smcUpdateTargetResult(db, id, result): Promise<void>`
 
 Updates the result of an existing target result row.
 
-### `getShooterRoundScore(db, roundId, shooterEntryId): Promise<{ kills, total, hasConflicts }>`
+### `smcGetShooterRoundScore(db, roundId, shooterEntryId): Promise<{ kills, total, hasConflicts }>`
 
 Calculates a shooter's total score for a round.
 
@@ -216,7 +218,7 @@ Calculates a shooter's total score for a round.
 { kills: number; total: number; hasConflicts: boolean }
 ```
 
-### `getRoundConflicts(db, roundId): Promise<ConflictedShotGroup[]>`
+### `smcGetRoundConflicts(db, roundId): Promise<ConflictedShotGroup[]>`
 
 Finds all conflicted shots in a round. Groups `target_results` by `(shooter_entry_id, target_number, bird_number)` and returns groups with more than one row.
 
@@ -230,17 +232,17 @@ interface ConflictedShotGroup {
 }
 ```
 
-### `resolveConflict(db, keepId, deleteIds): Promise<void>`
+### `smcResolveConflict(db, keepId, deleteIds): Promise<void>`
 
 Resolves a conflict by deleting the losing records in a write transaction. The `keepId` is accepted for API clarity but is not used in the query — only the `deleteIds` are deleted.
 
 ---
 
-## invites.ts
+## smc-invites.ts
 
 Functions for managing round invitations between users.
 
-### `createInvite(db, params): Promise<void>`
+### `smcCreateInvite(db, params): Promise<void>`
 
 Creates a new invite with status `PENDING`. Sets `created_at` to the current timestamp.
 
@@ -252,61 +254,61 @@ Creates a new invite with status `PENDING`. Sets `created_at` to the current tim
 | `params.invitee_id` | `string` | User ID (UUID) of the invitee |
 | `params.invitee_user_id` | `string` | User handle (`@handle`) of the invitee |
 
-### `getInviteById(db, inviteId): Promise<Invite | null>`
+### `smcGetInviteById(db, inviteId): Promise<Invite | null>`
 
 Returns a single invite by ID, or null if not found.
 
-### `listInvitesForRound(db, roundId): Promise<Invite[]>`
+### `smcListInvitesForRound(db, roundId): Promise<Invite[]>`
 
 Returns all invites for a round, ordered by `created_at DESC`.
 
-### `listIncomingInvitesForUser(db, inviteeUserId, status?): Promise<Invite[]>`
+### `smcListIncomingInvitesForUser(db, inviteeUserId, status?): Promise<Invite[]>`
 
 Returns invites where the user is the invitee. Matches on `invitee_user_id` (the handle, not the UUID). Optionally filters by status.
 
-### `listOutgoingInvitesForRound(db, roundId, inviterId): Promise<Invite[]>`
+### `smcListOutgoingInvitesForRound(db, roundId, inviterId): Promise<Invite[]>`
 
 Returns invites sent by a specific user for a specific round.
 
-### `updateInviteStatus(db, inviteId, status): Promise<void>`
+### `smcUpdateInviteStatus(db, inviteId, status): Promise<void>`
 
 Updates an invite's status (e.g. `PENDING` to `ACCEPTED` or `DECLINED`).
 
-### `checkDuplicateInvite(db, roundId, inviteeUserId): Promise<Invite | null>`
+### `smcCheckDuplicateInvite(db, roundId, inviteeUserId): Promise<Invite | null>`
 
 Checks if an invite already exists for this user and round. Returns the existing invite or null. Used to prevent duplicate invites.
 
-### `getPendingInviteCount(db, inviteeUserId): Promise<number>`
+### `smcGetPendingInviteCount(db, inviteeUserId): Promise<number>`
 
 Returns the count of pending invites for a user. Used for the notification badge on the home screen.
 
 ---
 
-## users.ts
+## smc-users.ts
 
 Functions for user lookup, search, and profile management.
 
-### `getUserById(db, userId): Promise<User | null>`
+### `smcGetUserById(db, userId): Promise<User | null>`
 
 Returns a user by their internal UUID (from Supabase Auth).
 
-### `getUserByUserId(db, userIdHandle): Promise<User | null>`
+### `smcGetUserByUserId(db, userIdHandle): Promise<User | null>`
 
 Returns a user by their `@handle`. Case-insensitive match using `LOWER()`.
 
-### `searchUsersByDisplayName(db, displayName): Promise<User[]>`
+### `smcSearchUsersByDisplayName(db, displayName): Promise<User[]>`
 
 Searches users by display name using `LIKE %pattern%`. **Only returns users where `discoverable = 1`** — respects the user's visibility preference.
 
-### `searchUsersByUserId(db, userIdHandle): Promise<User[]>`
+### `smcSearchUsersByUserId(db, userIdHandle): Promise<User[]>`
 
 Searches users by partial handle match using `LIKE %pattern%`. Case-insensitive. **Returns all users regardless of discoverable setting** — handles are considered public identifiers.
 
-### `isUserIdAvailable(db, userIdHandle): Promise<boolean>`
+### `smcIsUserIdAvailable(db, userIdHandle): Promise<boolean>`
 
 Returns `true` if the handle is not taken. Case-insensitive check. Used during profile setup to validate handle uniqueness.
 
-### `updateUserProfile(db, userId, updates): Promise<void>`
+### `smcUpdateUserProfile(db, userId, updates): Promise<void>`
 
 Partially updates a user's profile. Only the provided fields are updated. Sets `updated_at` to the current timestamp.
 
