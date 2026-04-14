@@ -20,6 +20,7 @@ import { smcGetUserByUserId } from '@/db/queries/smc-users';
 import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
 import { InviteStatus, RoundStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
+import { getSetupGuardRedirect } from '@/lib/round-guards';
 import { UserSearch } from '@/components/UserSearch';
 
 export default function RoundSetupScreen() {
@@ -51,8 +52,16 @@ export default function RoundSetupScreen() {
   const pendingInvites = pendingInviteRows ?? [];
 
   const reload = useCallback(async () => {
-    if (!roundId) return;
+    if (!roundId || !user) return;
     const r = await smcGetRound(db, roundId);
+
+    // Access guard: only the round owner can use the setup screen
+    const redirect = getSetupGuardRedirect(r, user.id, roundId);
+    if (redirect) {
+      router.replace(redirect);
+      return;
+    }
+
     setRound(r);
 
     // Load club positions
@@ -67,7 +76,7 @@ export default function RoundSetupScreen() {
     if (squad) {
       setSquadId(squad.id);
     }
-  }, [db, roundId]);
+  }, [db, roundId, user, router]);
 
   useFocusEffect(
     useCallback(() => {

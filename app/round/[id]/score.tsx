@@ -37,6 +37,7 @@ import {
   type ClubStand,
   type PositionWithStands,
 } from '@/lib/types';
+import { getScoreGuardRedirect } from '@/lib/round-guards';
 
 // Graceful haptics: no-op if not available (web)
 let triggerHaptic = () => {};
@@ -90,8 +91,16 @@ export default function ScoringScreen() {
   // Initial data load
   useEffect(() => {
     (async () => {
-      if (!roundId) return;
+      if (!roundId || !user) return;
       const r = await smcGetRound(db, roundId);
+
+      // Access guard: scoring screen requires IN_PROGRESS status
+      const redirect = getScoreGuardRedirect(r, user.id, roundId);
+      if (redirect) {
+        router.replace(redirect);
+        return;
+      }
+
       setRound(r);
 
       const squad = await smcGetSquadByRound(db, roundId);
@@ -124,7 +133,7 @@ export default function ScoringScreen() {
 
       setIsLoading(false);
     })();
-  }, [db, roundId]);
+  }, [db, roundId, user, router]);
 
   // Reactively watch shooter entries — picks up new squad members via sync
   useEffect(() => {
