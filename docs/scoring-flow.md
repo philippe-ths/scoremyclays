@@ -131,8 +131,8 @@ Any squad member can score for any shooter. If two devices later sync overlappin
 
 The app handles conflicts in four stages:
 
-1. **Deduplication during active scoring:** `getResultsForStandAndShooter` orders rows by `created_at` and keeps only the first record for each target and bird so the scorer can continue without the state machine skipping ahead.
-2. **Conflict-aware totals:** `getShooterRoundScore` flags shooters with duplicates and suppresses their rolled-up totals until the duplicates are resolved.
+1. **Deduplication during active scoring:** `smcGetResultsForStandAndShooter` orders rows by `created_at` and keeps only the first record for each target and bird so the scorer can continue without the state machine skipping ahead.
+2. **Conflict-aware totals:** `smcGetShooterRoundScore` flags shooters with duplicates and suppresses their rolled-up totals until the duplicates are resolved.
 3. **UI warnings:** The scoring screen shows a `Sync Issue` warning for the active shooter, and the summary screen marks conflicted shooters explicitly.
 4. **Organizer resolution:** The round creator can open the conflict-resolution screen, choose the winning record for each duplicated shot, and delete the losing rows from `target_results`.
 

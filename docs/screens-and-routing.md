@@ -18,6 +18,7 @@ ScoreMyClays uses Expo Router for file-based routing. The URL structure maps dir
 | `/invites` | `app/invites/index.tsx` | Accept or decline pending round invites |
 | `/profile/edit` | `app/profile/edit.tsx` | Edit display name, gear list, favourite clubs |
 | `/round/[id]/setup` | `app/round/[id]/setup.tsx` | Configure stands, squad, and invites for a round |
+| `/round/[id]/waiting` | `app/round/[id]/waiting.tsx` | Holding screen for non-owner shooters until the owner starts the round |
 | `/round/[id]/score` | `app/round/[id]/score.tsx` | Active scoring interface |
 | `/round/[id]/conflicts` | `app/round/[id]/conflicts.tsx` | Resolve duplicate shot records (round creator only) |
 | `/round/[id]/summary` | `app/round/[id]/summary.tsx` | Final scores and stand breakdown |
@@ -42,6 +43,7 @@ Stack (pushed on top of tabs)
   ├─ Invites (/invites)
   ├─ Edit Profile (/profile/edit)
   ├─ Round Setup (/round/[id]/setup)
+  ├─ Round Waiting (/round/[id]/waiting)
   ├─ Scoring (/round/[id]/score)
   ├─ Conflicts (/round/[id]/conflicts)
   └─ Summary (/round/[id]/summary)
@@ -155,6 +157,13 @@ New Round ──→ Setup ──→ Score ──→ Summary ──→ Home
 - **Squad section**: List of shooters with position numbers. Authenticated user is always Shooter 1.
 - **Invite section**: `UserSearch` component to find users by handle and send invites.
 - "Start Scoring" button — validates at least one shooter exists
+
+### Round Waiting (`app/round/[id]/waiting.tsx`)
+
+- Shown to non-owner shooters once they accept an invite or open a round that is still in setup
+- Displays round details (club, date), owner, club positions and stands, and the current squad
+- Uses a reactive query on the round's status and auto-navigates to Scoring when the owner sets the round to `IN_PROGRESS`
+- Squad list updates reactively as the owner adds or removes shooters
 
 ### Scoring (`app/round/[id]/score.tsx`)
 

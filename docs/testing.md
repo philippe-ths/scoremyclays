@@ -28,14 +28,17 @@ This runs Jest via the `test` script in `package.json`. All `.test.ts` files und
 ```
 __tests__/
   db/queries/       # Query function tests (one file per query module)
+    clubs.test.ts
+    invites.test.ts
+    rounds.test.ts
     scoring.test.ts
     stands.test.ts
     users.test.ts
-    invites.test.ts
-    clubs.test.ts
   lib/              # Core logic tests
-    uuid.test.ts
+    formatting.test.ts
     powersync-connector.test.ts
+    round-guards.test.ts
+    uuid.test.ts
   helpers/
     mockDb.ts       # Shared mock factory
 ```
@@ -66,14 +69,14 @@ The mock provides stubs for: `execute`, `getAll`, `getOptional`, `writeTransacti
 Test functions with **logic beyond simple CRUD** — these are the highest-value targets:
 
 - Deduplication, filtering, or transformation logic
-- Dynamic SQL builders (e.g., `updateStand`, `updateUserProfile`)
+- Dynamic SQL builders (e.g., `smcUpdateStand`, `smcUpdateUserProfile`)
 - Conflict detection and resolution
 - Search patterns and case-insensitive lookups
 - Error handling and edge cases
 
 ### What NOT to Test
 
-- Trivial single-query CRUD wrappers (e.g., `getRound`, `getStand`) — they delegate entirely to the database
+- Trivial single-query CRUD wrappers (e.g., `smcGetRound`, `smcGetStand`) — they delegate entirely to the database
 - React Native UI components or rendering
 - Framework behavior (PowerSync, Supabase, Expo)
 
