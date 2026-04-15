@@ -9,7 +9,10 @@ import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { SyncProvider } from '@/providers/SyncProvider';
 import IOSInstallPrompt from '@/components/IOSInstallPrompt';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
+import { breadcrumb, installGlobalHandlers } from '@/lib/crashLog';
 
+installGlobalHandlers();
+breadcrumb('app.boot');
 registerServiceWorker();
 
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => void }) {
