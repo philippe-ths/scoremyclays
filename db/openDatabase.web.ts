@@ -1,21 +1,27 @@
-import { PowerSyncDatabase } from '@powersync/web';
+import {
+  PowerSyncDatabase,
+  WASQLiteOpenFactory,
+  WASQLiteVFS,
+} from '@powersync/web';
 import { AppSchema } from './schema';
 
-// Pass an explicit worker URL so PowerSync uses `new Worker(urlString)` rather
-// than `new Worker(new URL('./WASQLiteDB.worker.js', import.meta.url))`.
-// The explicit URL path bypasses the Metro/Babel import.meta transform issue.
+// iOS Safari's default VFS (IDBBatchAtomicVFS) overflows the call stack via
+// Asyncify under sustained writes. PowerSync's troubleshooting docs direct
+// Safari users to OPFSCoopSyncVFS, which uses OPFS sync access handles and
+// avoids the Asyncify shadow-stack growth entirely. Requires iOS 16.4+.
 //
-// cacheSizeKb is capped at 4 MB (default is 50 MB). The 50 MB default SQLite
-// page cache allocated in WASM memory, combined with the JS bundle heap,
-// exceeds iOS Safari's per-process memory limit and causes silent OOM crashes.
-// 4 MB is sufficient for this app's data volume.
-// The UMD bundle is copied to public/ by the postinstall script.
+// The worker UMD URL bypasses the Metro/Babel import.meta transform issue.
+// cacheSizeKb is bounded at 4 MB to stay well under iOS WebContent limits.
+const openFactory = new WASQLiteOpenFactory({
+  dbFilename: 'scoremyclays.db',
+  vfs: WASQLiteVFS.OPFSCoopSyncVFS,
+  worker: '/@powersync/worker/WASQLiteDB.umd.js',
+  cacheSizeKb: 4 * 1024,
+  flags: { useWebWorker: true },
+});
+
 export const db = new PowerSyncDatabase({
   schema: AppSchema,
-  database: {
-    dbFilename: 'scoremyclays.db',
-    worker: '/@powersync/worker/WASQLiteDB.umd.js',
-    cacheSizeKb: 4 * 1024,
-  },
+  database: openFactory,
   flags: { useWebWorker: true },
 });
