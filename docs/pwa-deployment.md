@@ -35,8 +35,8 @@ This deployment method is intended for developer testing and small-group early f
 - **500 MB storage cap.** iOS imposes a per-origin storage limit for web apps. Scoring data is small, so this is unlikely to be a practical issue.
 - **No native install banner on iOS.** Unlike Android, iOS Safari does not show a native install prompt. The app includes a custom in-app prompt for iOS Safari users explaining the "Add to Home Screen" flow. The prompt is dismissible and not shown again after dismissal.
 - **External links open in Safari.** When the PWA runs in standalone mode, tapping an external link bounces to Safari proper. The current auth flow is email/password, so this does not affect login. If OAuth or magic-link flows are added later, test the round trip back into the standalone PWA.
-- **First offline use requires one online load.** The service worker pre-caches the manifest, icons, and root WASM file at install time; the hashed JS bundles and the `@powersync/` worker assets are cached on first request. After one full online load the app shell is available offline.
-- **Service worker updates.** When a new version is deployed to Vercel, the service worker installs the updated version on the next launch and takes control immediately. Active scoring sessions may see a refresh; close and reopen the PWA between sessions when possible.
+- **First offline use requires one online load.** The service worker pre-caches the SPA shell (root HTML, manifest, icons) at install time; the hashed JS bundles, `@powersync/` worker assets, and WASM files are cached on first request. After one full online load the app shell is available offline.
+- **Service worker updates.** When a new version is deployed to Vercel, the updated service worker installs in the background but waits to take over. It only activates once every PWA window is fully closed and the app is relaunched. This avoids mid-session controller swaps, which iOS Safari previously surfaced as spontaneous reloads. To force a pending update to apply, fully close the PWA (swipe away from the app switcher) and reopen it from the home screen.
 
 ## How this fits alongside native deployment
 
