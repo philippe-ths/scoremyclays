@@ -1,27 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
-  Platform,
   Alert,
-  SafeAreaView,
+  Platform,
+  Pressable,
   ScrollView,
+  StyleSheet,
   Switch,
+  View,
 } from 'react-native';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePowerSync } from '@powersync/react';
-import { Colors } from '@/lib/constants';
+import { color, radius, space } from '@/lib/design-system';
 import type { Club } from '@/lib/types';
 import { smcUpdateUserProfile, smcIsUserIdAvailable } from '@/db/queries/smc-users';
+import {
+  Body,
+  BodySm,
+  Button,
+  Chip,
+  H3,
+  Meta,
+  Screen,
+  TextInput,
+  Typography,
+} from '@/components/ui';
 
 export default function ProfileSetupScreen() {
   const { user, signOut, refreshUser } = useAuth();
   const db = usePowerSync();
-  
+
   const [displayName, setDisplayName] = useState('');
   const [userId, setUserId] = useState('');
   const [userIdAvailable, setUserIdAvailable] = useState(true);
@@ -31,94 +39,59 @@ export default function ProfileSetupScreen() {
   const [selectedClubIds, setSelectedClubIds] = useState<string[]>([]);
   const [gear, setGear] = useState<string[]>([]);
   const [newGearItem, setNewGearItem] = useState('');
-  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Load clubs on mount
   useEffect(() => {
-    const loadClubs = async () => {
+    (async () => {
       try {
-        const loadedClubs = await db.getAll<Club>(
-          'SELECT * FROM clubs ORDER BY name'
-        );
+        const loadedClubs = await db.getAll<Club>('SELECT * FROM clubs ORDER BY name');
         setClubs(loadedClubs);
       } catch (err) {
         console.error('Error loading clubs:', err);
       }
-    };
-    loadClubs();
+    })();
   }, [db]);
 
-  // Check userId availability with debounce
   useEffect(() => {
     if (!userId.trim()) {
       setUserIdAvailable(true);
       return;
     }
-
-    const timer = setTimeout(() => {
-      checkUserIdAvailability();
+    const timer = setTimeout(async () => {
+      setCheckingUserId(true);
+      try {
+        const available = await smcIsUserIdAvailable(db, userId);
+        setUserIdAvailable(available);
+      } catch (err) {
+        console.error('Error checking userId:', err);
+      } finally {
+        setCheckingUserId(false);
+      }
     }, 500);
-
     return () => clearTimeout(timer);
-  }, [userId]);
-
-  const checkUserIdAvailability = async () => {
-    if (!userId.trim()) return;
-
-    setCheckingUserId(true);
-    try {
-      const available = await smcIsUserIdAvailable(db, userId);
-      setUserIdAvailable(available);
-    } catch (err) {
-      console.error('Error checking userId:', err);
-    } finally {
-      setCheckingUserId(false);
-    }
-  };
+  }, [userId, db]);
 
   const validateForm = (): boolean => {
-    if (!displayName.trim()) {
-      setError('Display name is required');
-      return false;
-    }
-
-    if (!userId.trim()) {
-      setError('User ID is required');
-      return false;
-    }
-
-    if (!userIdAvailable) {
-      setError('This User ID is already taken');
-      return false;
-    }
-
-    // Validate userId format: alphanumeric, underscore, hyphen only
+    if (!displayName.trim()) return fail('Display name is required.');
+    if (!userId.trim()) return fail('User ID is required.');
+    if (!userIdAvailable) return fail('This User ID is already taken.');
     if (!/^[a-zA-Z0-9_-]+$/.test(userId)) {
-      setError('User ID can only contain letters, numbers, underscores, and hyphens');
-      return false;
+      return fail('User ID can only contain letters, numbers, underscores, and hyphens.');
     }
-
-    if (userId.length < 3) {
-      setError('User ID must be at least 3 characters');
-      return false;
-    }
-
-    if (userId.length > 20) {
-      setError('User ID must be 20 characters or less');
-      return false;
-    }
-
+    if (userId.length < 3) return fail('User ID must be at least 3 characters.');
+    if (userId.length > 20) return fail('User ID must be 20 characters or less.');
     return true;
+  };
+  const fail = (msg: string) => {
+    setError(msg);
+    return false;
   };
 
   const handleCompleteProfile = async () => {
     if (!validateForm() || !user) return;
-
     setError(null);
     setLoading(true);
-
     try {
       await smcUpdateUserProfile(db, user.id, {
         display_name: displayName,
@@ -127,439 +100,237 @@ export default function ProfileSetupScreen() {
         favourite_club_ids: JSON.stringify(selectedClubIds),
         gear: JSON.stringify(gear),
       });
-      // Refresh auth user state so profileComplete becomes true
       await refreshUser();
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to complete profile';
-      setError(errorMessage);
-      Alert.alert('Error', errorMessage);
+      const msg = err instanceof Error ? err.message : 'Failed to complete profile.';
+      setError(msg);
+      Alert.alert('Error', msg);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAddGear = () => {
+  const addGear = () => {
     if (newGearItem.trim()) {
       setGear([...gear, newGearItem.trim()]);
       setNewGearItem('');
     }
   };
+  const removeGear = (index: number) => setGear(gear.filter((_, i) => i !== index));
+  const toggleClub = (clubId: string) =>
+    setSelectedClubIds((prev) =>
+      prev.includes(clubId) ? prev.filter((id) => id !== clubId) : [...prev, clubId],
+    );
 
-  const handleRemoveGear = (index: number) => {
-    setGear(gear.filter((_, i) => i !== index));
-  };
-
-  const toggleClubSelection = (clubId: string) => {
-    if (selectedClubIds.includes(clubId)) {
-      setSelectedClubIds(selectedClubIds.filter(id => id !== clubId));
+  const confirmLogout = async () => {
+    const run = async () => {
+      try {
+        await signOut();
+      } catch {
+        Alert.alert('Error', 'Failed to log out.');
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm('Are you sure you want to log out?')) {
+        await run();
+      }
     } else {
-      setSelectedClubIds([...selectedClubIds, clubId]);
+      Alert.alert('Log Out', 'Are you sure you want to log out?', [
+        { text: 'Cancel' },
+        { text: 'Log Out', style: 'destructive', onPress: run },
+      ]);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
+    <Screen>
+      <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.header}>
-          <Text style={styles.title}>Complete Your Profile</Text>
-          <Text style={styles.subtitle}>Set up your account details</Text>
+          <H3>Complete Your Profile</H3>
+          <Meta style={{ marginTop: space[1] }}>Set Up Your Account Details</Meta>
         </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          )}
+        {error ? (
+          <View style={styles.errorBox}>
+            <BodySm tone="danger">{error}</BodySm>
+          </View>
+        ) : null}
 
-          {/* Display Name */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Basic Information</Text>
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>Display Name *</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Your name"
-                placeholderTextColor="#9CA3AF"
-                value={displayName}
-                onChangeText={setDisplayName}
-                editable={!loading}
+        <View style={styles.section}>
+          <H3>Basic Information</H3>
+          <TextInput
+            label="Display Name *"
+            placeholder="Your name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            editable={!loading}
+          />
+          <View style={{ position: 'relative' }}>
+            <TextInput
+              label="User ID *"
+              helperText="Unique handle for invites (3–20 characters; letters, numbers, underscore, hyphen)."
+              placeholder="unique_handle"
+              value={userId}
+              onChangeText={setUserId}
+              autoCapitalize="none"
+              editable={!loading}
+              errorText={
+                userId.trim() && !userIdAvailable && !checkingUserId
+                  ? 'Already Taken'
+                  : undefined
+              }
+            />
+            {checkingUserId ? (
+              <ActivityIndicator
+                size="small"
+                color={color.primary}
+                style={styles.userIdSpinner}
               />
-            </View>
-
-            {/* User ID */}
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>User ID *</Text>
-              <Text style={styles.helperText}>
-                Unique handle for invites (3-20 characters, letters/numbers/underscore/hyphen)
-              </Text>
-              <View style={styles.userIdWrapper}>
-                <TextInput
-                  style={[styles.input, styles.userIdInput]}
-                  placeholder="unique_handle"
-                  placeholderTextColor="#9CA3AF"
-                  value={userId}
-                  onChangeText={setUserId}
-                  autoCapitalize="none"
-                  editable={!loading}
-                />
-                {checkingUserId && (
-                  <ActivityIndicator
-                    size="small"
-                    color={Colors.primary}
-                    style={styles.userIdSpinner}
-                  />
-                )}
-              </View>
-              {userId.trim() && !checkingUserId && (
-                <Text
-                  style={[
-                    styles.availabilityText,
-                    userIdAvailable
-                      ? styles.availableText
-                      : styles.unavailableText,
-                  ]}
-                >
-                  {userIdAvailable ? '✓ Available' : '✗ Already taken'}
-                </Text>
-              )}
-            </View>
+            ) : null}
           </View>
+          {userId.trim() && !checkingUserId && userIdAvailable ? (
+            <BodySm tone="default" style={{ color: color.hit }}>
+              ✓ Available
+            </BodySm>
+          ) : null}
+        </View>
 
-          {/* Favourite Clubs */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Favourite Clubs (Optional)</Text>
-            <View style={styles.clubGrid}>
-              {clubs.map(club => (
-                <TouchableOpacity
-                  key={club.id}
-                  style={[
-                    styles.clubChip,
-                    selectedClubIds.includes(club.id) && styles.clubChipSelected,
-                  ]}
-                  onPress={() => toggleClubSelection(club.id)}
-                  disabled={loading}
-                >
-                  <Text
-                    style={[
-                      styles.clubChipText,
-                      selectedClubIds.includes(club.id) && styles.clubChipTextSelected,
-                    ]}
-                  >
-                    {club.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+        <View style={styles.section}>
+          <H3>Favourite Grounds</H3>
+          <View style={styles.clubGrid}>
+            {clubs.map((club) => (
+              <Chip
+                key={club.id}
+                label={club.name}
+                active={selectedClubIds.includes(club.id)}
+                disabled={loading}
+                onPress={() => toggleClub(club.id)}
+              />
+            ))}
           </View>
+        </View>
 
-          {/* Gear */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Gear (Optional)</Text>
-            <View style={styles.gearInputRow}>
+        <View style={styles.section}>
+          <H3>Gear</H3>
+          <View style={styles.gearRow}>
+            <View style={{ flex: 1 }}>
               <TextInput
-                style={[styles.input, styles.gearInput]}
-                placeholder="e.g., Beretta 686 Silver Pigeon"
-                placeholderTextColor="#9CA3AF"
+                placeholder="e.g. Beretta 686 Silver Pigeon"
                 value={newGearItem}
                 onChangeText={setNewGearItem}
                 editable={!loading}
               />
-              <TouchableOpacity
-                style={[
-                  styles.addGearButton,
-                  (!newGearItem.trim() || loading) && styles.buttonDisabled,
-                ]}
-                onPress={handleAddGear}
-                disabled={!newGearItem.trim() || loading}
-              >
-                <Text style={styles.addGearButtonText}>Add</Text>
-              </TouchableOpacity>
             </View>
-            {gear.length > 0 && (
-              <View style={styles.gearList}>
-                {gear.map((item, index) => (
-                  <View key={index} style={styles.gearItem}>
-                    <Text style={styles.gearItemText}>{item}</Text>
-                    <TouchableOpacity
-                      onPress={() => handleRemoveGear(index)}
-                      disabled={loading}
-                    >
-                      <Text style={styles.gearRemoveButton}>✕</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
-              </View>
-            )}
+            <Button
+              label="Add"
+              variant="primary"
+              size="md"
+              disabled={!newGearItem.trim() || loading}
+              onPress={addGear}
+            />
           </View>
-
-          {/* Discoverable Toggle */}
-          <View style={styles.section}>
-            <View style={styles.discoverableHeader}>
-              <View style={styles.discoverableTextContainer}>
-                <Text style={styles.sectionTitle}>Discoverable</Text>
-                <Text style={styles.helperText}>
-                  Allow others to find you by display name in invite search. Your User ID is always searchable.
-                </Text>
-              </View>
-              <Switch
-                value={discoverable}
-                onValueChange={setDiscoverable}
-                disabled={loading}
-              />
+          {gear.length > 0 ? (
+            <View style={{ gap: space[2] }}>
+              {gear.map((item, index) => (
+                <View key={index} style={styles.gearItem}>
+                  <Body style={{ flex: 1 }}>{item}</Body>
+                  <Pressable onPress={() => removeGear(index)} disabled={loading} hitSlop={8}>
+                    <Typography tone="muted" weight="600">
+                      ✕
+                    </Typography>
+                  </Pressable>
+                </View>
+              ))}
             </View>
-          </View>
-
-          {/* Complete Button */}
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleCompleteProfile}
-            disabled={loading || !userIdAvailable}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Complete Setup</Text>
-            )}
-          </TouchableOpacity>
-
-          {/* Logout Button */}
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={async () => {
-              if (Platform.OS === 'web') {
-                if (window.confirm('Are you sure you want to log out?')) {
-                  try {
-                    await signOut();
-                  } catch (err) {
-                    console.error('Failed to log out:', err);
-                  }
-                }
-              } else {
-                Alert.alert(
-                  'Log Out',
-                  'Are you sure you want to log out?',
-                  [
-                    { text: 'Cancel' },
-                    {
-                      text: 'Log Out',
-                      onPress: async () => {
-                        try {
-                          await signOut();
-                        } catch (err) {
-                          Alert.alert('Error', 'Failed to log out');
-                        }
-                      },
-                      style: 'destructive',
-                    },
-                  ]
-                );
-              }
-            }}
-            disabled={loading}
-          >
-            <Text style={styles.logoutButtonText}>Log Out</Text>
-          </TouchableOpacity>
+          ) : null}
         </View>
+
+        <View style={styles.section}>
+          <View style={styles.discoverableRow}>
+            <View style={{ flex: 1, gap: space[1] }}>
+              <H3>Discoverable</H3>
+              <BodySm tone="muted">
+                Allow others to find you by display name in invite search. Your User ID is always searchable.
+              </BodySm>
+            </View>
+            <Switch value={discoverable} onValueChange={setDiscoverable} disabled={loading} />
+          </View>
+        </View>
+
+        <Button
+          label={loading ? 'Saving…' : 'Complete Setup'}
+          variant="primary"
+          size="lg"
+          fullWidth
+          loading={loading}
+          disabled={loading || !userIdAvailable}
+          onPress={handleCompleteProfile}
+        />
+
+        <Pressable onPress={confirmLogout} disabled={loading} style={styles.logoutBtn}>
+          <Typography tone="danger" weight="600">
+            Log Out
+          </Typography>
+        </Pressable>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 32,
+  scroll: {
+    paddingHorizontal: space[5],
+    paddingVertical: space[8],
+    gap: space[6],
   },
   header: {
-    marginBottom: 32,
+    gap: space[1],
   },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
-  },
-  form: {
-    gap: 32,
-  },
-  errorContainer: {
-    backgroundColor: '#FEE2E2',
-    padding: 12,
-    borderRadius: 8,
+  errorBox: {
+    backgroundColor: color.missBg,
+    borderRadius: radius.md,
+    padding: space[3],
     borderLeftWidth: 4,
-    borderLeftColor: Colors.miss,
-  },
-  errorText: {
-    color: '#991B1B',
-    fontSize: 14,
+    borderLeftColor: color.miss,
   },
   section: {
-    gap: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: Colors.textPrimary,
-    backgroundColor: '#fff',
-  },
-  helperText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-  userIdWrapper: {
-    position: 'relative',
-  },
-  userIdInput: {
-    paddingRight: 40,
+    gap: space[3],
   },
   userIdSpinner: {
     position: 'absolute',
-    right: 12,
-    top: 12,
-  },
-  availabilityText: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginTop: 4,
-  },
-  availableText: {
-    color: Colors.hit,
-  },
-  unavailableText: {
-    color: Colors.miss,
+    right: space[3] + 2,
+    top: 36,
   },
   clubGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: space[2],
   },
-  clubChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    backgroundColor: '#fff',
-  },
-  clubChipSelected: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  clubChipText: {
-    fontSize: 14,
-    color: Colors.textPrimary,
-  },
-  clubChipTextSelected: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  gearInputRow: {
+  gearRow: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  gearInput: {
-    flex: 1,
-  },
-  addGearButton: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  addGearButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  gearList: {
-    gap: 8,
+    alignItems: 'flex-end',
+    gap: space[2],
   },
   gearItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: Colors.bgSecondary,
-    borderRadius: 8,
+    backgroundColor: color.bgSunken,
+    paddingHorizontal: space[3],
+    paddingVertical: space[3] - 2,
+    borderRadius: radius.md,
   },
-  gearItemText: {
-    fontSize: 14,
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  gearRemoveButton: {
-    fontSize: 18,
-    color: Colors.textSecondary,
-    paddingLeft: 8,
-  },
-  discoverableHeader: {
+  discoverableRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'flex-start',
-    gap: 16,
+    gap: space[4],
   },
-  discoverableTextContainer: {
-    flex: 1,
-    gap: 4,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
+  logoutBtn: {
     minHeight: 48,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    paddingVertical: 12,
-    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.miss,
-    backgroundColor: 'transparent',
-  },
-  logoutButtonText: {
-    color: Colors.miss,
-    fontSize: 16,
-    fontWeight: '600',
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    borderColor: color.miss,
+    marginTop: space[2],
   },
 });

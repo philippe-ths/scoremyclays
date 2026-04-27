@@ -1,19 +1,25 @@
 import { useCallback, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
 import { smcListIncomingInvitesForUser } from '@/db/queries/smc-invites';
-import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { color, fontFamily, radius, space } from '@/lib/design-system';
 import { formatRoundStatusLabel } from '@/lib/formatting';
 import { RoundStatus, InviteStatus, type RoundListItem } from '@/lib/types';
+import {
+  Badge,
+  BodySm,
+  BrandMark,
+  Button,
+  Card,
+  H1,
+  H3,
+  Meta,
+  Screen,
+  Typography,
+} from '@/components/ui';
 
 export default function HomeScreen() {
   const db = usePowerSync();
@@ -37,7 +43,6 @@ export default function HomeScreen() {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
     } else if (round.status === RoundStatus.SETUP) {
-      // Owner goes to setup, invitees go to waiting
       const isOwner = round.created_by === user?.id;
       router.push(isOwner ? `/round/${round.id}/setup` : `/round/${round.id}/waiting`);
     } else {
@@ -45,151 +50,148 @@ export default function HomeScreen() {
     }
   }
 
+  function statusTone(item: RoundListItem): 'success' | 'warning' | 'danger' | 'neutral' | 'info' {
+    if (item.has_unresolved_conflicts === 1) return 'danger';
+    if (item.status === RoundStatus.COMPLETED) return 'success';
+    if (item.status === RoundStatus.IN_PROGRESS) return 'info';
+    return 'neutral';
+  }
+
+  function statusLabel(item: RoundListItem): string {
+    if (item.has_unresolved_conflicts === 1) return 'Conflicted';
+    return formatRoundStatusLabel(item.status);
+  }
+
   return (
-    <View style={styles.root}>
+    <Screen>
       <View style={styles.hero}>
-        <Text style={styles.title}>ScoreMyClays</Text>
-        <Text style={styles.subtitle}>Track your shooting scores</Text>
+        <BrandMark variant="icon" size={44} />
+        <View style={styles.heroText}>
+          <H1>ScoreMyClays</H1>
+          <Meta>Track Your Shooting Scores</Meta>
+        </View>
       </View>
 
-      <TouchableOpacity style={styles.newRoundBtn} onPress={() => router.push('/new-round')}>
-        <Text style={styles.newRoundBtnText}>+ New Round</Text>
-      </TouchableOpacity>
+      <View style={styles.content}>
+        <Button
+          label="+ New Round"
+          variant="primary"
+          size="lg"
+          fullWidth
+          onPress={() => router.push('/new-round')}
+        />
 
-      {pendingInviteCount > 0 && (
-        <TouchableOpacity
-          style={styles.inviteBanner}
-          onPress={() => router.push('/invites')}
-        >
-          <Text style={styles.inviteBannerText}>
-            You have {pendingInviteCount} pending invite{pendingInviteCount > 1 ? 's' : ''}
-          </Text>
-        </TouchableOpacity>
-      )}
-
-      <Text style={styles.sectionTitle}>Recent Rounds</Text>
-
-      <FlatList
-        data={recent}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={recent.length === 0 ? styles.emptyContainer : undefined}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No rounds yet. Start your first one!</Text>
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} onPress={() => handlePress(item)}>
-            <View style={styles.cardRow}>
-              <Text style={styles.groundName}>{item.ground_name}</Text>
-              <Text
-                style={[
-                  styles.status,
-                  item.has_unresolved_conflicts === 1 && { color: Colors.miss },
-                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.COMPLETED && { color: Colors.hit },
-                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.IN_PROGRESS && { color: Colors.primary },
-                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.SETUP && { color: Colors.textMuted },
-                ]}
-              >
-                {item.has_unresolved_conflicts === 1
-                  ? 'Conflicted'
-                  : formatRoundStatusLabel(item.status)}
-              </Text>
+        {pendingInviteCount > 0 ? (
+          <Card
+            onPress={() => router.push('/invites')}
+            style={styles.inviteBanner}
+          >
+            <View style={styles.inviteRow}>
+              <Typography variant="body" weight="600" tone="inverse">
+                You have {pendingInviteCount} pending invite{pendingInviteCount > 1 ? 's' : ''}
+              </Typography>
+              <Badge label="View" tone="warning" />
             </View>
-            <Text style={styles.detail}>
-              {item.date} · {item.total_targets} targets
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
-    </View>
+          </Card>
+        ) : null}
+
+        <H3 style={styles.sectionTitle}>Recent Rounds</H3>
+
+        <FlatList
+          data={recent}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={
+            recent.length === 0 ? styles.emptyContainer : styles.listGap
+          }
+          ItemSeparatorComponent={() => <View style={{ height: space[2] }} />}
+          ListEmptyComponent={
+            <BodySm tone="meta" align="center">
+              No rounds yet. Start your first one.
+            </BodySm>
+          }
+          renderItem={({ item }) => (
+            <Card onPress={() => handlePress(item)} padded={false} style={styles.roundCard}>
+              <View style={styles.roundRow}>
+                <View style={styles.roundThumb}>
+                  <Typography
+                    tone="inverse"
+                    style={{ fontFamily: fontFamily.displayBlack, fontSize: 18 }}
+                  >
+                    {item.ground_name.charAt(0).toUpperCase()}
+                  </Typography>
+                </View>
+                <View style={styles.roundBody}>
+                  <Typography variant="body" weight="600" numberOfLines={1}>
+                    {item.ground_name}
+                  </Typography>
+                  <Meta>
+                    {item.date} · {item.total_targets} targets
+                  </Meta>
+                </View>
+                <Badge label={statusLabel(item)} tone={statusTone(item)} />
+              </View>
+            </Card>
+          )}
+        />
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
-    padding: Spacing.lg,
-  },
   hero: {
-    marginBottom: Spacing.lg,
-  },
-  title: {
-    fontSize: FontSize['3xl'],
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-  },
-  newRoundBtn: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.xl,
+    gap: space[3],
+    paddingHorizontal: space[5],
+    paddingTop: space[3],
+    paddingBottom: space[4],
   },
-  newRoundBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: '#FFFFFF',
+  heroText: {
+    flex: 1,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: space[5],
+    gap: space[4],
   },
   inviteBanner: {
-    backgroundColor: Colors.hit,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    marginBottom: Spacing.lg,
-    alignItems: 'center',
+    backgroundColor: color.primary,
+    borderColor: color.primary,
   },
-  inviteBannerText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: FontSize.base,
+  inviteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space[3],
   },
   sectionTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
+    marginTop: space[2],
+  },
+  listGap: {
+    paddingBottom: space[8],
   },
   emptyContainer: {
     alignItems: 'center',
-    paddingTop: Spacing.xl,
+    paddingTop: space[8],
   },
-  emptyText: {
-    fontSize: FontSize.base,
-    color: Colors.textMuted,
+  roundCard: {
+    padding: space[3] + 2,
   },
-  card: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgSecondary,
-  },
-  cardRow: {
+  roundRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: space[3] + 2,
   },
-  groundName: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+  roundThumb: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md + 2,
+    backgroundColor: color.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  roundBody: {
     flex: 1,
-  },
-  status: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-  },
-  detail: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
   },
 });

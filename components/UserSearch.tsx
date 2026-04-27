@@ -1,22 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  View,
-  TextInput,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  View,
 } from 'react-native';
 import { usePowerSync } from '@powersync/react';
-import { Colors } from '@/lib/constants';
+import { color, radius, space } from '@/lib/design-system';
 import type { User } from '@/lib/types';
 import { smcSearchUsersByDisplayName, smcSearchUsersByUserId } from '@/db/queries/smc-users';
+import {
+  Body,
+  BodySm,
+  Card,
+  Meta,
+  TextInput,
+  Typography,
+} from '@/components/ui';
 
 interface UserSearchProps {
   onSelectUser: (user: User) => void;
-  excludeUserId?: string; // User ID to exclude (e.g., current user to prevent self-invite)
-  currentUserInternalId?: string; // Internal ID (UUID) to exclude
+  excludeUserId?: string;
+  currentUserInternalId?: string;
 }
 
 export function UserSearch({ onSelectUser, excludeUserId, currentUserInternalId }: UserSearchProps) {
@@ -26,166 +31,109 @@ export function UserSearch({ onSelectUser, excludeUserId, currentUserInternalId 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  // Search users as user types
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
       setMessage(null);
       return;
     }
-
-    const timer = setTimeout(() => {
-      searchUsers();
+    const timer = setTimeout(async () => {
+      setLoading(true);
+      setMessage(null);
+      try {
+        let found: User[] = [];
+        if (query.startsWith('@')) {
+          const handle = query.slice(1);
+          found = await smcSearchUsersByUserId(db, handle);
+          if (found.length === 0) setMessage(`No shooter found matching @${handle}.`);
+        } else {
+          found = await smcSearchUsersByDisplayName(db, query);
+          if (found.length === 0) {
+            setMessage('No shooters found. Try searching by exact User ID (e.g. @username).');
+          }
+        }
+        if (excludeUserId) found = found.filter((u) => u.user_id !== excludeUserId);
+        if (currentUserInternalId) found = found.filter((u) => u.id !== currentUserInternalId);
+        setResults(found);
+      } catch (err) {
+        console.error('Error searching users:', err);
+        setMessage('Error searching. Please try again.');
+      } finally {
+        setLoading(false);
+      }
     }, 300);
-
     return () => clearTimeout(timer);
-  }, [query]);
-
-  const searchUsers = async () => {
-    setLoading(true);
-    setMessage(null);
-
-    try {
-      let foundUsers: User[] = [];
-
-      // If query starts with @, search for partial user_id match
-      if (query.startsWith('@')) {
-        const userIdHandle = query.slice(1);
-        foundUsers = await smcSearchUsersByUserId(db, userIdHandle);
-        if (foundUsers.length === 0) {
-          setMessage(`No user found matching @${userIdHandle}`);
-        }
-      } else {
-        // Search by display name (only discoverable users)
-        foundUsers = await smcSearchUsersByDisplayName(db, query);
-        if (foundUsers.length === 0) {
-          setMessage('No users found. Try searching by exact User ID (e.g., @username).');
-        }
-      }
-
-      // Filter out excluded users
-      if (excludeUserId) {
-        foundUsers = foundUsers.filter(u => u.user_id !== excludeUserId);
-      }
-      if (currentUserInternalId) {
-        foundUsers = foundUsers.filter(u => u.id !== currentUserInternalId);
-      }
-
-      setResults(foundUsers);
-    } catch (err) {
-      console.error('Error searching users:', err);
-      setMessage('Error searching users. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [query, db, excludeUserId, currentUserInternalId]);
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchInputContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search by name or @userId"
-          placeholderTextColor="#9CA3AF"
-          value={query}
-          onChangeText={setQuery}
-        />
-        {loading && <ActivityIndicator size="small" color={Colors.primary} />}
+      <View style={styles.searchWrap}>
+        <View style={{ flex: 1 }}>
+          <TextInput
+            placeholder="Search by name or @userId"
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+          />
+        </View>
+        {loading ? <ActivityIndicator size="small" color={color.primary} /> : null}
       </View>
 
-      {message && (
-        <View style={styles.messageContainer}>
-          <Text style={styles.messageText}>{message}</Text>
+      {message ? (
+        <View style={styles.messageBox}>
+          <BodySm style={{ color: '#78350f' }}>{message}</BodySm>
         </View>
-      )}
+      ) : null}
 
-      {results.length > 0 && (
+      {results.length > 0 ? (
         <FlatList
           data={results}
-          keyExtractor={item => item.id}
+          keyExtractor={(item) => item.id}
           scrollEnabled={false}
+          ItemSeparatorComponent={() => <View style={{ height: space[2] }} />}
           renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.resultItem}
+            <Card
               onPress={() => {
                 onSelectUser(item);
                 setQuery('');
                 setResults([]);
               }}
+              style={styles.resultItem}
             >
-              <View style={styles.resultContent}>
-                <Text style={styles.resultName}>{item.display_name}</Text>
-                <Text style={styles.resultUserId}>@{item.user_id}</Text>
+              <View style={{ flex: 1 }}>
+                <Body weight="600">{item.display_name}</Body>
+                <Meta style={{ marginTop: 1 }}>@{item.user_id}</Meta>
               </View>
-              <Text style={styles.inviteButton}>Invite →</Text>
-            </TouchableOpacity>
+              <Typography tone="primary" weight="600">
+                Invite →
+              </Typography>
+            </Card>
           )}
         />
-      )}
+      ) : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    gap: space[3],
   },
-  searchInputContainer: {
+  searchWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: '#fff',
+    gap: space[2],
   },
-  searchInput: {
-    flex: 1,
-    fontSize: 14,
-    color: Colors.textPrimary,
-    paddingVertical: 4,
-  },
-  messageContainer: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 6,
+  messageBox: {
+    backgroundColor: color.noBirdBg,
+    paddingHorizontal: space[3],
+    paddingVertical: space[2] + 2,
+    borderRadius: radius.sm,
     borderLeftWidth: 3,
-    borderLeftColor: '#FBBF24',
-  },
-  messageText: {
-    fontSize: 13,
-    color: '#78350F',
-    lineHeight: 18,
+    borderLeftColor: color.noBird,
   },
   resultItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    backgroundColor: Colors.bgSecondary,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  resultContent: {
-    flex: 1,
-  },
-  resultName: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: 2,
-  },
-  resultUserId: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-  inviteButton: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
-    marginLeft: 12,
   },
 });

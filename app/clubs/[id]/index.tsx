@@ -1,18 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
-import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { color, radius, space } from '@/lib/design-system';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import type { Club, PositionWithStands } from '@/lib/types';
+import {
+  Body,
+  BodySm,
+  Button,
+  Card,
+  H2,
+  H3,
+  Meta,
+  PhotoHeader,
+  Screen,
+} from '@/components/ui';
 
 export default function ClubDetailScreen() {
   const { id: clubId } = useLocalSearchParams<{ id: string }>();
@@ -37,132 +43,110 @@ export default function ClubDetailScreen() {
     load();
   }, [load]);
 
-  function handleStartRound() {
-    router.push(`/(tabs)/new-round?clubId=${clubId}`);
-  }
-
-  if (isLoading) {
-    return <LoadingPlaceholder />;
-  }
-
-  if (!club) {
-    return <LoadingPlaceholder message="Club not found" />;
-  }
+  if (isLoading) return <LoadingPlaceholder />;
+  if (!club) return <LoadingPlaceholder message="Ground not found" />;
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      <Text style={styles.clubName}>{club.name}</Text>
-      {club.description ? (
-        <Text style={styles.clubDescription}>{club.description}</Text>
-      ) : null}
-
-      <Text style={styles.sectionTitle}>
-        Positions ({positions.length})
-      </Text>
-
-      {positions.map((position) => (
-        <View key={position.id} style={styles.positionCard}>
-          <Text style={styles.positionTitle}>
-            {formatPositionTitle(position)}
-          </Text>
-
-          {position.stands.map((stand) => (
-            <View key={stand.id} style={styles.standRow}>
-              <Text style={styles.standDetail}>
-                Stand {stand.stand_number} · {formatStandDetail(stand)}
-              </Text>
-            </View>
-          ))}
-
-          {position.stands.length === 0 && (
-            <Text style={styles.emptyStands}>No stands configured</Text>
-          )}
+    <Screen edges={['left', 'right']}>
+      <Pressable onPress={() => router.back()} hitSlop={12} style={styles.floatingBack}>
+        <View style={styles.backButton}>
+          <Ionicons name="chevron-back" size={22} color={color.fgInverse} />
         </View>
-      ))}
+      </Pressable>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <PhotoHeader eyebrow="Ground" title={club.name} height={220} />
 
-      {positions.length === 0 && (
-        <Text style={styles.emptyText}>No positions configured for this club</Text>
-      )}
+        <View style={styles.body}>
+          {club.description ? (
+            <Body tone="muted">{club.description}</Body>
+          ) : null}
 
-      <TouchableOpacity style={styles.startBtn} onPress={handleStartRound}>
-        <Text style={styles.startBtnText}>Start Round at This Club</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <View style={styles.sectionHead}>
+            <H2>Positions</H2>
+            <Meta>{positions.length} Configured</Meta>
+          </View>
+
+          {positions.length === 0 ? (
+            <BodySm tone="muted" align="center" style={{ marginTop: space[4] }}>
+              No positions configured for this ground.
+            </BodySm>
+          ) : (
+            <View style={{ gap: space[3] }}>
+              {positions.map((position) => (
+                <Card key={position.id}>
+                  <H3>{formatPositionTitle(position)}</H3>
+                  {position.stands.length === 0 ? (
+                    <BodySm tone="meta" style={{ marginTop: space[2], fontStyle: 'italic' }}>
+                      No stands configured.
+                    </BodySm>
+                  ) : (
+                    <View style={styles.standList}>
+                      {position.stands.map((stand) => (
+                        <View key={stand.id} style={styles.standRow}>
+                          <BodySm>
+                            Stand {stand.stand_number} · {formatStandDetail(stand)}
+                          </BodySm>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </Card>
+              ))}
+            </View>
+          )}
+
+          <Button
+            label="Start Round at This Ground"
+            variant="primary"
+            size="lg"
+            fullWidth
+            onPress={() => router.push(`/(tabs)/new-round?clubId=${clubId}`)}
+            style={{ marginTop: space[6] }}
+          />
+        </View>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
+  scrollContent: {
+    paddingBottom: space[12],
   },
-  container: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
+  floatingBack: {
+    position: 'absolute',
+    top: space[3],
+    left: space[4],
+    zIndex: 2,
   },
-  clubName: {
-    fontSize: FontSize['2xl'],
-    fontWeight: '700',
-    color: Colors.textPrimary,
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(15,29,13,0.55)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  clubDescription: {
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    marginTop: Spacing.sm,
+  body: {
+    paddingHorizontal: space[5],
+    paddingTop: space[5],
+    gap: space[4],
   },
-  sectionTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginTop: Spacing.xl,
-    marginBottom: Spacing.md,
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    marginTop: space[2],
   },
-  positionCard: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgSecondary,
-  },
-  positionTitle: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+  standList: {
+    gap: space[1],
+    marginTop: space[2],
   },
   standRow: {
-    paddingVertical: Spacing.xs,
-    paddingLeft: Spacing.sm,
+    paddingVertical: space[1],
+    paddingLeft: space[3],
     borderLeftWidth: 2,
-    borderLeftColor: Colors.primary,
-    marginBottom: Spacing.xs,
-  },
-  standDetail: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-  },
-  emptyStands: {
-    fontSize: FontSize.sm,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
-  },
-  emptyText: {
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    marginTop: Spacing.lg,
-  },
-  startBtn: {
-    marginTop: Spacing.xl,
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  startBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    borderLeftColor: color.primary,
+    borderRadius: radius.sm,
   },
 });

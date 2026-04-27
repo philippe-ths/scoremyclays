@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { usePowerSync, useQuery } from '@powersync/react';
 import { smcGetRound } from '@/db/queries/smc-rounds';
 import { smcGetSquadByRound, smcListShooterEntries } from '@/db/queries/smc-squads';
 import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import { smcGetUserById } from '@/db/queries/smc-users';
-import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { color, radius, space } from '@/lib/design-system';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
 import { RoundStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
+import {
+  Badge,
+  Body,
+  BodySm,
+  Card,
+  H1,
+  H3,
+  Meta,
+  Screen,
+  TopBar,
+} from '@/components/ui';
 
 export default function RoundWaitingScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
@@ -28,14 +33,11 @@ export default function RoundWaitingScreen() {
   const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Reactive subscription on round status — triggers re-render when status changes
-  const { data: roundRows } = useQuery<Round>(
-    'SELECT * FROM rounds WHERE id = ?',
-    [roundId ?? ''],
-  );
+  const { data: roundRows } = useQuery<Round>('SELECT * FROM rounds WHERE id = ?', [
+    roundId ?? '',
+  ]);
   const reactiveRound = roundRows?.[0] ?? null;
 
-  // Reactive subscription on squad members — updates when owner modifies squad
   const { data: shooterRows } = useQuery<ShooterEntry>(
     `SELECT se.* FROM shooter_entries se
      JOIN squads s ON se.squad_id = s.id
@@ -45,29 +47,19 @@ export default function RoundWaitingScreen() {
   );
   const reactiveShooters = shooterRows ?? [];
 
-  // Auto-navigate to scoring when round status becomes IN_PROGRESS
   useEffect(() => {
     if (reactiveRound?.status === RoundStatus.IN_PROGRESS) {
       router.replace(`/round/${roundId}/score`);
     }
   }, [reactiveRound?.status, roundId, router]);
 
-  // Load non-reactive data (club, owner) on focus
   const reload = useCallback(async () => {
     if (!roundId) return;
     setLoading(true);
-
     try {
       const r = await smcGetRound(db, roundId);
       setRound(r);
-
-      // Load owner info
-      if (r?.created_by) {
-        const ownerUser = await smcGetUserById(db, r.created_by);
-        setOwner(ownerUser);
-      }
-
-      // Load club details
+      if (r?.created_by) setOwner(await smcGetUserById(db, r.created_by));
       if (r?.club_id) {
         const clubData = await smcGetClubWithDetails(db, r.club_id);
         if (clubData) {
@@ -75,13 +67,8 @@ export default function RoundWaitingScreen() {
           setClubPositions(clubData.positions);
         }
       }
-
-      // Load squad members (initial load, reactive query takes over)
       const squad = await smcGetSquadByRound(db, roundId);
-      if (squad) {
-        const entries = await smcListShooterEntries(db, squad.id);
-        setShooters(entries);
-      }
+      if (squad) setShooters(await smcListShooterEntries(db, squad.id));
     } finally {
       setLoading(false);
     }
@@ -93,151 +80,102 @@ export default function RoundWaitingScreen() {
     }, [reload]),
   );
 
-  // Use reactive shooters once available, fall back to initial load
   const displayShooters = reactiveShooters.length > 0 ? reactiveShooters : shooters;
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={Colors.primary} />
-      </View>
+      <Screen>
+        <TopBar title="Waiting" onBack={() => router.back()} />
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={color.primary} />
+        </View>
+      </Screen>
     );
   }
 
   const ownerName = owner?.display_name ?? 'the round owner';
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      {/* Waiting Banner */}
-      <View style={styles.waitingBanner}>
-        <Text style={styles.waitingTitle}>Waiting to Start</Text>
-        <Text style={styles.waitingText}>
-          Waiting for {ownerName} to start the round...
-        </Text>
-      </View>
-
-      {/* Club Name */}
-      {clubName && (
-        <View style={styles.clubSection}>
-          <Text style={styles.clubName}>{clubName}</Text>
+    <Screen>
+      <TopBar title={clubName ?? 'Waiting'} onBack={() => router.back()} />
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.banner}>
+          <H3 tone="default" style={{ color: color.noBird }}>
+            Waiting to Start
+          </H3>
+          <Body tone="muted" align="center" style={{ marginTop: space[1] }}>
+            Waiting for {ownerName} to start the round.
+          </Body>
         </View>
-      )}
 
-      {/* Positions Section */}
-      {clubPositions.length > 0 && (
-        <>
-          <Text style={styles.sectionTitle}>Positions</Text>
-          {clubPositions.map((position) => (
-            <View key={position.id} style={styles.card}>
-              <Text style={styles.cardTitle}>
-                {formatPositionTitle(position)}
-              </Text>
-              {position.stands.map((stand) => (
-                <Text key={stand.id} style={styles.cardDetail}>
-                  Stand {stand.stand_number} · {formatStandDetail(stand)}
-                </Text>
+        {clubName ? <H1>{clubName}</H1> : null}
+
+        {clubPositions.length > 0 ? (
+          <View style={styles.section}>
+            <H3>Positions</H3>
+            <View style={{ gap: space[2] }}>
+              {clubPositions.map((position) => (
+                <Card key={position.id}>
+                  <Body weight="600">{formatPositionTitle(position)}</Body>
+                  {position.stands.map((stand) => (
+                    <Meta key={stand.id} style={{ marginTop: space[1] }}>
+                      Stand {stand.stand_number} · {formatStandDetail(stand)}
+                    </Meta>
+                  ))}
+                </Card>
               ))}
             </View>
-          ))}
-        </>
-      )}
-
-      {/* Squad Section */}
-      <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Squad</Text>
-      {displayShooters.length === 0 ? (
-        <Text style={styles.emptyText}>No shooters added yet</Text>
-      ) : (
-        displayShooters.map((entry) => (
-          <View key={entry.id} style={styles.card}>
-            <Text style={styles.cardTitle}>
-              {entry.position_in_squad}. {entry.shooter_name}
-            </Text>
-            {entry.user_id && (
-              <Text style={styles.userIdBadge}>Linked user</Text>
-            )}
           </View>
-        ))
-      )}
-    </ScrollView>
+        ) : null}
+
+        <View style={styles.section}>
+          <H3>Squad</H3>
+          {displayShooters.length === 0 ? (
+            <BodySm tone="meta" style={{ fontStyle: 'italic' }}>
+              No shooters added yet.
+            </BodySm>
+          ) : (
+            <View style={{ gap: space[2] }}>
+              {displayShooters.map((entry) => (
+                <Card key={entry.id}>
+                  <Body weight="600">
+                    {entry.position_in_squad}. {entry.shooter_name}
+                  </Body>
+                  {entry.user_id ? (
+                    <Badge label="Linked" tone="info" style={{ marginTop: space[1] }} />
+                  ) : null}
+                </Card>
+              ))}
+            </View>
+          )}
+        </View>
+
+        {round ? null : null}
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
-  },
-  container: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
-  },
-  loadingContainer: {
+  loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.bgPrimary,
   },
-  waitingBanner: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#FBBF24',
-    borderWidth: 1,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.lg,
-    marginBottom: Spacing.lg,
+  scroll: {
+    padding: space[5],
+    paddingBottom: space[12],
+    gap: space[6],
+  },
+  banner: {
+    backgroundColor: color.noBirdBg,
+    borderColor: color.noBird,
+    borderLeftWidth: 4,
+    borderRadius: radius.md,
+    padding: space[4],
     alignItems: 'center',
   },
-  waitingTitle: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: '#78350F',
-    marginBottom: Spacing.xs,
-  },
-  waitingText: {
-    fontSize: FontSize.base,
-    color: '#92400E',
-    textAlign: 'center',
-  },
-  clubSection: {
-    marginBottom: Spacing.lg,
-  },
-  clubName: {
-    fontSize: FontSize['2xl'],
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  sectionTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgSecondary,
-  },
-  cardTitle: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  cardDetail: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-  },
-  userIdBadge: {
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-    fontWeight: '600',
-    marginTop: Spacing.xs,
-  },
-  emptyText: {
-    fontSize: FontSize.base,
-    color: Colors.textMuted,
-    fontStyle: 'italic',
+  section: {
+    gap: space[3],
   },
 });

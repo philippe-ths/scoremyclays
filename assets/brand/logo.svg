@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 64" width="240" height="64" fill="none">
+  
+  <g transform="translate(4, 8)">
+    <ellipse cx="24" cy="24" rx="22" ry="7" fill="#2c4e22"></ellipse>
+    <ellipse cx="24" cy="22" rx="22" ry="7" fill="#37632a"></ellipse>
+    <ellipse cx="24" cy="20" rx="16" ry="4" fill="#4a7d38" opacity="0.6"></ellipse>
+    <circle cx="32" cy="20" r="2" fill="#d96515" opacity="0.9"></circle>
+  </g>
+  
+  <g transform="translate(60, 0)">
+    <text x="0" y="28" font-family="Fraunces, serif" font-weight="800" font-size="22" fill="#2c4e22" letter-spacing="-0.5">ScoreMyClays</text>
+    <text x="0" y="50" font-family="Inter, sans-serif" font-weight="600" font-size="10" fill="#7c7460" letter-spacing="2">TRACK · IMPROVE · COMPETE</text>
+  </g>
+</svg>

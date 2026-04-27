@@ -1,6 +1,6 @@
 import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useEffect, useState } from 'react';
-import { BorderRadius, Colors, FontSize, Spacing } from '@/lib/constants';
+import { color, space, radius, fontSize, fontWeight, shadow } from '@/lib/design-system';
 import { shouldShowIOSInstallPrompt } from '@/lib/iosInstallPrompt';
 
 const DISMISS_KEY = 'smc.iosInstallPrompt.dismissed';
@@ -56,47 +56,43 @@ export default function IOSInstallPrompt() {
 const styles = StyleSheet.create({
   banner: {
     position: 'absolute',
-    left: Spacing.md,
-    right: Spacing.md,
-    bottom: Spacing.md,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    backgroundColor: Colors.bgPrimary,
+    left: space[4],
+    right: space[4],
+    bottom: space[4],
+    padding: space[4],
+    borderRadius: radius.lg,
+    backgroundColor: color.bgElevated,
     borderWidth: 1,
-    borderColor: Colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    borderColor: color.border1,
+    ...shadow.md,
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: Spacing.md,
+    gap: space[4],
     zIndex: 1000,
   },
   textBlock: {
     flex: 1,
   },
   title: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.xs,
+    fontSize: fontSize.base,
+    fontWeight: fontWeight.semibold,
+    color: color.fg1,
+    marginBottom: space[1],
   },
   body: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
+    fontSize: fontSize.sm,
+    color: color.fg2,
     lineHeight: 20,
   },
   dismiss: {
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    borderRadius: BorderRadius.md,
-    backgroundColor: Colors.bgTertiary,
+    paddingHorizontal: space[4],
+    paddingVertical: space[2],
+    borderRadius: radius.md,
+    backgroundColor: color.bgSunken,
   },
   dismissText: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+    fontSize: fontSize.sm,
+    fontWeight: fontWeight.semibold,
+    color: color.fg1,
   },
 });

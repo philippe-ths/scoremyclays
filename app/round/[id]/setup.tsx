@@ -1,14 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
-  Alert,
-} from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { usePowerSync, useQuery } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
@@ -16,12 +8,26 @@ import { smcGetRound, smcUpdateRoundStatus } from '@/db/queries/smc-rounds';
 import { smcGetSquadByRound, smcAddShooterEntry, smcRemoveShooterEntry } from '@/db/queries/smc-squads';
 import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import { smcCreateInvite, smcCheckDuplicateInvite } from '@/db/queries/smc-invites';
-import { smcGetUserByUserId } from '@/db/queries/smc-users';
-import { Colors, Spacing, FontSize, BorderRadius, MAX_SQUAD_SIZE } from '@/lib/constants';
+import { MAX_SQUAD_SIZE } from '@/lib/constants';
+import { color, radius, space } from '@/lib/design-system';
 import { formatStandDetail, formatPositionTitle } from '@/lib/formatting';
 import { InviteStatus, RoundStatus, type ShooterEntry, type Round, type PositionWithStands, type User } from '@/lib/types';
 import { getSetupGuardRedirect } from '@/lib/round-guards';
 import { UserSearch } from '@/components/UserSearch';
+import {
+  Badge,
+  Body,
+  BodySm,
+  Button,
+  Card,
+  H3,
+  Label,
+  Meta,
+  Screen,
+  TextInput,
+  TopBar,
+  Typography,
+} from '@/components/ui';
 
 export default function RoundSetupScreen() {
   const { id: roundId } = useLocalSearchParams<{ id: string }>();
@@ -34,7 +40,6 @@ export default function RoundSetupScreen() {
   const [newShooterName, setNewShooterName] = useState('');
   const [clubPositions, setClubPositions] = useState<PositionWithStands[]>([]);
 
-  // Reactively watch shooter entries — auto-updates when invitees accept or owner modifies squad
   const { data: shooterRows } = useQuery<ShooterEntry>(
     `SELECT se.* FROM shooter_entries se
      JOIN squads s ON se.squad_id = s.id
@@ -44,7 +49,6 @@ export default function RoundSetupScreen() {
   );
   const shooters = shooterRows ?? [];
 
-  // Reactively watch pending invites — auto-updates when sync changes the invites table
   const { data: pendingInviteRows } = useQuery<{ id: string; invitee_user_id: string; status: string }>(
     'SELECT id, invitee_user_id, status FROM invites WHERE round_id = ? AND inviter_id = ? AND status = ?',
     [roundId ?? '', user?.id ?? '', InviteStatus.PENDING],
@@ -54,28 +58,18 @@ export default function RoundSetupScreen() {
   const reload = useCallback(async () => {
     if (!roundId || !user) return;
     const r = await smcGetRound(db, roundId);
-
-    // Access guard: only the round owner can use the setup screen
     const redirect = getSetupGuardRedirect(r, user.id, roundId);
     if (redirect) {
       router.replace(redirect);
       return;
     }
-
     setRound(r);
-
-    // Load club positions
     if (r?.club_id) {
       const clubData = await smcGetClubWithDetails(db, r.club_id);
-      if (clubData) {
-        setClubPositions(clubData.positions);
-      }
+      if (clubData) setClubPositions(clubData.positions);
     }
-
     const squad = await smcGetSquadByRound(db, roundId);
-    if (squad) {
-      setSquadId(squad.id);
-    }
+    if (squad) setSquadId(squad.id);
   }, [db, roundId, user, router]);
 
   useFocusEffect(
@@ -86,17 +80,14 @@ export default function RoundSetupScreen() {
 
   async function handleSelectUserForInvite(selectedUser: User) {
     if (!user || !roundId) return;
-
-    // Check if already invited or participant
     const existing = await smcCheckDuplicateInvite(db, roundId, selectedUser.user_id!);
     if (existing) {
       if (existing.status === InviteStatus.PENDING) {
-        Alert.alert('Already invited', 'You have already invited this user to this round.');
+        Alert.alert('Already Invited', 'You have already invited this shooter to this round.');
       } else if (existing.status === InviteStatus.ACCEPTED) {
-        Alert.alert('Already participant', 'This user is already a participant in this round.');
+        Alert.alert('Already Participant', 'This shooter is already a participant.');
       } else {
-        Alert.alert('Re-inviting', 'Sending a new invite to this user.');
-        // Update declined invite back to PENDING
+        Alert.alert('Re-inviting', 'Sending a new invite to this shooter.');
         await smcCreateInvite(db, {
           id: existing.id,
           round_id: roundId,
@@ -107,8 +98,6 @@ export default function RoundSetupScreen() {
       }
       return;
     }
-
-    // Create invite
     try {
       await smcCreateInvite(db, {
         id: Crypto.randomUUID(),
@@ -117,11 +106,10 @@ export default function RoundSetupScreen() {
         invitee_id: selectedUser.id,
         invitee_user_id: selectedUser.user_id!,
       });
-
-      Alert.alert('Invited!', `${selectedUser.display_name} has been invited to the round.`);
+      Alert.alert('Invited', `${selectedUser.display_name} has been invited to the round.`);
       await reload();
     } catch (err) {
-      Alert.alert('Error', 'Failed to send invite');
+      Alert.alert('Error', 'Failed to send invite.');
       console.error('Error sending invite:', err);
     }
   }
@@ -129,13 +117,9 @@ export default function RoundSetupScreen() {
   async function handleAddShooter() {
     if (!squadId || !user) return;
     const name = newShooterName.trim();
-    if (!name) {
-      Alert.alert('Name required', 'Enter the shooter\'s name.');
-      return;
-    }
+    if (!name) return Alert.alert('Name required', "Enter the shooter's name.");
     if (shooters.length >= MAX_SQUAD_SIZE) {
-      Alert.alert('Squad full', `Maximum ${MAX_SQUAD_SIZE} shooters per squad.`);
-      return;
+      return Alert.alert('Squad Full', `Maximum ${MAX_SQUAD_SIZE} shooters per squad.`);
     }
     await smcAddShooterEntry(db, {
       id: Crypto.randomUUID(),
@@ -151,8 +135,7 @@ export default function RoundSetupScreen() {
 
   async function handleRemoveShooter(entryId: string) {
     if (shooters.length <= 1) {
-      Alert.alert('Cannot remove', 'At least one shooter is required.');
-      return;
+      return Alert.alert('Cannot Remove', 'At least one shooter is required.');
     }
     await smcRemoveShooterEntry(db, entryId);
     await reload();
@@ -160,206 +143,132 @@ export default function RoundSetupScreen() {
 
   async function handleStartScoring() {
     if (shooters.length === 0) {
-      Alert.alert('Add shooters', 'At least one shooter is required.');
-      return;
+      return Alert.alert('Add Shooters', 'At least one shooter is required.');
     }
     await smcUpdateRoundStatus(db, roundId!, RoundStatus.IN_PROGRESS);
     router.push(`/round/${roundId}/score`);
   }
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      {/* Club Positions Preview */}
-      <Text style={styles.sectionTitle}>Positions</Text>
-      {clubPositions.map((position) => (
-        <View key={position.id} style={styles.card}>
-          <Text style={styles.cardTitle}>
-            {formatPositionTitle(position)}
-          </Text>
-          {position.stands.map((stand) => (
-            <Text key={stand.id} style={styles.cardDetail}>
-              Stand {stand.stand_number} · {formatStandDetail(stand)}
-            </Text>
-          ))}
-        </View>
-      ))}
-
-      {/* Squad Section */}
-      <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Squad</Text>
-
-      {shooters.map((entry) => (
-        <View key={entry.id} style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View>
-              <Text style={styles.cardTitle}>
-                {entry.position_in_squad}. {entry.shooter_name}
-                {entry.user_id === user?.id ? ' (You)' : ''}
-              </Text>
-              {entry.user_id && (
-                <Text style={styles.userIdBadge}>Linked user</Text>
-              )}
-            </View>
-            <TouchableOpacity onPress={() => handleRemoveShooter(entry.id)}>
-              <Text style={styles.deleteText}>Remove</Text>
-            </TouchableOpacity>
+    <Screen>
+      <TopBar
+        title={round?.ground_name ?? 'Round Setup'}
+        onBack={() => router.back()}
+      />
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.section}>
+          <H3>Positions</H3>
+          <View style={{ gap: space[2] }}>
+            {clubPositions.map((position) => (
+              <Card key={position.id}>
+                <Body weight="600">{formatPositionTitle(position)}</Body>
+                {position.stands.map((stand) => (
+                  <Meta key={stand.id} style={{ marginTop: space[1] }}>
+                    Stand {stand.stand_number} · {formatStandDetail(stand)}
+                  </Meta>
+                ))}
+              </Card>
+            ))}
           </View>
         </View>
-      ))}
 
-      {/* Pending Invites */}
-      {pendingInvites.length > 0 && (
-        <>
-          <Text style={[styles.label, { marginTop: Spacing.md, marginBottom: Spacing.sm }]}>
-            Pending Invites ({pendingInvites.length})
-          </Text>
-          {pendingInvites.map((invite) => (
-            <View key={invite.id} style={styles.pendingInviteCard}>
-              <Text style={styles.pendingInviteText}>
-                Waiting for @{invite.invitee_user_id} to accept...
-              </Text>
+        <View style={styles.section}>
+          <H3>Squad</H3>
+          <View style={{ gap: space[2] }}>
+            {shooters.map((entry) => (
+              <Card key={entry.id}>
+                <View style={styles.shooterRow}>
+                  <View style={{ flex: 1 }}>
+                    <Body weight="600">
+                      {entry.position_in_squad}. {entry.shooter_name}
+                      {entry.user_id === user?.id ? ' (You)' : ''}
+                    </Body>
+                    {entry.user_id ? (
+                      <Badge label="Linked" tone="info" style={{ marginTop: space[1] }} />
+                    ) : null}
+                  </View>
+                  <Pressable hitSlop={8} onPress={() => handleRemoveShooter(entry.id)}>
+                    <Typography tone="danger" weight="600">
+                      Remove
+                    </Typography>
+                  </Pressable>
+                </View>
+              </Card>
+            ))}
+          </View>
+        </View>
+
+        {pendingInvites.length > 0 ? (
+          <View style={styles.section}>
+            <Label>Pending Invites ({pendingInvites.length})</Label>
+            <View style={{ gap: space[2] }}>
+              {pendingInvites.map((invite) => (
+                <View key={invite.id} style={styles.pendingInvite}>
+                  <BodySm>Waiting for @{invite.invitee_user_id} to accept…</BodySm>
+                </View>
+              ))}
             </View>
-          ))}
-        </>
-      )}
+          </View>
+        ) : null}
 
-      {/* Invite Users Section */}
-      <View style={[styles.section, { marginTop: Spacing.lg, marginBottom: Spacing.md }]}>
-        <Text style={styles.label}>Invite Users</Text>
-        <UserSearch
-          onSelectUser={handleSelectUserForInvite}
-          currentUserInternalId={user?.id}
+        <View style={styles.section}>
+          <Label>Invite Shooters</Label>
+          <UserSearch onSelectUser={handleSelectUserForInvite} currentUserInternalId={user?.id} />
+        </View>
+
+        <View style={styles.section}>
+          <Label>Add Shooter by Name</Label>
+          <View style={styles.addShooterRow}>
+            <View style={{ flex: 1 }}>
+              <TextInput
+                value={newShooterName}
+                onChangeText={setNewShooterName}
+                placeholder="Shooter name"
+                returnKeyType="done"
+                onSubmitEditing={handleAddShooter}
+              />
+            </View>
+            <Button label="Add" variant="primary" size="md" onPress={handleAddShooter} />
+          </View>
+        </View>
+
+        <Button
+          label="Start Scoring"
+          variant="primary"
+          size="lg"
+          fullWidth
+          onPress={handleStartScoring}
+          style={{ marginTop: space[4] }}
         />
-      </View>
-
-      <View style={styles.addShooterRow}>
-        <TextInput
-          style={styles.shooterInput}
-          value={newShooterName}
-          onChangeText={setNewShooterName}
-          placeholder="Or add shooter by name"
-          placeholderTextColor={Colors.textMuted}
-          returnKeyType="done"
-          onSubmitEditing={handleAddShooter}
-        />
-        <TouchableOpacity style={styles.addShooterBtn} onPress={handleAddShooter}>
-          <Text style={styles.addShooterBtnText}>Add</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Start Button */}
-      <TouchableOpacity style={styles.startBtn} onPress={handleStartScoring}>
-        <Text style={styles.startBtnText}>Start Scoring</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   scroll: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
+    padding: space[5],
+    paddingBottom: space[12],
+    gap: space[6],
   },
-  container: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
+  section: {
+    gap: space[3],
   },
-  sectionTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgSecondary,
-  },
-  cardHeader: {
+  shooterRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    gap: space[3],
   },
-  cardTitle: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  cardDetail: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-  },
-  deleteText: {
-    fontSize: FontSize.sm,
-    color: Colors.miss,
+  pendingInvite: {
+    backgroundColor: color.noBirdBg,
+    borderLeftWidth: 3,
+    borderLeftColor: color.noBird,
+    borderRadius: radius.md,
+    padding: space[3],
   },
   addShooterRow: {
     flexDirection: 'row',
-    gap: Spacing.sm,
-    marginTop: Spacing.xs,
-  },
-  shooterInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    fontSize: FontSize.base,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.bgSecondary,
-  },
-  addShooterBtn: {
-    backgroundColor: Colors.primary,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.lg,
-    justifyContent: 'center',
-  },
-  addShooterBtnText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: FontSize.base,
-  },
-  startBtn: {
-    marginTop: Spacing.xl,
-    backgroundColor: Colors.hit,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  startBtnText: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  userIdBadge: {
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-    fontWeight: '600',
-    marginTop: Spacing.xs,
-  },
-  pendingInviteCard: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#FBBF24',
-    borderLeftWidth: 3,
-    borderRadius: BorderRadius.md,
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.sm,
-    marginBottom: Spacing.sm,
-  },
-  pendingInviteText: {
-    fontSize: FontSize.sm,
-    color: '#78350F',
-    fontWeight: '500',
-  },
-  section: {
-    gap: Spacing.md,
-  },
-  label: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+    alignItems: 'flex-start',
+    gap: space[2],
   },
 });

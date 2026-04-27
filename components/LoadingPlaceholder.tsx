@@ -1,14 +1,18 @@
-import { StyleSheet, Text, View } from 'react-native';
-import { Colors, FontSize } from '@/lib/constants';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { color, space } from '@/lib/design-system';
+import { BodySm } from '@/components/ui';
 
 interface LoadingPlaceholderProps {
   message?: string;
 }
 
-export default function LoadingPlaceholder({ message = 'Loading...' }: LoadingPlaceholderProps) {
+export default function LoadingPlaceholder({ message = 'Loading…' }: LoadingPlaceholderProps) {
   return (
     <View style={styles.centered}>
-      <Text style={styles.text}>{message}</Text>
+      <ActivityIndicator size="small" color={color.primary} />
+      <BodySm tone="muted" style={{ marginTop: space[3] }}>
+        {message}
+      </BodySm>
     </View>
   );
 }
@@ -18,9 +22,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  text: {
-    fontSize: FontSize.lg,
-    color: Colors.textSecondary,
+    backgroundColor: color.bg,
   },
 });

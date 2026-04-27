@@ -1,35 +1,44 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Platform,
-  Alert,
-  SafeAreaView,
   ActivityIndicator,
+  Alert,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
 import { usePowerSync } from '@powersync/react';
-import { Colors } from '@/lib/constants';
+import { color, fontFamily, radius, space } from '@/lib/design-system';
 import type { Club } from '@/lib/types';
+import {
+  Body,
+  Button,
+  Card,
+  H3,
+  Label,
+  Meta,
+  PhotoHeader,
+  Screen,
+  Typography,
+} from '@/components/ui';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, signOut, isLoading } = useAuth();
   const db = usePowerSync();
-  
+
   const [clubs, setClubs] = useState<Record<string, Club>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadClubs = async () => {
+    (async () => {
       try {
         const allClubs = await db.getAll<Club>('SELECT * FROM clubs');
         const clubMap: Record<string, Club> = {};
-        allClubs.forEach(club => {
+        allClubs.forEach((club) => {
           clubMap[club.id] = club;
         });
         setClubs(clubMap);
@@ -38,289 +47,184 @@ export default function ProfileScreen() {
       } finally {
         setLoading(false);
       }
-    };
-    loadClubs();
+    })();
   }, [db]);
 
   if (isLoading || loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+      <Screen>
+        <View style={styles.loading}>
+          <ActivityIndicator size="large" color={color.primary} />
         </View>
-      </SafeAreaView>
+      </Screen>
     );
   }
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   const favouriteClubIds: string[] = user.favourite_club_ids
     ? JSON.parse(user.favourite_club_ids)
     : [];
   const gearList: string[] = user.gear ? JSON.parse(user.gear) : [];
-  const favouriteClubs = favouriteClubIds
-    .map(id => clubs[id])
-    .filter(Boolean);
+  const favouriteClubs = favouriteClubIds.map((id) => clubs[id]).filter(Boolean);
 
-  const handleLogout = async () => {
+  const confirmLogout = () => {
+    const run = async () => {
+      try {
+        await signOut();
+      } catch {
+        Alert.alert('Error', 'Failed to log out.');
+      }
+    };
     if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to log out?')) {
-        try {
-          await signOut();
-        } catch (err) {
-          console.error('Failed to log out:', err);
-        }
+      if (typeof window !== 'undefined' && window.confirm('Are you sure you want to log out?')) {
+        void run();
       }
     } else {
-      Alert.alert(
-        'Log Out',
-        'Are you sure you want to log out?',
-        [
-          { text: 'Cancel' },
-          {
-            text: 'Log Out',
-            onPress: async () => {
-              try {
-                await signOut();
-              } catch (err) {
-                Alert.alert('Error', 'Failed to log out');
-              }
-            },
-            style: 'destructive',
-          },
-        ]
-      );
+      Alert.alert('Log Out', 'Are you sure you want to log out?', [
+        { text: 'Cancel' },
+        { text: 'Log Out', style: 'destructive', onPress: run },
+      ]);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <Screen edges={['left', 'right']}>
       <ScrollView>
-        {/* Header Section */}
-        <View style={styles.header}>
+        <PhotoHeader
+          eyebrow={`@${user.user_id}`}
+          title={user.display_name || 'Shooter'}
+          height={220}
+        />
+
+        <View style={styles.avatarRow}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
+            <Typography
+              style={{
+                fontFamily: fontFamily.displayBlack,
+                fontSize: 28,
+                color: color.primaryFg,
+              }}
+            >
               {(user.display_name || 'U')[0].toUpperCase()}
-            </Text>
-          </View>
-          <View style={styles.headerInfo}>
-            <Text style={styles.displayName}>{user.display_name}</Text>
-            <Text style={styles.userId}>@{user.user_id}</Text>
+            </Typography>
           </View>
         </View>
 
-        {/* Info Cards */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
-          
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Email</Text>
-            <Text style={styles.infoValue}>{user.email}</Text>
-          </View>
+          <H3>Account</H3>
 
-          {/* Discoverable Status */}
-          <View style={styles.infoCard}>
-            <Text style={styles.infoLabel}>Discoverable</Text>
-            <Text style={styles.infoValue}>
-              {user.discoverable ? 'Visible in search' : 'Private (exact User ID only)'}
-            </Text>
-          </View>
+          <Card padded style={styles.infoCard}>
+            <Label>Email</Label>
+            <Body>{user.email}</Body>
+          </Card>
+
+          <Card padded style={styles.infoCard}>
+            <Label>Discoverable</Label>
+            <Body>
+              {user.discoverable ? 'Visible in Search' : 'Private (Exact User ID Only)'}
+            </Body>
+          </Card>
         </View>
 
-        {/* Favourite Clubs */}
-        {favouriteClubs.length > 0 && (
+        {favouriteClubs.length > 0 ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Favourite Clubs</Text>
-            <View style={styles.clubList}>
-              {favouriteClubs.map(club => (
-                <View key={club.id} style={styles.clubListItem}>
-                  <Text style={styles.clubListItemText}>{club.name}</Text>
-                </View>
+            <H3>Favourite Grounds</H3>
+            <View style={{ gap: space[2] }}>
+              {favouriteClubs.map((club) => (
+                <Card key={club.id} padded style={styles.listItem}>
+                  <Body weight="500">{club.name}</Body>
+                </Card>
               ))}
             </View>
           </View>
-        )}
+        ) : null}
 
-        {/* Gear */}
-        {gearList.length > 0 && (
+        {gearList.length > 0 ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Gear</Text>
-            <View style={styles.gearList}>
+            <H3>Gear</H3>
+            <View style={{ gap: space[2] }}>
               {gearList.map((item, index) => (
-                <View key={index} style={styles.gearListItem}>
-                  <Text style={styles.gearListItemText}>{item}</Text>
-                </View>
+                <Card key={index} padded style={styles.listItem}>
+                  <Body>{item}</Body>
+                </Card>
               ))}
             </View>
           </View>
-        )}
+        ) : null}
 
-        {/* Actions */}
-        <View style={styles.section}>
-          <TouchableOpacity
-            style={styles.editButton}
+        <View style={[styles.section, styles.actions]}>
+          <Button
+            label="Edit Profile"
+            variant="primary"
+            size="lg"
+            fullWidth
             onPress={() => router.push('/profile/edit')}
-          >
-            <Text style={styles.editButtonText}>Edit Profile</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.logoutButton}
-            onPress={handleLogout}
-          >
-            <Text style={styles.logoutButtonText}>Log Out</Text>
-          </TouchableOpacity>
+          />
+          <Pressable onPress={confirmLogout} style={styles.logoutBtn}>
+            <Typography tone="danger" weight="600">
+              Log Out
+            </Typography>
+          </Pressable>
         </View>
 
-        {/* Account Info */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Member since {new Date(user.created_at).toLocaleDateString()}</Text>
+          <Meta>Member since {new Date(user.created_at).toLocaleDateString()}</Meta>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
-  },
-  loadingContainer: {
+  loading: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+  avatarRow: {
+    paddingHorizontal: space[5],
+    marginTop: -32,
+    marginBottom: space[4],
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: color.primary,
+    borderWidth: 3,
+    borderColor: color.bgElevated,
     alignItems: 'center',
-    marginRight: 16,
-  },
-  avatarText: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#fff',
-  },
-  headerInfo: {
-    flex: 1,
-  },
-  displayName: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 4,
-  },
-  userId: {
-    fontSize: 14,
-    color: Colors.textSecondary,
+    justifyContent: 'center',
   },
   section: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingHorizontal: space[5],
+    paddingVertical: space[5],
+    gap: space[3],
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: 16,
+    borderBottomColor: color.border1,
   },
   infoCard: {
-    backgroundColor: Colors.bgSecondary,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    marginBottom: 12,
+    gap: space[1],
   },
-  infoLabel: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    marginBottom: 4,
+  listItem: {
+    paddingHorizontal: space[4],
+    paddingVertical: space[3],
   },
-  infoValue: {
-    fontSize: 15,
-    color: Colors.textPrimary,
-    fontWeight: '500',
+  actions: {
+    gap: space[3],
+    borderBottomWidth: 0,
   },
-  clubList: {
-    gap: 8,
-  },
-  clubListItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: Colors.bgSecondary,
-    borderRadius: 8,
-  },
-  clubListItemText: {
-    fontSize: 14,
-    color: Colors.textPrimary,
-  },
-  gearList: {
-    gap: 8,
-  },
-  gearListItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: Colors.bgSecondary,
-    borderRadius: 8,
-  },
-  gearListItemText: {
-    fontSize: 14,
-    color: Colors.textPrimary,
-  },
-  editButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 12,
-    borderRadius: 8,
+  logoutBtn: {
+    minHeight: 48,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 48,
-    marginBottom: 12,
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  logoutButton: {
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.miss,
-    minHeight: 48,
-  },
-  logoutButtonText: {
-    color: Colors.miss,
-    fontSize: 16,
-    fontWeight: '600',
+    borderRadius: radius.pill,
+    borderWidth: 1.5,
+    borderColor: color.miss,
   },
   footer: {
-    paddingHorizontal: 20,
-    paddingVertical: 24,
     alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
+    paddingVertical: space[6],
   },
 });

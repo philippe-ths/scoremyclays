@@ -1,15 +1,21 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, useColorScheme } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, useColorScheme } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { DatabaseProvider, useDatabase } from '@/providers/DatabaseProvider';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { SyncProvider } from '@/providers/SyncProvider';
 import IOSInstallPrompt from '@/components/IOSInstallPrompt';
 import { registerServiceWorker } from '@/lib/registerServiceWorker';
 import { breadcrumb, installGlobalHandlers } from '@/lib/crashLog';
+import {
+  color,
+  space,
+  useDesignSystemFonts,
+} from '@/lib/design-system';
+import { Button, H1, BodySm } from '@/components/ui';
 
 installGlobalHandlers();
 breadcrumb('app.boot');
@@ -20,11 +26,11 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => voi
 
   return (
     <View style={styles.errorContainer}>
-      <Text style={styles.errorTitle}>Something went wrong</Text>
-      <Text style={styles.errorMessage}>{errorMessage}</Text>
-      <TouchableOpacity style={styles.errorButton} onPress={retry}>
-        <Text style={styles.errorButtonText}>Try again</Text>
-      </TouchableOpacity>
+      <H1 align="center">Something went wrong</H1>
+      <BodySm tone="danger" align="center" style={styles.errorMessage}>
+        {errorMessage}
+      </BodySm>
+      <Button label="Try again" onPress={retry} />
     </View>
   );
 }
@@ -66,8 +72,8 @@ function AppContent() {
 
   if (!isReady || isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View style={styles.loading}>
+        <ActivityIndicator size="large" color={color.primary} />
       </View>
     );
   }
@@ -75,18 +81,18 @@ function AppContent() {
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/login" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-        <Stack.Screen name="auth/profile-setup" options={{ headerShown: false }} />
-        <Stack.Screen name="clubs/[id]/index" options={{ title: 'Club Details', headerShown: true }} />
-        <Stack.Screen name="round/[id]/setup" options={{ title: 'Round Setup', headerShown: true }} />
-        <Stack.Screen name="round/[id]/waiting" options={{ title: 'Round', headerShown: true }} />
-        <Stack.Screen name="round/[id]/score" options={{ title: 'Scoring', headerShown: true }} />
-        <Stack.Screen name="round/[id]/conflicts" options={{ title: 'Resolve Conflicts', headerShown: true }} />
-        <Stack.Screen name="round/[id]/summary" options={{ title: 'Summary', headerShown: true }} />
-        <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile', headerShown: true }} />
-        <Stack.Screen name="invites/index" options={{ title: 'Invites', headerShown: true }} />
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="auth/login" />
+        <Stack.Screen name="auth/signup" />
+        <Stack.Screen name="auth/profile-setup" />
+        <Stack.Screen name="clubs/[id]/index" />
+        <Stack.Screen name="round/[id]/setup" />
+        <Stack.Screen name="round/[id]/waiting" />
+        <Stack.Screen name="round/[id]/score" />
+        <Stack.Screen name="round/[id]/conflicts" />
+        <Stack.Screen name="round/[id]/summary" />
+        <Stack.Screen name="profile/edit" />
+        <Stack.Screen name="invites/index" />
       </Stack>
       <IOSInstallPrompt />
     </ThemeProvider>
@@ -94,30 +100,28 @@ function AppContent() {
 }
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({});
+  const fontsLoaded = useDesignSystemFonts();
 
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
-  useEffect(() => {
-    if (loaded) {
+    if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [fontsLoaded]);
 
-  if (!loaded) {
+  if (!fontsLoaded) {
     return null;
   }
 
   return (
-    <DatabaseProvider>
-      <AuthProvider>
-        <SyncProvider>
-          <AppContent />
-        </SyncProvider>
-      </AuthProvider>
-    </DatabaseProvider>
+    <SafeAreaProvider>
+      <DatabaseProvider>
+        <AuthProvider>
+          <SyncProvider>
+            <AppContent />
+          </SyncProvider>
+        </AuthProvider>
+      </DatabaseProvider>
+    </SafeAreaProvider>
   );
 }
 
@@ -126,30 +130,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
-    backgroundColor: '#0F172A',
-  },
-  errorTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#F8FAFC',
-    marginBottom: 12,
+    padding: space[6],
+    gap: space[4],
+    backgroundColor: color.bg,
   },
   errorMessage: {
-    fontSize: 15,
-    color: '#FCA5A5',
-    textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: space[3],
   },
-  errorButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    backgroundColor: '#2563EB',
-  },
-  errorButtonText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#FFFFFF',
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: color.bg,
   },
 });
