@@ -19,12 +19,18 @@ Read this file when creating a follow-up or spin-off GitHub issue.
 - State why the change is needed and what triggered the discovery.
 - State acceptance criteria if they are clear.
 
+## Referencing Code
+
+- Point to the relevant files, directories, or entry points when they help the reader find where the work starts.
+- Frame references as starting points for orientation, not as boundaries or a prescribed solution.
+- Prefer stable references (files, directories, modules) over volatile ones.
+
 ## What the Issue Must Not Contain
 
-- Do not include file paths, code snippets, or implementation approaches.
-- Do not reference specific functions, variables, or line numbers.
 - Do not prescribe how the implementing agent should solve the problem.
-  (Why: Implementation details peg to the current codebase state and bias the implementing agent toward an approach that may not match the codebase when the issue is picked up.)
+- Do not include code snippets or a step-by-step implementation plan.
+- Do not pin to specific line numbers, function names, or variable names, which drift as the code changes.
+  (Why: prescribing the solution or pinning to volatile code locations biases the implementing agent toward an approach that may not match the codebase when the issue is picked up; file- and directory-level references orient the reader without prescribing.)
 
 ## Keeping Issues Concise
 
