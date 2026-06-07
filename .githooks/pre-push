@@ -34,6 +34,9 @@ if [ "$REQUIRE_VALIDATION_BEFORE_PUSH" = "true" ]; then
   "$ROOT_DIR/.ai-policy/scripts/check-validation.sh"
 fi
 
-printf '%s\n' "$PUSH_REFS" | "$ROOT_DIR/.ai-policy/hooks/check-changelog.sh"
+# Changelog-discipline check (check-changelog.sh) is intentionally omitted here.
+# It enforces a CHANGELOG.md entry for every ai-workflow.md Version bump, which
+# is meaningful in the workflow's own repository but not in a repo that merely
+# vendors ai-workflow.md as installed tooling.
 
 exit 0
