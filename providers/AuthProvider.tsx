@@ -4,6 +4,7 @@ import type { User } from '@/lib/types';
 import { useDatabase } from './DatabaseProvider';
 import { supabase } from '@/lib/supabase';
 import type { AuthSession } from '@supabase/supabase-js';
+import { breadcrumb } from '@/lib/crashLog';
 
 export interface AuthContextValue {
   user: User | null;
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener — also fires INITIAL_SESSION for the current session
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       if (!mounted) return;
+      breadcrumb('auth.state', { event, hasSession: !!newSession, uid: newSession?.user?.id });
       setSession(newSession);
 
       if (newSession?.user && event !== 'SIGNED_OUT') {

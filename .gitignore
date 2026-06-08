@@ -130,6 +130,7 @@ ios/
 android/
 
 # AI workflow 
+.agents/
 .ai-policy/
 .claude/
 .codex/

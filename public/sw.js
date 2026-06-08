@@ -1,49 +1,51 @@
-/**
- * ScoreMyClays service worker.
- *
- * Makes the PWA boot offline. The app's data layer (PowerSync SQLite) already
- * works without a connection, but the page that loads it was never cached, so
- * reopening offline failed with Safari's "not connected to the internet" error.
- *
- * The precache list and cache version below are placeholders that
- * `scripts/generate-pwa.js` fills in after `expo export`, using the real
- * (build-hashed) file list from `dist/`. Precaching the whole export on install
- * is what makes the app bootable offline after a single online visit — the
- * hashed JS bundle and the dynamically-imported wa-sqlite chunks are otherwise
- * fetched before the worker takes control and would never reach the cache.
- *
- * Strategy:
- * - Install: precache every exported asset (best-effort per file).
- * - Navigations: network-first, falling back to the cached app shell offline.
- *   With Expo web `output: "single"` every route is the same index.html (SPA).
- * - Same-origin assets: cache-first, with runtime caching as a backstop.
- * - Cross-origin requests (Supabase / PowerSync) are never intercepted; they
- *   fail naturally offline and PowerSync handles that against local SQLite.
- */
-const CACHE = 'smc-shell-' + '__BUILD_ID__';
+// ScoreMyClays service worker
+// Strategy:
+// - Precache only the minimal SPA shell on install (root HTML, manifest, icons).
+//   WASM assets populate the runtime cache on first fetch, giving the same
+//   offline behaviour after one full online load without bloating install.
+// - Stale-while-revalidate for same-origin GET requests (handles hashed JS
+//   bundles, the @powersync/ worker + WASM directory, and the root-level WASM
+//   files whose filenames we know ahead of time).
+// - Network-first for navigation requests with a strict ok-response guard,
+//   falling back to cached '/' so the SPA shell loads offline. The web build
+//   is `output: "single"`, so a single index.html serves every route.
+// - A new worker waits in the background and activates only when every PWA
+//   client has closed. No `skipWaiting()` / `clients.claim()` — mid-session
+//   controller swaps were causing spontaneous reloads on iOS Safari.
 
-// Replaced at build time with the full list of exported asset URLs.
-const PRECACHE_URLS = '__PRECACHE_PLACEHOLDER__';
+const VERSION = 'v3';
+const STATIC_CACHE = `smc-static-${VERSION}`;
+const RUNTIME_CACHE = `smc-runtime-${VERSION}`;
+
+const PRECACHE_URLS = [
+  '/',
+  '/manifest.json',
+  '/apple-touch-icon.png',
+  '/icon-192.png',
+  '/icon-512.png',
+];
 
 self.addEventListener('install', (event) => {
-  const urls = Array.isArray(PRECACHE_URLS) ? PRECACHE_URLS : ['/'];
   event.waitUntil(
-    caches
-      .open(CACHE)
-      // Per-file so one failed asset doesn't abort the whole precache.
-      .then((cache) => Promise.allSettled(urls.map((url) => cache.add(url))))
-      .then(() => self.skipWaiting())
+    caches.open(STATIC_CACHE).then((cache) => cache.addAll(PRECACHE_URLS))
   );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches
-      .keys()
-      .then((keys) => Promise.all(keys.filter((key) => key !== CACHE).map((key) => caches.delete(key))))
-      .then(() => self.clients.claim())
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== STATIC_CACHE && key !== RUNTIME_CACHE)
+          .map((key) => caches.delete(key))
+      )
+    )
   );
 });
+
+function isCacheableResponse(response) {
+  return !!response && response.status === 200 && response.type === 'basic';
+}
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
@@ -51,37 +53,37 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
 
   const url = new URL(request.url);
-
-  // Only handle our own origin. Supabase / PowerSync calls pass through untouched.
   if (url.origin !== self.location.origin) return;
 
-  // Navigations (the document request): network-first, fall back to cached shell.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE).then((cache) => cache.put('/', copy));
+          if (isCacheableResponse(response)) {
+            const copy = response.clone();
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put('/', copy));
+          }
           return response;
         })
-        .catch(() => caches.match('/').then((cached) => cached || caches.match('/index.html')))
+        .catch(() =>
+          caches.match('/').then((cached) => cached || caches.match(request))
+        )
     );
     return;
   }
 
-  // Static assets: cache-first, then network (and cache the result for next time).
   event.respondWith(
     caches.match(request).then((cached) => {
-      if (cached) return cached;
-      return fetch(request)
+      const networkFetch = fetch(request)
         .then((response) => {
-          if (response && response.status === 200 && response.type === 'basic') {
+          if (isCacheableResponse(response)) {
             const copy = response.clone();
-            caches.open(CACHE).then((cache) => cache.put(request, copy));
+            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
           }
           return response;
         })
         .catch(() => cached);
+      return cached || networkFetch;
     })
   );
 });

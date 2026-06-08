@@ -4,6 +4,7 @@ import { PowerSyncContext } from '@powersync/react';
 import { db } from '@/db/openDatabase';
 import { SupabaseConnector } from '@/lib/powersync-connector';
 import { supabase } from '@/lib/supabase';
+import { breadcrumb } from '@/lib/crashLog';
 
 interface DatabaseContextValue {
   isReady: boolean;
@@ -27,31 +28,50 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
     // INITIAL_SESSION fires synchronously before db.init() finishes,
     // so we store the session and connect after init completes.
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      breadcrumb('db.auth', { event, hasSession: !!session });
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
         if (session) {
           connector.currentSession = session;
           if (initComplete && !db.connected) {
-            db.connect(connector).catch(err => console.error('[DB] Connect error:', err));
+            breadcrumb('db.connect.start', { trigger: event });
+            db.connect(connector)
+              .then(() => breadcrumb('db.connect.done'))
+              .catch(err => {
+                breadcrumb('db.connect.error', { message: err instanceof Error ? err.message : String(err) });
+                console.error('[DB] Connect error:', err);
+              });
           }
         }
       } else if (event === 'SIGNED_OUT') {
         connector.currentSession = null;
         await db.disconnect();
+        breadcrumb('db.disconnect.done');
       }
     });
 
     (async () => {
       try {
+        breadcrumb('db.init.start');
         await db.init();
+        const resolvedVfs = (db as unknown as { options?: { database?: { waOptions?: { vfs?: string } } } })
+          .options?.database?.waOptions?.vfs;
+        breadcrumb('db.init.done', { vfs: resolvedVfs });
         initComplete = true;
         if (mounted) setIsReady(true);
 
         // Connect now if INITIAL_SESSION already provided a session
         if (connector.currentSession && !db.connected) {
-          db.connect(connector).catch(err => console.error('[DB] Connect error:', err));
+          breadcrumb('db.connect.start', { trigger: 'postInit' });
+          db.connect(connector)
+            .then(() => breadcrumb('db.connect.done'))
+            .catch(err => {
+              breadcrumb('db.connect.error', { message: err instanceof Error ? err.message : String(err) });
+              console.error('[DB] Connect error:', err);
+            });
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : String(err);
+        breadcrumb('db.init.error', { message: errorMessage });
         console.error('Database initialization error:', errorMessage);
         if (mounted) setError(errorMessage);
       }

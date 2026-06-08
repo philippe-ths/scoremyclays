@@ -1,13 +1,33 @@
 {
-  "buildCommand": "npx expo export --platform web && node scripts/generate-pwa.js",
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build:web",
   "outputDirectory": "dist",
-  "rewrites": [{ "source": "/(.*)", "destination": "/" }],
+  "framework": null,
+  "rewrites": [
+    { "source": "/:path+/wa-sqlite.wasm", "destination": "/wa-sqlite.wasm" },
+    { "source": "/:path+/wa-sqlite-async.wasm", "destination": "/wa-sqlite-async.wasm" },
+    { "source": "/:path+/mc-wa-sqlite.wasm", "destination": "/mc-wa-sqlite.wasm" },
+    { "source": "/:path+/mc-wa-sqlite-async.wasm", "destination": "/mc-wa-sqlite-async.wasm" },
+    { "source": "/((?!.*\\.).*)", "destination": "/" }
+  ],
   "headers": [
     {
       "source": "/sw.js",
       "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
         { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json" }
+      ]
+    },
+    {
+      "source": "/(.*).wasm",
+      "headers": [
+        { "key": "Content-Type", "value": "application/wasm" }
       ]
     }
   ]

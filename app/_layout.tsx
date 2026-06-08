@@ -7,6 +7,13 @@ import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View, useColorSc
 import { DatabaseProvider, useDatabase } from '@/providers/DatabaseProvider';
 import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { SyncProvider } from '@/providers/SyncProvider';
+import IOSInstallPrompt from '@/components/IOSInstallPrompt';
+import { registerServiceWorker } from '@/lib/registerServiceWorker';
+import { breadcrumb, installGlobalHandlers } from '@/lib/crashLog';
+
+installGlobalHandlers();
+breadcrumb('app.boot');
+registerServiceWorker();
 
 export function ErrorBoundary({ error, retry }: { error: Error; retry: () => void }) {
   const errorMessage = error instanceof Error ? error.message : String(error);
@@ -81,6 +88,7 @@ function AppContent() {
         <Stack.Screen name="profile/edit" options={{ title: 'Edit Profile', headerShown: true }} />
         <Stack.Screen name="invites/index" options={{ title: 'Invites', headerShown: true }} />
       </Stack>
+      <IOSInstallPrompt />
     </ThemeProvider>
   );
 }
