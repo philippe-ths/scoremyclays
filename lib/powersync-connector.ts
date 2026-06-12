@@ -15,6 +15,18 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
     return () => this.errorListeners.delete(listener);
   }
 
+  /**
+   * Surface an error to all registered listeners (e.g. the SyncProvider banner).
+   * Used for connect/sync failures that happen outside uploadData, so a failed
+   * sync is visible to the user instead of leaving a silently empty app.
+   */
+  public reportError(error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    for (const listener of this.errorListeners) {
+      listener(err);
+    }
+  }
+
   async fetchCredentials(): Promise<PowerSyncCredentials | null> {
     // Use cached session to avoid deadlock when called from onAuthStateChange
     const session = this.currentSession;
@@ -73,9 +85,7 @@ export class SupabaseConnector implements PowerSyncBackendConnector {
         // Rethrowing would block the entire CRUD queue forever.
         const err = error instanceof Error ? error : new Error(String(error));
         console.error(`Upload error (skipping): ${err.message}`);
-        for (const listener of this.errorListeners) {
-          listener(err);
-        }
+        this.reportError(err);
       }
     }
 

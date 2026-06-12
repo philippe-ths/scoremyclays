@@ -39,6 +39,7 @@ export function DatabaseProvider({ children }: { children: ReactNode }) {
               .catch(err => {
                 breadcrumb('db.connect.error', { message: err instanceof Error ? err.message : String(err) });
                 console.error('[DB] Connect error:', err);
+                connector.reportError(err);
               });
           }
         }
