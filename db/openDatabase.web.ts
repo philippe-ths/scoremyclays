@@ -24,4 +24,13 @@ export const db = new PowerSyncDatabase({
   schema: AppSchema,
   database: openFactory,
   flags: { useWebWorker: true },
+  // The shared sync worker must be pointed at the copied UMD asset for the
+  // same reason as the DB worker above: PowerSync's default resolves the
+  // worker via `new URL(..., import.meta.url)` with `type: 'module'`, which
+  // Metro cannot bundle. Left unset, SharedWorker construction fails, the
+  // message port is undefined, and connect throws "Cannot read properties of
+  // undefined (reading 'addEventListener')" — stalling sync entirely.
+  sync: {
+    worker: '/@powersync/worker/SharedSyncImplementation.umd.js',
+  },
 });

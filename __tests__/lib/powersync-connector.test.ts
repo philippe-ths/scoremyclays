@@ -53,6 +53,41 @@ describe('SupabaseConnector', () => {
     });
   });
 
+  describe('reportError', () => {
+    it('notifies all registered listeners with an Error', () => {
+      const a = jest.fn();
+      const b = jest.fn();
+      connector.addErrorListener(a);
+      connector.addErrorListener(b);
+
+      const err = new Error('connect failed');
+      connector.reportError(err);
+
+      expect(a).toHaveBeenCalledWith(err);
+      expect(b).toHaveBeenCalledWith(err);
+    });
+
+    it('wraps non-Error values in an Error', () => {
+      const listener = jest.fn();
+      connector.addErrorListener(listener);
+
+      connector.reportError('boom');
+
+      expect(listener).toHaveBeenCalledWith(expect.any(Error));
+      expect(listener.mock.calls[0][0].message).toBe('boom');
+    });
+
+    it('does not notify a removed listener', () => {
+      const listener = jest.fn();
+      const remove = connector.addErrorListener(listener);
+      remove();
+
+      connector.reportError(new Error('x'));
+
+      expect(listener).not.toHaveBeenCalled();
+    });
+  });
+
   describe('uploadData', () => {
     it('skips read-only tables (clubs, club_positions, club_stands)', async () => {
       const mockDb = {
