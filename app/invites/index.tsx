@@ -1,21 +1,18 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  SafeAreaView,
   ActivityIndicator,
-  RefreshControl,
+  Alert,
+  FlatList,
   Platform,
+  RefreshControl,
+  StyleSheet,
+  View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
-import { Colors } from '@/lib/constants';
+import { color, space } from '@/lib/design-system';
 import { InviteStatus, RoundStatus, type Invite, type User, type Round } from '@/lib/types';
 import {
   smcListIncomingInvitesForUser,
@@ -25,6 +22,16 @@ import { smcGetUserById } from '@/db/queries/smc-users';
 import { smcGetRound } from '@/db/queries/smc-rounds';
 import * as Crypto from 'expo-crypto';
 import { smcAddShooterEntry, smcGetSquadByRound } from '@/db/queries/smc-squads';
+import {
+  Body,
+  BodySm,
+  Button,
+  Card,
+  H2,
+  Meta,
+  Screen,
+  TopBar,
+} from '@/components/ui';
 
 export default function InvitesScreen() {
   const { user } = useAuth();
@@ -34,30 +41,26 @@ export default function InvitesScreen() {
   const [invites, setInvites] = useState<Invite[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [inviteDetails, setInviteDetails] = useState<Record<string, { inviter: User | null; round: Round | null }>>({});
+  const [inviteDetails, setInviteDetails] = useState<
+    Record<string, { inviter: User | null; round: Round | null }>
+  >({});
 
-  // Load invites
   const loadInvites = useCallback(async () => {
     if (!user?.user_id) return;
-
     try {
       const pendingInvites = await smcListIncomingInvitesForUser(
         db,
         user.user_id,
-        InviteStatus.PENDING
+        InviteStatus.PENDING,
       );
       setInvites(pendingInvites);
-
-      // Load inviter and round details for each invite
       const details: Record<string, { inviter: User | null; round: Round | null }> = {};
       for (const invite of pendingInvites) {
         try {
           const inviter = await smcGetUserById(db, invite.inviter_id);
-          const round = await db.getOptional<Round>(
-            'SELECT * FROM rounds WHERE id = ?',
-            [invite.round_id]
-          );
-
+          const round = await db.getOptional<Round>('SELECT * FROM rounds WHERE id = ?', [
+            invite.round_id,
+          ]);
           details[invite.id] = { inviter: inviter ?? null, round: round ?? null };
         } catch (err) {
           console.error('Error loading invite details:', err);
@@ -72,43 +75,40 @@ export default function InvitesScreen() {
     }
   }, [user?.user_id, db]);
 
-  // Load invites on mount and when screen is focused
   useFocusEffect(
     useCallback(() => {
       loadInvites();
-    }, [loadInvites])
+    }, [loadInvites]),
   );
+
+  const showToast = (message: string) => {
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined') window.alert(message);
+    } else {
+      Alert.alert('', message);
+    }
+  };
 
   const handleAcceptInvite = async (invite: Invite) => {
     try {
-      // Get the squad for this round
       const squad = await smcGetSquadByRound(db, invite.round_id);
       if (!squad) {
-        if (Platform.OS === 'web') window.alert('Could not find squad for this round');
-        else Alert.alert('Error', 'Could not find squad for this round');
+        showToast('Could not find squad for this round.');
         return;
       }
-
-      // Check if squad is full
       const shooterCount = await db.getOptional<{ count: number }>(
         'SELECT COUNT(*) as count FROM shooter_entries WHERE squad_id = ?',
-        [squad.id]
+        [squad.id],
       );
-
       if (shooterCount && shooterCount.count >= 6) {
-        if (Platform.OS === 'web') window.alert('This squad is full (max 6 shooters)');
-        else Alert.alert('Error', 'This squad is full (max 6 shooters)');
+        showToast('This squad is full (max 6 shooters).');
         return;
       }
-
-      // Get next position
       const maxPosition = await db.getOptional<{ max_pos: number }>(
         'SELECT MAX(position_in_squad) as max_pos FROM shooter_entries WHERE squad_id = ?',
-        [squad.id]
+        [squad.id],
       );
       const nextPosition = (maxPosition?.max_pos || 0) + 1;
-
-      // Create shooter entry with user's UUID (not handle) so sync rules match
       await smcAddShooterEntry(db, {
         id: Crypto.randomUUID(),
         squad_id: squad.id,
@@ -117,272 +117,141 @@ export default function InvitesScreen() {
         shooter_name: user!.display_name || 'Unknown',
         position_in_squad: nextPosition,
       });
-
-      // Update invite status
       await smcUpdateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
 
-      // Route based on round status: setup → waiting, in-progress → scoring, completed → summary
       const round = await smcGetRound(db, invite.round_id);
-      let destination: string;
-      if (round?.status === RoundStatus.SETUP) {
-        destination = `/round/${invite.round_id}/waiting`;
-      } else if (round?.status === RoundStatus.IN_PROGRESS) {
-        destination = `/round/${invite.round_id}/score`;
-      } else {
-        destination = `/round/${invite.round_id}/summary`;
-      }
+      const destination =
+        round?.status === RoundStatus.SETUP
+          ? `/round/${invite.round_id}/waiting`
+          : round?.status === RoundStatus.IN_PROGRESS
+            ? `/round/${invite.round_id}/score`
+            : `/round/${invite.round_id}/summary`;
 
       if (Platform.OS === 'web') {
-        window.alert('You have joined the round!');
+        if (typeof window !== 'undefined') window.alert('You have joined the round!');
         router.push(destination as any);
       } else {
         Alert.alert('Success', 'You have joined the round!', [
-          { 
-            text: 'OK', 
+          {
+            text: 'OK',
             onPress: () => {
               loadInvites();
               router.push(destination as any);
-            } 
+            },
           },
         ]);
       }
     } catch (err) {
       console.error('Error accepting invite:', err);
-      if (Platform.OS === 'web') window.alert('Failed to accept invite');
-      else Alert.alert('Error', 'Failed to accept invite');
+      showToast('Failed to accept invite.');
     }
   };
 
-  const handleDeclineInvite = async (inviteId: string) => {
+  const declineInvite = async (inviteId: string) => {
     try {
       await smcUpdateInviteStatus(db, inviteId, InviteStatus.DECLINED);
-      if (Platform.OS === 'web') window.alert('Invite declined');
-      else Alert.alert('Success', 'Invite declined');
+      showToast('Invite declined.');
       loadInvites();
     } catch (err) {
       console.error('Error declining invite:', err);
-      if (Platform.OS === 'web') window.alert('Failed to decline invite');
-      else Alert.alert('Error', 'Failed to decline invite');
+      showToast('Failed to decline invite.');
     }
   };
 
   const confirmDecline = (inviteId: string) => {
     if (Platform.OS === 'web') {
-      if (window.confirm('Are you sure you want to decline this invite?')) {
-        handleDeclineInvite(inviteId);
+      if (typeof window !== 'undefined' && window.confirm('Are you sure you want to decline this invite?')) {
+        declineInvite(inviteId);
       }
     } else {
-      Alert.alert(
-        'Decline Invite',
-        'Are you sure you want to decline this invite?',
-        [
-          { text: 'Cancel', onPress: () => {} },
-          {
-            text: 'Decline',
-            onPress: () => handleDeclineInvite(inviteId),
-            style: 'destructive',
-          },
-        ]
-      );
+      Alert.alert('Decline Invite', 'Are you sure you want to decline this invite?', [
+        { text: 'Cancel' },
+        { text: 'Decline', style: 'destructive', onPress: () => declineInvite(inviteId) },
+      ]);
     }
   };
 
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  if (invites.length === 0) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>No Invites Yet</Text>
-          <Text style={styles.emptyText}>
-            When someone invites you to a round, you'll see it here.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <SafeAreaView style={styles.container}>
-      <FlatList
-        data={invites}
-        keyExtractor={item => item.id}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => {
-            setRefreshing(true);
-            loadInvites();
-          }} />
-        }
-        renderItem={({ item }) => {
-          const detail = inviteDetails[item.id];
-          const inviter = detail?.inviter;
-          const round = detail?.round;
-
-          return (
-            <View style={styles.inviteCard}>
-              <View style={styles.inviteHeader}>
-                <View style={styles.inviterInfo}>
-                  <Text style={styles.inviteTitle}>
-                    {inviter
-                      ? `${inviter.display_name} (@${inviter.user_id}) invited you to a round`
-                      : 'You have been invited to a round'}
-                  </Text>
-                  {round && (
-                    <Text style={styles.roundInfo}>
-                      {round.ground_name} • {new Date(round.date).toLocaleDateString()}
-                    </Text>
-                  )}
+    <Screen>
+      <TopBar title="Invites" onBack={() => router.back()} />
+      {loading ? (
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={color.primary} />
+        </View>
+      ) : invites.length === 0 ? (
+        <View style={styles.centered}>
+          <H2 align="center">No Invites Yet</H2>
+          <BodySm tone="muted" align="center" style={{ marginTop: space[2], maxWidth: 320 }}>
+            When someone invites you to a round, you'll see it here.
+          </BodySm>
+        </View>
+      ) : (
+        <FlatList
+          data={invites}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          ItemSeparatorComponent={() => <View style={{ height: space[3] }} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                loadInvites();
+              }}
+            />
+          }
+          renderItem={({ item }) => {
+            const { inviter, round } = inviteDetails[item.id] ?? {};
+            return (
+              <Card>
+                <Body weight="600">
+                  {inviter
+                    ? `${inviter.display_name} (@${inviter.user_id}) invited you to a round`
+                    : 'You have been invited to a round'}
+                </Body>
+                {round ? (
+                  <Meta style={{ marginTop: space[1] }}>
+                    {round.ground_name} · {new Date(round.date).toLocaleDateString()} · {round.total_targets} targets
+                  </Meta>
+                ) : null}
+                <View style={styles.buttonRow}>
+                  <Button
+                    label="Accept"
+                    variant="primary"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={() => handleAcceptInvite(item)}
+                  />
+                  <Button
+                    label="Decline"
+                    variant="secondary"
+                    size="md"
+                    style={{ flex: 1 }}
+                    onPress={() => confirmDecline(item.id)}
+                  />
                 </View>
-              </View>
-
-              {round && (
-                <View style={styles.roundDetails}>
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Targets:</Text>
-                    <Text style={styles.detailValue}>{round.total_targets}</Text>
-                  </View>
-                </View>
-              )}
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={styles.acceptButton}
-                  onPress={() => handleAcceptInvite(item)}
-                >
-                  <Text style={styles.acceptButtonText}>Accept</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.declineButton}
-                  onPress={() => confirmDecline(item.id)}
-                >
-                  <Text style={styles.declineButtonText}>Decline</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          );
-        }}
-      />
-    </SafeAreaView>
+              </Card>
+            );
+          }}
+        />
+      )}
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
-  },
-  loadingContainer: {
+  centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: space[6],
   },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
-  emptyTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: 8,
-  },
-  emptyText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  inviteCard: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    paddingBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  inviteHeader: {
-    marginBottom: 12,
-  },
-  inviterInfo: {
-    gap: 4,
-  },
-  inviteTitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  roundInfo: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-  },
-  roundDetails: {
-    backgroundColor: Colors.bgSecondary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginBottom: 12,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  detailLabel: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  detailValue: {
-    fontSize: 13,
-    color: Colors.textPrimary,
-    fontWeight: '600',
+  list: {
+    padding: space[5],
   },
   buttonRow: {
     flexDirection: 'row',
-    gap: 8,
-  },
-  acceptButton: {
-    flex: 1,
-    backgroundColor: Colors.hit,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  acceptButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  declineButton: {
-    flex: 1,
-    backgroundColor: Colors.bgSecondary,
-    paddingVertical: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.miss,
-  },
-  declineButtonText: {
-    color: Colors.miss,
-    fontWeight: '600',
-    fontSize: 14,
+    gap: space[2],
+    marginTop: space[4],
   },
 });

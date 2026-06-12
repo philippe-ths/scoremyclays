@@ -1,0 +1,338 @@
+/* =========================================================
+   ScoreMyClays Design System — Colors & Type
+   v0.1.0
+   ========================================================= */
+
+/* ---------- Webfonts ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  /* =========================================================
+     COLOR — Brand
+     Deep English-countryside greens, warm paper cream.
+     Named after the sport's visual world.
+     ========================================================= */
+
+  /* Primary — "Field" green. The brand color. */
+  --field-50:  #f2f7f0;
+  --field-100: #dfead9;
+  --field-200: #bfd5b3;
+  --field-300: #94b883;
+  --field-400: #6b9a56;
+  --field-500: #4a7d38;
+  --field-600: #37632a;
+  --field-700: #2c4e22;  /* PRIMARY brand green */
+  --field-800: #233f1d;
+  --field-900: #1c3218;
+  --field-950: #0f1d0d;
+
+  /* Accent — "Clay" orange. For hits, highlights, CTAs that punch. */
+  --clay-50:  #fdf5ec;
+  --clay-100: #fae5cc;
+  --clay-200: #f5c88f;
+  --clay-300: #efa556;
+  --clay-400: #e88230;
+  --clay-500: #d96515;  /* ACCENT — clay pigeon orange */
+  --clay-600: #b74f0f;
+  --clay-700: #8f3c0d;
+  --clay-800: #6b2d0c;
+  --clay-900: #4a200a;
+
+  /* Neutral — "Bone" warm paper scale */
+  --bone-0:   #ffffff;
+  --bone-50:  #faf8f3;  /* page background */
+  --bone-100: #f2ede2;
+  --bone-200: #e6dfcd;
+  --bone-300: #d2c9b2;
+  --bone-400: #a89f86;
+  --bone-500: #7c7460;
+  --bone-600: #5a5445;
+  --bone-700: #403b30;
+  --bone-800: #2a2720;
+  --bone-900: #18160f;
+
+  /* Dark mode — "Powder" (smoke + powder) */
+  --powder-950: #0a0d08;  /* true background in scoring mode */
+  --powder-900: #141711;
+  --powder-800: #1e221b;
+  --powder-700: #2a2f26;
+  --powder-600: #3a4034;
+
+  /* =========================================================
+     COLOR — Semantic
+     ========================================================= */
+
+  /* Surfaces */
+  --bg:            var(--bone-50);
+  --bg-elevated:   var(--bone-0);
+  --bg-sunken:     var(--bone-100);
+  --bg-inverse:    var(--field-900);
+
+  /* Foregrounds */
+  --fg-1:          var(--bone-900);  /* primary text */
+  --fg-2:          var(--bone-700);  /* secondary text */
+  --fg-3:          var(--bone-500);  /* tertiary / meta */
+  --fg-4:          var(--bone-400);  /* disabled, placeholder */
+  --fg-inverse:    var(--bone-50);
+
+  /* Borders */
+  --border-1:      var(--bone-200);
+  --border-2:      var(--bone-300);
+  --border-strong: var(--bone-400);
+
+  /* Brand */
+  --primary:       var(--field-700);
+  --primary-hover: var(--field-800);
+  --primary-fg:    var(--bone-50);
+
+  --accent:        var(--clay-500);
+  --accent-hover:  var(--clay-600);
+  --accent-fg:     var(--bone-0);
+
+  /* Status — shooting-literal */
+  --hit:           #2c8a3f;   /* green for HIT */
+  --hit-bg:        #e5f4e8;
+  --miss:          #b42318;   /* red for MISS */
+  --miss-bg:       #fde8e6;
+  --nobird:        var(--clay-500);  /* no-bird amber */
+  --nobird-bg:     #fef1dd;
+
+  /* Medals */
+  --medal-gold:    #c8a24a;
+  --medal-silver:  #a8a8a8;
+  --medal-bronze:  #9a6b3e;
+
+  /* Performance deltas */
+  --positive:      var(--field-600);
+  --negative:      #b42318;
+
+  /* Live / realtime indicator */
+  --live:          #d93f2b;
+
+  /* =========================================================
+     TYPOGRAPHY
+     Display: Fraunces (serif, a touch countryside/editorial)
+     UI/Body: Inter
+     Mono: JetBrains Mono (for scores, timers, CPSA numbers)
+     ========================================================= */
+
+  --font-display: 'Fraunces', 'Times New Roman', serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+  /* Type scale — mobile-first */
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-md:   18px;
+  --text-lg:   20px;
+  --text-xl:   24px;
+  --text-2xl:  32px;
+  --text-3xl:  40px;
+  --text-4xl:  52px;
+  --text-5xl:  64px;
+  --text-6xl:  80px;  /* for big score displays */
+
+  /* Line heights */
+  --lh-tight:  1.1;
+  --lh-snug:   1.25;
+  --lh-normal: 1.5;
+  --lh-loose:  1.7;
+
+  /* Letter spacing */
+  --tracking-tight:  -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide:   0.04em;
+  --tracking-ui:     0.08em;   /* for UPPERCASE UI labels */
+
+  /* Weights */
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --weight-black:    800;
+
+  /* =========================================================
+     SPACING — 4px base grid
+     ========================================================= */
+  --space-0:  0;
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* =========================================================
+     RADII
+     App leans soft. Cards 12–16px. Pills for controls.
+     ========================================================= */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   16px;
+  --radius-xl:   20px;
+  --radius-2xl:  28px;
+  --radius-pill: 999px;
+
+  /* =========================================================
+     SHADOWS — warm, subtle. Never harsh black.
+     ========================================================= */
+  --shadow-xs: 0 1px 2px rgba(24, 22, 15, 0.04);
+  --shadow-sm: 0 1px 3px rgba(24, 22, 15, 0.06), 0 1px 2px rgba(24, 22, 15, 0.04);
+  --shadow-md: 0 4px 12px rgba(24, 22, 15, 0.08), 0 2px 4px rgba(24, 22, 15, 0.04);
+  --shadow-lg: 0 12px 32px rgba(24, 22, 15, 0.10), 0 4px 8px rgba(24, 22, 15, 0.05);
+  --shadow-xl: 0 24px 48px rgba(24, 22, 15, 0.14), 0 8px 16px rgba(24, 22, 15, 0.06);
+  --shadow-inset: inset 0 1px 2px rgba(24, 22, 15, 0.06);
+
+  /* For dark mode (scoring) */
+  --shadow-dark-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  /* =========================================================
+     MOTION
+     ========================================================= */
+  --ease-out:   cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --duration-fast:   120ms;
+  --duration-normal: 200ms;
+  --duration-slow:   320ms;
+
+  /* =========================================================
+     LAYOUT
+     ========================================================= */
+  --content-max:   1200px;
+  --mobile-max:    430px;   /* typical mobile app width */
+  --touch-target:  48px;    /* min tap target */
+  --touch-xl:      72px;    /* glove-friendly scoring buttons */
+}
+
+/* =========================================================
+   SEMANTIC TYPE STYLES
+   Use via class or apply in components.
+   ========================================================= */
+
+.sc-display-xl {
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 6vw, var(--text-6xl));
+  font-weight: var(--weight-black);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+.sc-display {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, var(--text-4xl));
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+.sc-h1 {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--weight-bold);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg-1);
+}
+
+.sc-h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.sc-h3 {
+  font-family: var(--font-body);
+  font-size: var(--text-xl);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.sc-h4 {
+  font-family: var(--font-body);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  line-height: var(--lh-snug);
+  color: var(--fg-1);
+}
+
+.sc-body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  font-weight: var(--weight-regular);
+  line-height: var(--lh-normal);
+  color: var(--fg-1);
+}
+
+.sc-body-sm {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-regular);
+  line-height: var(--lh-normal);
+  color: var(--fg-2);
+}
+
+.sc-meta {
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: var(--fg-3);
+}
+
+.sc-label {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-ui);
+  color: var(--fg-3);
+}
+
+.sc-score {
+  font-family: var(--font-mono);
+  font-size: var(--text-5xl);
+  font-weight: var(--weight-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+  line-height: 1;
+  color: var(--fg-1);
+}
+
+.sc-score-sm {
+  font-family: var(--font-mono);
+  font-weight: var(--weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.sc-mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* =========================================================
+   BASE
+   ========================================================= */
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  color: var(--fg-1);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}

@@ -1,3 +1,4 @@
+import { type Href } from 'expo-router';
 import { RoundStatus, type Round } from '@/lib/types';
 
 /**
@@ -8,7 +9,7 @@ export function getSetupGuardRedirect(
   round: Round | null,
   userId: string,
   roundId: string,
-): string | null {
+): Href | null {
   if (!round) return '/';
 
   if (round.created_by !== userId) {
@@ -32,7 +33,7 @@ export function getScoreGuardRedirect(
   round: Round | null,
   userId: string,
   roundId: string,
-): string | null {
+): Href | null {
   if (!round) return '/';
 
   if (round.status !== RoundStatus.IN_PROGRESS) {

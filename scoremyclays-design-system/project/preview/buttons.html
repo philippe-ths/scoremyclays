@@ -1,0 +1,27 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="../colors_and_type.css"></head>
+<body style="padding:24px;background:var(--bg);margin:0;font-family:var(--font-body)">
+<style>
+.btn { font-family:var(--font-body); font-weight:600; font-size:15px; border:none; cursor:pointer; border-radius:999px; padding:12px 22px; transition:all 120ms var(--ease-out); }
+.btn-primary { background:var(--field-700); color:var(--bone-0); }
+.btn-primary:hover { background:var(--field-800); }
+.btn-secondary { background:var(--bone-0); color:var(--field-800); border:1.5px solid var(--field-700); }
+.btn-ghost { background:transparent; color:var(--fg-1); }
+.btn-accent { background:var(--clay-500); color:var(--bone-0); }
+.btn-dark { background:var(--bone-900); color:var(--bone-50); }
+.btn-xl { font-size:20px; font-weight:700; padding:22px 36px; letter-spacing:0.04em; text-transform:uppercase; border-radius:20px; }
+</style>
+<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+<button class="btn btn-primary">Start Scoring</button>
+<button class="btn btn-secondary">Continue</button>
+<button class="btn btn-accent">Challenge</button>
+<button class="btn btn-dark">Save</button>
+<button class="btn btn-ghost">Cancel</button>
+</div>
+<div style="display:flex;gap:12px;margin-top:18px">
+<button class="btn btn-xl" style="flex:1;background:var(--hit);color:#fff">HIT</button>
+<button class="btn btn-xl" style="flex:1;background:var(--miss);color:#fff">MISS</button>
+<button class="btn btn-xl" style="flex:1;background:var(--bone-700);color:#fff">No Bird</button>
+</div>
+<div style="margin-top:14px;font-size:12px;color:var(--fg-3)">Standard pills · XL scoring buttons use UPPERCASE and 72px+ height</div>
+</body></html>

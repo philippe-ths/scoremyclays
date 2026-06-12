@@ -1,18 +1,18 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
-  ScrollView,
-} from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/providers/AuthProvider';
-import { Colors } from '@/lib/constants';
+import { color, radius, space } from '@/lib/design-system';
+import {
+  BodySm,
+  Button,
+  DisplayXl,
+  H1,
+  Meta,
+  Screen,
+  TextInput,
+  Typography,
+} from '@/components/ui';
 
 export default function SignupScreen() {
   const router = useRouter();
@@ -26,268 +26,178 @@ export default function SignupScreen() {
 
   const validateForm = (): boolean => {
     if (!email.trim()) {
-      setError('Email is required');
+      setError('Email is required.');
       return false;
     }
-
-    // Simple email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError('Please enter a valid email address');
+      setError('Please enter a valid email address.');
       return false;
     }
-
     if (!password.trim()) {
-      setError('Password is required');
+      setError('Password is required.');
       return false;
     }
-
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError('Password must be at least 6 characters.');
       return false;
     }
-
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError('Passwords do not match.');
       return false;
     }
-
     return true;
   };
 
   const handleSignup = async () => {
     if (!validateForm()) return;
-
     setError(null);
     setLoading(true);
-
     try {
       await signUp(email, password);
       setSignupSuccess(true);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Sign up failed. Please try again.';
-      setError(errorMessage);
-      Alert.alert('Sign Up Error', errorMessage);
+      const msg = err instanceof Error ? err.message : 'Sign up failed. Please try again.';
+      setError(msg);
+      Alert.alert('Sign Up Error', msg);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+    <Screen>
+      <ScrollView contentContainerStyle={styles.scroll}>
         {signupSuccess ? (
           <>
-            {/* Success Message */}
             <View style={styles.header}>
-              <Text style={styles.title}>Check Your Email</Text>
-              <Text style={styles.subtitle}>
-                We've sent a confirmation link to{'\n'}
-                <Text style={{ fontWeight: '600' }}>{email}</Text>
-              </Text>
+              <H1>Check Your Email</H1>
+              <Meta style={{ marginTop: space[2] }}>
+                We've sent a confirmation link to{' '}
+                <Typography weight="600">{email}</Typography>
+              </Meta>
             </View>
-
-            <View style={styles.infoContainer}>
-              <Text style={styles.infoText}>
+            <View style={styles.infoBox}>
+              <BodySm tone="muted">
                 Click the link in the email to verify your account, then come back here to log in.
-              </Text>
+              </BodySm>
             </View>
-
-            <TouchableOpacity
-              style={[styles.button, { marginTop: 24 }]}
+            <Button
+              label="Go to Login"
+              variant="primary"
+              size="lg"
+              fullWidth
               onPress={() => router.replace('/auth/login')}
-            >
-              <Text style={styles.buttonText}>Go to Login</Text>
-            </TouchableOpacity>
+              style={{ marginTop: space[6] }}
+            />
           </>
         ) : (
           <>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Create Account</Text>
-          <Text style={styles.subtitle}>Join ScoreMyClays to get started</Text>
-        </View>
-
-        {/* Form */}
-        <View style={styles.form}>
-          {error && (
-            <View style={styles.errorContainer}>
-              <Text style={styles.errorText}>{error}</Text>
+            <View style={styles.header}>
+              <DisplayXl>Create Account</DisplayXl>
+              <Meta style={{ marginTop: space[1] }}>Join ScoreMyClays to Get Started</Meta>
             </View>
-          )}
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="your@email.com"
-              placeholderTextColor="#9CA3AF"
-              value={email}
-              onChangeText={setEmail}
-              autoCapitalize="none"
-              keyboardType="email-address"
-              editable={!loading}
-            />
-          </View>
+            <View style={styles.form}>
+              {error ? (
+                <View style={styles.errorBox}>
+                  <BodySm tone="danger">{error}</BodySm>
+                </View>
+              ) : null}
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="At least 6 characters"
-              placeholderTextColor="#9CA3AF"
-              value={password}
-              onChangeText={setPassword}
-              secureTextEntry
-              editable={!loading}
-            />
-          </View>
+              <TextInput
+                label="Email"
+                placeholder="you@example.com"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                editable={!loading}
+              />
+              <TextInput
+                label="Password"
+                placeholder="At least 6 characters"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                editable={!loading}
+              />
+              <TextInput
+                label="Confirm Password"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                secureTextEntry
+                editable={!loading}
+              />
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Confirm Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Confirm your password"
-              placeholderTextColor="#9CA3AF"
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              secureTextEntry
-              editable={!loading}
-            />
-          </View>
+              <View style={styles.infoBox}>
+                <BodySm tone="muted">
+                  You'll be able to verify your email after creating your account.
+                </BodySm>
+              </View>
 
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoText}>
-              You'll be able to verify your email after creating your account.
-            </Text>
-          </View>
+              <Button
+                label={loading ? 'Creating…' : 'Create Account'}
+                variant="primary"
+                size="lg"
+                fullWidth
+                loading={loading}
+                onPress={handleSignup}
+                style={{ marginTop: space[2] }}
+              />
+            </View>
 
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleSignup}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Create Account</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-
-        {/* Login Link */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity
-            onPress={() => router.push('/auth/login')}
-            disabled={loading}
-          >
-            <Text style={styles.link}>Log in</Text>
-          </TouchableOpacity>
-        </View>
+            <View style={styles.footer}>
+              <BodySm tone="muted">Already have an account? </BodySm>
+              <Pressable
+                onPress={() => router.push('/auth/login')}
+                disabled={loading}
+                hitSlop={8}
+              >
+                <Typography variant="bodySm" tone="primary" weight="600">
+                  Log In
+                </Typography>
+              </Pressable>
+            </View>
           </>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingVertical: 32,
+  scroll: {
+    paddingHorizontal: space[5],
+    paddingVertical: space[8],
+    gap: space[4],
   },
   header: {
-    marginBottom: 40,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: Colors.textSecondary,
+    marginBottom: space[6],
   },
   form: {
-    gap: 20,
-    marginBottom: 40,
+    gap: space[4],
+    marginBottom: space[6],
   },
-  errorContainer: {
-    backgroundColor: '#FEE2E2',
-    padding: 12,
-    borderRadius: 8,
+  errorBox: {
+    backgroundColor: color.missBg,
+    borderRadius: radius.md,
+    padding: space[3],
     borderLeftWidth: 4,
-    borderLeftColor: Colors.miss,
+    borderLeftColor: color.miss,
   },
-  errorText: {
-    color: '#991B1B',
-    fontSize: 14,
-  },
-  inputContainer: {
-    gap: 8,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: Colors.textPrimary,
-    backgroundColor: '#fff',
-  },
-  infoContainer: {
-    backgroundColor: '#EFF6FF',
-    padding: 12,
-    borderRadius: 8,
+  infoBox: {
+    backgroundColor: '#e8f0f7',
+    borderRadius: radius.md,
+    padding: space[3],
     borderLeftWidth: 4,
-    borderLeftColor: Colors.primary,
-  },
-  infoText: {
-    fontSize: 13,
-    color: '#0C4A6E',
-    lineHeight: 18,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-    marginTop: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+    borderLeftColor: color.primary,
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  footerText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  link: {
-    fontSize: 14,
-    color: Colors.primary,
-    fontWeight: '600',
+    marginTop: space[4],
   },
 });

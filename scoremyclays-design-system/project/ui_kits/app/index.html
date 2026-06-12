@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ScoreMyClays — Mobile UI Kit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="../../colors_and_type.css">
+<link rel="stylesheet" href="kit.css">
+<style>
+  html, body { margin:0; padding:0; background: var(--bone-100); min-height: 100vh; }
+  .stage { display:flex; flex-direction:column; align-items:center; padding: 32px 16px 60px; gap: 32px; min-height: 100vh; }
+  .stage__header { text-align:center; max-width: 720px; }
+  .stage__title { font-family: var(--font-display); font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; color: var(--fg-1); }
+  .stage__sub { font-size: 15px; color: var(--fg-2); margin: 0; }
+  .stage__tip { font-size: 13px; color: var(--fg-3); margin-top: 12px; padding: 10px 16px; background: var(--bone-0); border:1px solid var(--border-1); border-radius: 999px; display:inline-block; }
+  .phone-wrap { position: relative; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="Components.jsx"></script>
+<script type="text/babel" src="Screens.jsx"></script>
+<script type="text/babel">
+const { useState } = React;
+
+function App() {
+  const [tab, setTab] = useState("home");
+  const [route, setRoute] = useState("home"); // home | setup | scoring | scorecard
+
+  const goHome = () => { setRoute("home"); setTab("home"); };
+
+  let screen = null;
+  if (route === "setup") screen = <RoundSetupScreen onBack={goHome} onStart={() => setRoute("scoring")} />;
+  else if (route === "scoring") screen = <ScoringScreen onExit={() => setRoute("scorecard")} />;
+  else if (route === "scorecard") screen = <ScorecardScreen onBack={goHome} />;
+  else {
+    if (tab === "home") screen = <HomeScreen onStart={() => setRoute("setup")} onResume={() => setRoute("scoring")} onRound={() => setRoute("scorecard")} />;
+    else if (tab === "stats") screen = <StatsScreen />;
+    else if (tab === "social") screen = <SocialScreen />;
+    else if (tab === "profile") screen = <ProfileScreen />;
+  }
+
+  // Scoring mode: hide tab bar
+  const isEdgeToEdge = route === "scoring";
+
+  return (
+    <div className="stage" data-screen-label="01 Mobile UI Kit">
+      <div className="stage__header">
+        <h1 className="stage__title">ScoreMyClays — Mobile</h1>
+        <p className="stage__sub">Interactive click-through of the v0.1.0 UI kit. Tap Start New Round to walk setup → scoring → scorecard.</p>
+        <div className="stage__tip">Tap tabs · Try HIT/MISS · Back arrow in headers</div>
+      </div>
+      <div className="phone-wrap">
+        <IOSDevice dark={isEdgeToEdge}>
+          <div className="app-shell" style={isEdgeToEdge ? {background:'var(--powder-950)'} : undefined}>
+            {isEdgeToEdge ? (
+              <div style={{flex:1,position:'relative'}}>{screen}</div>
+            ) : (
+              <React.Fragment>
+                <div className="app-scroll">{screen}</div>
+                <TabBar active={tab} onChange={t => { setTab(t); setRoute(t === "home" ? "home" : t); }}/>
+              </React.Fragment>
+            )}
+          </div>
+        </IOSDevice>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

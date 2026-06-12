@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { smcGetRound } from '@/db/queries/smc-rounds';
@@ -14,10 +9,31 @@ import { smcListStands } from '@/db/queries/smc-stands';
 import { smcGetShooterRoundScore, smcGetResultsForStandAndShooter } from '@/db/queries/smc-scoring';
 import { smcGetClubPositions } from '@/db/queries/smc-clubs';
 import { useAuth } from '@/providers/AuthProvider';
-import { Ionicons } from '@expo/vector-icons';
-import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
+import { PRESENTATION_LABELS } from '@/lib/constants';
+import { color, fontFamily, radius, space } from '@/lib/design-system';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
-import { ShotResult, RoundStatus, type Round, type Stand, type ShooterEntry, type PresentationType, type ClubPosition } from '@/lib/types';
+import {
+  ShotResult,
+  RoundStatus,
+  type Round,
+  type Stand,
+  type ShooterEntry,
+  type PresentationType,
+  type ClubPosition,
+} from '@/lib/types';
+import {
+  Badge,
+  Body,
+  BodySm,
+  Button,
+  Card,
+  CircularStat,
+  H3,
+  Meta,
+  PhotoHeader,
+  Screen,
+  Typography,
+} from '@/components/ui';
 
 interface ShooterScore {
   shooter: ShooterEntry;
@@ -50,16 +66,17 @@ export default function RoundSummaryScreen() {
   useEffect(() => {
     (async () => {
       if (!roundId) return;
-
       const r = await smcGetRound(db, roundId);
       setRound(r);
 
       const stands = await smcListStands(db, roundId);
       const squad = await smcGetSquadByRound(db, roundId);
-      if (!squad) { setIsLoading(false); return; }
+      if (!squad) {
+        setIsLoading(false);
+        return;
+      }
       const shooters = await smcListShooterEntries(db, squad.id);
 
-      // Per-shooter totals
       const scores: ShooterScore[] = [];
       for (const shooter of shooters) {
         const score = await smcGetShooterRoundScore(db, roundId, shooter.id);
@@ -67,13 +84,12 @@ export default function RoundSummaryScreen() {
       }
       setShooterScores(scores);
 
-      // Per-stand breakdown
       const breakdowns: StandBreakdown[] = [];
       for (const stand of stands) {
         const results: StandBreakdown['results'] = [];
         for (const shooter of shooters) {
           const standResults = await smcGetResultsForStandAndShooter(db, stand.id, shooter.id);
-          const kills = standResults.filter((r) => r.result === ShotResult.KILL).length;
+          const kills = standResults.filter((res) => res.result === ShotResult.KILL).length;
           results.push({ shooter, kills, total: standResults.length });
         }
         breakdowns.push({ stand, results });
@@ -82,7 +98,6 @@ export default function RoundSummaryScreen() {
       if (r?.club_id) {
         const positions = await smcGetClubPositions(db, r.club_id);
         const grouped = new Map<string, StandBreakdown[]>();
-
         for (const bd of breakdowns) {
           const posId = bd.stand.club_position_id;
           if (posId) {
@@ -91,7 +106,6 @@ export default function RoundSummaryScreen() {
             grouped.set(posId, arr);
           }
         }
-
         const posBreakdowns: PositionBreakdown[] = [];
         for (const pos of positions) {
           const posStands = grouped.get(pos.id);
@@ -106,227 +120,206 @@ export default function RoundSummaryScreen() {
     })();
   }, [db, roundId]);
 
-  if (isLoading) {
-    return <LoadingPlaceholder message="Loading summary..." />;
-  }
+  if (isLoading) return <LoadingPlaceholder message="Loading summary…" />;
+
+  const myScore = shooterScores.find((s) => s.shooter.user_id === user?.id) ?? shooterScores[0];
+  const myPercent = myScore && myScore.total > 0 ? (myScore.kills / myScore.total) * 100 : 0;
+  const anyConflicts = shooterScores.some((s) => s.hasConflicts);
+  const isOwner = user?.id === round?.created_by;
 
   return (
-    <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.groundName}>{round?.ground_name ?? 'Round'}</Text>
-        <Text style={styles.date}>{round?.date}</Text>
-      </View>
-
-      {/* Overall scores */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.md }}>
-        <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>Scores</Text>
-        {shooterScores.some(s => s.hasConflicts) && user?.id === round?.created_by && (
-          <TouchableOpacity 
-            style={styles.resolveBtn} 
-            onPress={() => router.push(`/round/${roundId}/conflicts`)}
-          >
-            <Ionicons name="warning" size={16} color="#FFF" style={{ marginRight: 4 }} />
-            <Text style={styles.resolveBtnText}>Resolve Conflicts</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      
-      {shooterScores.map((s) => (
-        <View key={s.shooter.id} style={styles.scoreRow}>
-          <Text style={styles.shooterName}>{s.shooter.shooter_name}</Text>
-          {s.hasConflicts ? (
-             <View style={styles.conflictBadge}>
-               <Ionicons name="warning" size={16} color="#EAB308" />
-               <Text style={styles.conflictText}>Conflicted</Text>
-             </View>
-          ) : (
-            <Text style={styles.shooterScore}>
-              {s.kills} / {s.total}
-            </Text>
-          )}
+    <Screen edges={['left', 'right']}>
+      <Pressable onPress={() => router.back()} hitSlop={12} style={styles.floatingBack}>
+        <View style={styles.backButton}>
+          <Ionicons name="chevron-back" size={22} color={color.fgInverse} />
         </View>
-      ))}
+      </Pressable>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <PhotoHeader
+          eyebrow={round?.date ?? 'Round'}
+          title={round?.ground_name ?? 'Round'}
+          height={220}
+        />
 
-      {/* Position-grouped breakdown */}
-      {positionBreakdowns.length > 0 && (
-        <>
-          <Text style={[styles.sectionTitle, { marginTop: Spacing.xl }]}>Position Breakdown</Text>
-          {positionBreakdowns.map((pb) => (
-            <View key={pb.position.id} style={styles.positionSection}>
-              <Text style={styles.positionHeader}>
-                Position {pb.position.position_number}
-                {pb.position.name ? ` — ${pb.position.name}` : ''}
-              </Text>
-              {pb.stands.map((bd) => (
-                <View key={bd.stand.id} style={styles.standCard}>
-                  <Text style={styles.standTitle}>
-                    Stand {bd.stand.stand_number} · {PRESENTATION_LABELS[bd.stand.presentation as PresentationType]}
-                  </Text>
-                  {bd.results.map((r) => (
-                    <View key={r.shooter.id} style={styles.standResultRow}>
-                      <Text style={styles.standShooterName}>{r.shooter.shooter_name}</Text>
-                      <Text style={styles.standShooterScore}>
-                        {r.kills}/{r.total}
-                      </Text>
-                    </View>
+        <View style={styles.body}>
+          {myScore ? (
+            <View style={styles.heroStat}>
+              <CircularStat
+                value={myPercent}
+                size={160}
+                stroke={14}
+                label={myScore.shooter.shooter_name.toUpperCase()}
+              />
+              <Meta style={{ marginTop: space[3] }}>
+                {myScore.kills} of {myScore.total} Targets
+              </Meta>
+            </View>
+          ) : null}
+
+          <View style={styles.sectionHead}>
+            <H3>Scores</H3>
+            {anyConflicts && isOwner ? (
+              <Button
+                label="Resolve Conflicts"
+                variant="destructive"
+                size="md"
+                onPress={() => router.push(`/round/${roundId}/conflicts`)}
+              />
+            ) : null}
+          </View>
+
+          <Card padded={false} style={styles.scoresCard}>
+            {shooterScores.map((s, idx) => (
+              <View
+                key={s.shooter.id}
+                style={[
+                  styles.scoreRow,
+                  idx === shooterScores.length - 1 ? styles.scoreRowLast : null,
+                ]}
+              >
+                <Body weight="600" style={{ flex: 1 }}>
+                  {s.shooter.shooter_name}
+                </Body>
+                {s.hasConflicts ? (
+                  <Badge label="Conflicted" tone="warning" />
+                ) : (
+                  <Typography
+                    style={{
+                      fontFamily: fontFamily.monoBold,
+                      fontSize: 22,
+                      color: color.primary,
+                    }}
+                  >
+                    {s.kills} / {s.total}
+                  </Typography>
+                )}
+              </View>
+            ))}
+          </Card>
+
+          {positionBreakdowns.length > 0 ? (
+            <View style={styles.section}>
+              <H3>Position Breakdown</H3>
+              {positionBreakdowns.map((pb) => (
+                <View key={pb.position.id} style={{ gap: space[2] }}>
+                  <Typography
+                    style={{
+                      fontFamily: fontFamily.bodyBold,
+                      fontSize: 14,
+                      color: color.primary,
+                      textTransform: 'uppercase',
+                      letterSpacing: 1.2,
+                    }}
+                  >
+                    Position {pb.position.position_number}
+                    {pb.position.name ? ` — ${pb.position.name}` : ''}
+                  </Typography>
+                  {pb.stands.map((bd) => (
+                    <Card key={bd.stand.id}>
+                      <Body weight="600">
+                        Stand {bd.stand.stand_number} ·{' '}
+                        {PRESENTATION_LABELS[bd.stand.presentation as PresentationType]}
+                      </Body>
+                      <View style={{ marginTop: space[2], gap: space[1] }}>
+                        {bd.results.map((r) => (
+                          <View key={r.shooter.id} style={styles.standResultRow}>
+                            <BodySm tone="muted">{r.shooter.shooter_name}</BodySm>
+                            <Typography
+                              style={{
+                                fontFamily: fontFamily.monoSemibold,
+                                fontSize: 14,
+                                color: color.fg1,
+                              }}
+                            >
+                              {r.kills}/{r.total}
+                            </Typography>
+                          </View>
+                        ))}
+                      </View>
+                    </Card>
                   ))}
                 </View>
               ))}
             </View>
-          ))}
-        </>
-      )}
+          ) : null}
 
-      {/* Continue Scoring (visible to all squad members when round is in progress) */}
-      {round?.status === RoundStatus.IN_PROGRESS && (
-        <TouchableOpacity
-          style={styles.scoringBtn}
-          onPress={() => router.push(`/round/${roundId}/score`)}
-        >
-          <Text style={styles.homeBtnText}>Continue Scoring</Text>
-        </TouchableOpacity>
-      )}
-
-      {/* Back to Home */}
-      <TouchableOpacity style={styles.homeBtn} onPress={() => router.replace('/')}>
-        <Text style={styles.homeBtnText}>Back to Home</Text>
-      </TouchableOpacity>
-    </ScrollView>
+          <View style={{ gap: space[3], marginTop: space[6] }}>
+            {round?.status === RoundStatus.IN_PROGRESS ? (
+              <Button
+                label="Continue Scoring"
+                variant="primary"
+                size="lg"
+                fullWidth
+                onPress={() => router.push(`/round/${roundId}/score`)}
+              />
+            ) : null}
+            <Button
+              label="Back to Home"
+              variant="secondary"
+              size="lg"
+              fullWidth
+              onPress={() => router.replace('/')}
+            />
+          </View>
+        </View>
+      </ScrollView>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   scroll: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
+    paddingBottom: space[12],
   },
-  container: {
-    padding: Spacing.lg,
-    paddingBottom: Spacing.xxl,
+  floatingBack: {
+    position: 'absolute',
+    top: space[3],
+    left: space[4],
+    zIndex: 2,
   },
-  header: {
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(15,29,13,0.55)',
     alignItems: 'center',
-    marginBottom: Spacing.lg,
+    justifyContent: 'center',
   },
-  groundName: {
-    fontSize: FontSize['2xl'],
-    fontWeight: '700',
-    color: Colors.textPrimary,
+  body: {
+    paddingHorizontal: space[5],
+    paddingTop: space[5],
+    gap: space[6],
   },
-  date: {
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+  heroStat: {
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.md,
+  sectionHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: space[2],
+  },
+  scoresCard: {
+    overflow: 'hidden',
   },
   scoreRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.md,
+    paddingVertical: space[3] + 2,
+    paddingHorizontal: space[4],
     borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
+    borderBottomColor: color.border1,
   },
-  shooterName: {
-    fontSize: FontSize.lg,
-    fontWeight: '600',
-    color: Colors.textPrimary,
+  scoreRowLast: {
+    borderBottomWidth: 0,
   },
-  shooterScore: {
-    fontSize: FontSize['2xl'],
-    fontWeight: '700',
-    color: Colors.hit,
-  },
-  resolveBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#EAB308',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.sm,
-  },
-  resolveBtnText: {
-    color: '#FFF',
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-  },
-  conflictBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fef9c3',
-    paddingHorizontal: Spacing.sm,
-    paddingVertical: Spacing.xs,
-    borderRadius: BorderRadius.sm,
-    borderWidth: 1,
-    borderColor: '#EAB308',
-  },
-  conflictText: {
-    color: '#a16207',
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    marginLeft: 4,
-  },
-  standCard: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgSecondary,
-  },
-  standTitle: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    marginBottom: Spacing.sm,
+  section: {
+    gap: space[3],
   },
   standResultRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: Spacing.xs,
-  },
-  standShooterName: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-  },
-  standShooterScore: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  scoringBtn: {
-    marginTop: Spacing.xl,
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.lg,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  homeBtn: {
-    marginTop: Spacing.md,
-    backgroundColor: Colors.textSecondary,
-    paddingVertical: Spacing.md,
-    borderRadius: BorderRadius.md,
-    alignItems: 'center',
-  },
-  homeBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  positionSection: {
-    marginBottom: Spacing.lg,
-  },
-  positionHeader: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: Colors.primary,
-    marginBottom: Spacing.sm,
   },
 });

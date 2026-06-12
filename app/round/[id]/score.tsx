@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
+  Pressable,
   StyleSheet,
-  Text,
   View,
-  TouchableOpacity,
-  Alert,
-  Platform,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useNavigation } from '@react-navigation/native';
@@ -20,7 +17,17 @@ import { smcListStands, smcCreateStand } from '@/db/queries/smc-stands';
 import { smcRecordTargetResult, smcGetResultsForStandAndShooter, smcGetRoundConflicts, type ConflictedShotGroup } from '@/db/queries/smc-scoring';
 import { smcUpdateRoundStatus } from '@/db/queries/smc-rounds';
 import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
-import { Colors, Spacing, FontSize, BorderRadius, PRESENTATION_LABELS } from '@/lib/constants';
+import { PRESENTATION_LABELS } from '@/lib/constants';
+import {
+  color,
+  fontFamily,
+  fontSize,
+  palette,
+  radius,
+  space,
+  tracking,
+} from '@/lib/design-system';
+import { Button, Typography } from '@/components/ui';
 import LoadingPlaceholder from '@/components/LoadingPlaceholder';
 import PositionPicker, { type PositionStatus } from '@/components/PositionPicker';
 import StandSelector from '@/components/StandSelector';
@@ -340,17 +347,23 @@ export default function ScoringScreen() {
 
   const navigation = useNavigation();
   useLayoutEffect(() => {
+    // Dark scoring surface is full-bleed — hide the stack header.
+    if (phase === 'scoring') {
+      navigation.setOptions({ headerShown: false });
+      return;
+    }
     navigation.setOptions({
+      headerShown: true,
       title: headerTitle,
       headerLeft: showInternalBack
         ? () => (
-            <TouchableOpacity onPress={handleHeaderBack} style={{ paddingRight: Spacing.sm }}>
-              <Ionicons name="arrow-back" size={24} color={Colors.primary} />
-            </TouchableOpacity>
+            <Pressable onPress={handleHeaderBack} hitSlop={12} style={{ paddingRight: space[2] }}>
+              <Ionicons name="chevron-back" size={24} color={color.primary} />
+            </Pressable>
           )
         : undefined,
     });
-  }, [navigation, headerTitle, showInternalBack, handleHeaderBack]);
+  }, [navigation, headerTitle, showInternalBack, handleHeaderBack, phase]);
 
   const standComplete = currentStand
     ? targetNum > (currentStand.num_targets ?? 0)
@@ -543,85 +556,125 @@ export default function ScoringScreen() {
   }
 
   const shooterHasConflict = conflicts.some(c => c.shooter_entry_id === currentShooter.id);
+  const presentationLabel = PRESENTATION_LABELS[currentStand.presentation as PresentationType];
 
   return (
     <View style={styles.root}>
-      {/* Top bar: score + progress */}
-      <View style={styles.topBar}>
-        <View style={styles.scoreBox}>
-          <Text style={styles.scoreLabel}>Score</Text>
-          {shooterHasConflict ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-              <Ionicons name="warning" size={16} color="#EAB308" />
-              <Text style={[styles.scoreValue, { fontSize: FontSize.sm, color: '#EAB308', marginLeft: 4, marginTop: 0 }]}>Sync Issue</Text>
-            </View>
-          ) : (
-            <Text style={styles.scoreValue}>{killCount}/{totalRecorded}</Text>
-          )}
+      {/* Top strip: back + stand meta + shooter name + change */}
+      <View style={styles.top}>
+        <Pressable onPress={handleHeaderBack} hitSlop={12} style={styles.topBack}>
+          <Ionicons name="chevron-back" size={26} color={color.fgInverse} />
+        </Pressable>
+        <View style={styles.topMeta}>
+          <Typography
+            style={{
+              fontFamily: fontFamily.bodyBold,
+              fontSize: fontSize.xs - 1,
+              color: palette.field[300],
+              letterSpacing: tracking.ui,
+              textTransform: 'uppercase',
+            }}
+            numberOfLines={1}
+          >
+            Stand {currentStand.stand_number} · {presentationLabel}
+          </Typography>
+          <Typography
+            style={{
+              fontFamily: fontFamily.display,
+              fontSize: fontSize.xl,
+              color: color.fgInverse,
+              marginTop: 2,
+            }}
+            numberOfLines={1}
+          >
+            {currentShooter.shooter_name}
+          </Typography>
         </View>
-        <View style={styles.progressBox}>
-          <Text style={styles.progressLabel}>
-            Stand {currentStand.stand_number}
-          </Text>
-          <Text style={styles.progressDetail}>
-            {PRESENTATION_LABELS[currentStand.presentation as PresentationType]}
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.shooterBox} onPress={returnToShooterPicker}>
-          <Text style={styles.shooterLabel}>{currentShooter.shooter_name}</Text>
-          <Text style={styles.changeShooterHint}>✎ Change</Text>
-        </TouchableOpacity>
+        <Pressable onPress={returnToShooterPicker} hitSlop={8} style={styles.topChange}>
+          <Typography
+            style={{
+              fontFamily: fontFamily.bodyBold,
+              fontSize: fontSize.xs,
+              color: palette.field[200],
+              letterSpacing: tracking.ui,
+            }}
+          >
+            CHANGE
+          </Typography>
+        </Pressable>
       </View>
 
-      {/* Target info */}
-      <View style={styles.targetInfo}>
-        {!standComplete && (
-          <Text style={styles.targetText}>
-            Target {targetNum} of {currentStand.num_targets}
-            {maxBirds > 1 ? ` · Bird ${birdNum}` : ''}
-          </Text>
-        )}
+      {/* Score readout */}
+      <View style={styles.scoreArea}>
+        {shooterHasConflict ? (
+          <View style={styles.conflictRow}>
+            <Ionicons name="warning" size={18} color={color.noBird} />
+            <Typography
+              style={{
+                fontFamily: fontFamily.bodySemibold,
+                fontSize: fontSize.sm,
+                color: color.noBird,
+                marginLeft: space[2],
+              }}
+            >
+              Sync Issue — resolve before scoring
+            </Typography>
+          </View>
+        ) : null}
+        <Typography style={styles.bigScore}>
+          {killCount}/{totalRecorded || '—'}
+        </Typography>
+        <Typography style={styles.scoreMeta}>
+          {standComplete
+            ? 'Stand Complete'
+            : maxBirds > 1
+              ? `Target ${targetNum} of ${currentStand.num_targets} · Bird ${birdNum}`
+              : `Target ${targetNum} of ${currentStand.num_targets}`}
+        </Typography>
       </View>
 
-      {/* Main scoring area */}
-      <View style={styles.scoringArea}>
-        {standComplete ? (
-          <View style={styles.completedOverlay}>
-            <Text style={styles.completedText}>Stand Complete!</Text>
-            <Text style={styles.completedScore}>
-              {killCount}/{totalRecorded}
-            </Text>
-            <TouchableOpacity
-              style={styles.nextBtn}
-              onPress={returnToShooterPicker}
-            >
-              <Text style={styles.nextBtnText}>Choose Next Shooter</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View style={styles.buttonsContainer}>
-            <TouchableOpacity
-              style={[styles.scoreBtn, styles.killBtn]}
-              onPress={() => handleScore(ShotResult.KILL)}
-            >
-              <Text style={styles.scoreBtnText}>KILL</Text>
-            </TouchableOpacity>
+      {/* Buttons row */}
+      {standComplete ? (
+        <View style={styles.completeFooter}>
+          <Button
+            label="Choose Next Shooter"
+            variant="primary"
+            size="lg"
+            fullWidth
+            onPress={returnToShooterPicker}
+          />
+        </View>
+      ) : (
+        <View style={styles.buttons}>
+          <Button
+            label="Hit"
+            variant="scoring-hit"
+            size="scoring"
+            style={styles.buttonFlex}
+            onPress={() => handleScore(ShotResult.KILL)}
+          />
+          <Button
+            label="Miss"
+            variant="scoring-miss"
+            size="scoring"
+            style={styles.buttonFlex}
+            onPress={() => handleScore(ShotResult.LOSS)}
+          />
+          <Button
+            label="No Bird"
+            variant="scoring-nobird"
+            size="scoring"
+            style={styles.buttonFlex}
+            onPress={() => handleScore(ShotResult.NO_SHOT)}
+          />
+        </View>
+      )}
 
-            <TouchableOpacity
-              style={[styles.scoreBtn, styles.lossBtn]}
-              onPress={() => handleScore(ShotResult.LOSS)}
-            >
-              <Text style={styles.scoreBtnText}>LOSS</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.scoreBtn, styles.noShotBtn]}
-              onPress={() => handleScore(ShotResult.NO_SHOT)}
-            >
-              <Text style={styles.noShotBtnText}>NO SHOT</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+      {/* Footer hints */}
+      <View style={styles.footer}>
+        <Typography style={styles.footerText}>
+          HIT / MISS / NO BIRD records this bird and advances the target.
+        </Typography>
       </View>
     </View>
   );
@@ -630,131 +683,79 @@ export default function ScoringScreen() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.bgPrimary,
+    backgroundColor: color.bgDark,
+    paddingHorizontal: space[5],
+    paddingTop: space[8],
+    paddingBottom: space[4],
   },
-  topBar: {
+  top: {
     flexDirection: 'row',
-    paddingHorizontal: Spacing.md,
-    paddingVertical: Spacing.md,
-    backgroundColor: Colors.bgSecondary,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.border,
-  },
-  scoreBox: {
-    flex: 1,
     alignItems: 'center',
+    gap: space[3],
   },
-  scoreLabel: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-  },
-  scoreValue: {
-    fontSize: FontSize['2xl'],
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  progressBox: {
-    flex: 1,
+  topBack: {
+    width: 36,
+    height: 36,
     alignItems: 'center',
-  },
-  progressLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  progressDetail: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-  },
-  shooterBox: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  shooterLabel: {
-    fontSize: FontSize.sm,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  shooterDetail: {
-    fontSize: FontSize.xs,
-    color: Colors.textSecondary,
-  },
-  changeShooterHint: {
-    fontSize: FontSize.xs,
-    color: Colors.primary,
-    fontWeight: '600',
-    marginTop: 2,
-  },
-  targetInfo: {
-    paddingVertical: Spacing.lg,
-    alignItems: 'center',
-  },
-  targetText: {
-    fontSize: FontSize.xl,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  scoringArea: {
-    flex: 1,
     justifyContent: 'center',
-    paddingHorizontal: Spacing.lg,
-    paddingBottom: Spacing.xxl,
   },
-  buttonsContainer: {
-    gap: Spacing.md,
+  topMeta: {
+    flex: 1,
   },
-  scoreBtn: {
-    height: 80,
-    borderRadius: BorderRadius.lg,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  killBtn: {
-    backgroundColor: Colors.hit,
-  },
-  lossBtn: {
-    backgroundColor: Colors.miss,
-  },
-  noShotBtn: {
-    backgroundColor: Colors.bgTertiary,
+  topChange: {
+    paddingVertical: space[2],
+    paddingHorizontal: space[3],
+    borderRadius: radius.pill,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderColor: palette.powder[600],
   },
-  scoreBtnText: {
-    fontSize: FontSize['3xl'],
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  noShotBtnText: {
-    fontSize: FontSize.xl,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-  },
-  completedOverlay: {
+  scoreArea: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: Spacing.md,
+    gap: space[2],
   },
-  completedText: {
-    fontSize: FontSize['2xl'],
-    fontWeight: '700',
-    color: Colors.textPrimary,
+  conflictRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: space[3],
   },
-  completedScore: {
-    fontSize: FontSize['5xl'],
-    fontWeight: '800',
-    color: Colors.hit,
+  bigScore: {
+    fontFamily: fontFamily.monoBold,
+    fontSize: 96,
+    lineHeight: 96,
+    color: color.fgDark1,
+    letterSpacing: -3,
+    fontVariant: ['tabular-nums'],
   },
-  nextBtn: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.md,
-    marginTop: Spacing.md,
+  scoreMeta: {
+    fontFamily: fontFamily.mono,
+    fontSize: fontSize.base,
+    color: palette.bone[400],
+    marginTop: space[2],
   },
-  nextBtnText: {
-    fontSize: FontSize.lg,
-    fontWeight: '700',
-    color: '#FFFFFF',
+  buttons: {
+    flexDirection: 'row',
+    gap: space[2] + 2,
+    marginBottom: space[3],
+  },
+  buttonFlex: {
+    flex: 1,
+  },
+  completeFooter: {
+    paddingHorizontal: space[2],
+    marginBottom: space[3],
+  },
+  footer: {
+    paddingTop: space[3] + 2,
+    borderTopWidth: 1,
+    borderTopColor: palette.powder[700],
+    alignItems: 'center',
+  },
+  footerText: {
+    fontFamily: fontFamily.bodyMedium,
+    fontSize: fontSize.xs,
+    color: palette.bone[400],
+    letterSpacing: tracking.wide,
   },
 });

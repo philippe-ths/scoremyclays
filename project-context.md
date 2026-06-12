@@ -1,104 +1,119 @@
-# Project Context
-
 ## Product Summary
-- ScoreMyClays is an offline-first mobile app for recording sporting clays (clay pigeon) shooting scores.
-- Primary users are clay shooters and squads scoring rounds at shooting grounds that often have poor or no mobile signal.
-- The core flow is: create a round from a club layout or custom stands, score each bird as kill/loss/no-shot per shooter, then view round summaries.
-- All data is stored locally and syncs to the cloud when connectivity returns.
-- The app runs on iOS, Android, and web from a single Expo codebase.
+
+ScoreMyClays is an offline-first mobile and web app for recording sporting clays shooting scores at grounds with poor or no signal.
+The primary user is a shooter or squad scorekeeper who records kill/loss/no-shot results for every target during a round.
+The core flow is: create a round, add shooters (up to 6 per squad), configure stands, score target-by-target, view a round summary.
+Scoring is done on a single device for the whole squad, and results sync to other invited shooters' devices when connectivity returns.
 
 ## Domain Concepts
-- A `Round` is a scoring session at a ground with status SETUP, IN_PROGRESS, COMPLETED, or ABANDONED.
-- A `Squad` groups up to `MAX_SQUAD_SIZE` (6) shooters within a round.
-- A `ShooterEntry` is one shooter's position in a squad, optionally linked to a registered user.
-- A `Stand` is a shooting position in a round with a target configuration and a presentation type.
-- A `TargetResultRecord` records one bird's outcome (KILL, LOSS, NO_SHOT) for a shooter at a stand, append-only and tagged with the recording device.
-- `Club`, `ClubPosition`, and `ClubStand` are read-only reference data describing pre-configured ground layouts.
-- An `Invite` links a round to an invited user by handle with status PENDING, ACCEPTED, or DECLINED.
-- A `User` has an immutable `user_id` handle used for invites and a `discoverable` flag controlling search visibility.
-- `PresentationType` and `TargetConfig` are enums describing how a target flies and how its birds are presented.
-- A scoring conflict is two or more target results for the same shooter, target, and bird, produced when multiple devices score the same shot.
+
+A `User` has an immutable `user_id` handle used to invite them to rounds.
+A `Round` is a scored outing, owned by one creator, with a status of SETUP, IN_PROGRESS, COMPLETED, or ABANDONED.
+A `Squad` belongs to a round and groups the `ShooterEntry` records recording each participating shooter.
+A `ShooterEntry` represents a shooter in a squad, either a real linked user or a free-text name, with a position in squad.
+A `Stand` is one numbered scoring station within a round, with a `TargetConfig` and `PresentationType`.
+A `TargetResult` records the outcome of one bird at one stand for one shooter, as KILL, LOSS, or NO_SHOT.
+A `Club` owns reusable `ClubPosition` layouts, each containing reusable `ClubStand` presets used to pre-populate round stands.
+An `Invite` links a round and an invitee handle with status PENDING, ACCEPTED, or DECLINED.
+`TargetConfig` values are SINGLE, REPORT_PAIR, SIMULTANEOUS_PAIR, FOLLOWING_PAIR.
+`PresentationType` values are CROSSER, DRIVEN, INCOMING, GOING_AWAY, QUARTERING_AWAY, QUARTERING_TOWARDS, TEAL, DROPPING, LOOPER, RABBIT, BATTUE, CHANDELLE, SPRINGING.
 
 ## Scope
-- Supports email/password authentication through Supabase with a required profile-setup step that assigns the user handle.
-- Supports creating rounds from seeded club layouts or from custom stand setups.
-- Supports scoring a squad of up to six shooters on a single device, per stand and per bird.
-- Supports inviting other users to a round by handle and accepting or declining invites.
-- Supports round summaries with per-shooter totals and per-stand breakdowns.
-- Detects scoring conflicts and provides a resolution screen that keeps one record and deletes the duplicates.
-- Stores all data locally in SQLite and syncs CRUD operations to Supabase through PowerSync when connected.
-- Reference tables (`clubs`, `club_positions`, `club_stands`) sync server-to-client only and are never uploaded.
+
+Supports offline round creation, squad scoring, stand setup, target-by-target entry, round summary, and cross-device sync.
+Supports authentication via Supabase email/password with a profile-setup step enforcing a unique handle.
+Supports inviting other users to a round by handle and accepting or declining received invites.
+Supports pre-populating a round's stands from a saved club layout and creating/editing clubs.
+Supports conflict detection and resolution when multiple devices write target results for the same target.
+Runs on iOS, Android, and web (React Native Web) from a single Expo Router codebase.
+Non-goals: tournament scoring rulesets, league management, ballistics tracking, social feed features.
 
 ## Important Constraints
-- The app must function fully offline; sync is opportunistic and resumes when connectivity returns.
-- Maximum squad size is six shooters (`MAX_SQUAD_SIZE`).
-- Minimum interactive tap target size is 48px (`MIN_TAP_TARGET_SIZE`).
-- Supabase and PowerSync credentials come from `EXPO_PUBLIC_*` environment variables and are absent by default.
-- Missing credentials only emit a warning, allowing the app to run local-only without sync or invites.
-- `target_results` rows are append-only; corrections happen by adding rows and resolving conflicts, not by editing in place.
-- A user's `user_id` handle is immutable once set.
-- Row-level security policies on Supabase govern which rows each user may read and write.
+
+Maximum squad size is 6 shooters per round (`MAX_SQUAD_SIZE` in `lib/constants.ts`).
+Minimum tap target size is 48px for interactive controls (`MIN_TAP_TARGET_SIZE` in `lib/constants.ts`, mirrored as `layout.touchTarget` in the design system).
+Scoring buttons use the glove-friendly 72px tap target (`TOUCH_XL` in `lib/constants.ts`, `layout.touchXl` in the design system).
+The app must function fully offline; all reads and writes go through the local PowerSync SQLite database.
+Sync requires `EXPO_PUBLIC_SUPABASE_URL`, `EXPO_PUBLIC_SUPABASE_ANON_KEY`, and `EXPO_PUBLIC_POWERSYNC_URL` env vars.
+A user's `user_id` handle is immutable once set during profile setup.
+Row-level security is enforced in Supabase migrations; PowerSync sync rules gate data per user bucket.
+A user sees only their own profile, discoverable users, their own rounds, rounds they are a shooter in, rounds they are pending-invited to, and global club reference data.
+Git `pre-commit` and `pre-push` hooks under `.githooks/` block commits to `main`/`master` and require a passing validation state file at `.ai-policy/state/validation.status`.
 
 ## Architecture Summary
-- The app is a client-side modular monolith with an offline-first data layer and no custom backend server.
-- Expo Router provides file-based routing under `app/` with typed routes enabled.
-- The provider chain is `DatabaseProvider` then `AuthProvider` then `SyncProvider`, wrapping the screen stack.
-- `DatabaseProvider` initializes the PowerSync database and connects or disconnects sync in response to Supabase auth-state changes.
-- Local persistence is SQLite through PowerSync, opened via a platform-split module (`openDatabase.native.ts` versus `openDatabase.web.ts`).
-- `SupabaseConnector` uploads queued local CRUD operations to Supabase, skips read-only reference tables, and surfaces non-retryable errors to a banner.
-- Sync rules in `supabase/powersync-sync-rules.yaml` define per-user buckets for own profile, owned rounds, shared rounds, invited rounds, sent and received invites, and global reference data.
-- All screen reads and writes go through typed query functions in `db/queries/`, keeping screens decoupled from SQL.
+
+Client-side modular monolith built with React Native + Expo Router, sharing a single codebase across iOS, Android, and web.
+Offline-first data layer: PowerSync maintains a local SQLite database that bidirectionally syncs CRUD operations to Supabase Postgres.
+Provider chain wraps the app: `SafeAreaProvider` → `DatabaseProvider` (PowerSync init + connect) → `AuthProvider` (Supabase auth + profile state) → `SyncProvider` (sync status banners) → `Stack` router; the root layout gates the splash screen until the design-system fonts have loaded.
+Route protection is centralised in `useProtectedRoute` in `app/_layout.tsx`, redirecting based on authenticated and profile-complete state.
+Stack headers are turned off globally; each screen renders its own `TopBar` from `components/ui/`, and the bottom tab bar is the custom `TabBar` in `components/ui/TabBar.tsx`.
+All database access goes through typed query modules in `db/queries/`; screens do not issue raw SQL.
+Platform-specific database entrypoints split via `db/openDatabase.native.ts` (react-native-quick-sqlite) and `db/openDatabase.web.ts` (wa-sqlite WASM).
+Auth storage uses `AsyncStorage` on native and `window.localStorage` on web, wired in `lib/supabase.ts`.
+Sync is authenticated via `SupabaseConnector` in `lib/powersync-connector.ts`, which the provider passes to `db.connect`.
 
 ## Key Dependencies
-- `expo` and `react-native`: the mobile and web app framework and runtime.
-- `expo-router`: file-based navigation with typed routes.
-- `@powersync/react-native`, `@powersync/web`, and `@powersync/common`: the offline-first local SQLite database and sync engine, split by platform.
-- `@journeyapps/react-native-quick-sqlite` and `@journeyapps/wa-sqlite`: the native and web SQLite backends that PowerSync drives.
-- `@supabase/supabase-js`: the backend client for authentication and the sync upload target (PostgreSQL plus Auth).
-- `@react-native-async-storage/async-storage`: persists the Supabase session on native, while web uses `localStorage`.
-- `expo-crypto`: SHA-256 hashing for deterministic UUID generation and seeding.
-- `expo-haptics`: tactile feedback during scoring.
-- `react-native-reanimated` and `react-native-worklets`: the animation runtime.
-- `typescript` in strict mode: the language and type checker.
-- `jest` with `ts-jest`: the test runner.
+
+`expo` (~55) and `expo-router` provide the cross-platform runtime and file-based routing.
+`react-native` (0.83) and `react-native-web` render the UI on native and web respectively.
+`@powersync/react-native` and `@powersync/web` provide the offline-first local database with server sync.
+`@journeyapps/react-native-quick-sqlite` is the native SQLite driver for PowerSync.
+`@journeyapps/wa-sqlite` is the WebAssembly SQLite driver used by PowerSync on web (assets copied by `postinstall`).
+`@supabase/supabase-js` is the backend client for auth and as the PowerSync backend.
+`@react-native-async-storage/async-storage` persists the Supabase session on native.
+`@react-navigation/native` underlies Expo Router's navigation stack.
+`expo-crypto` provides UUID generation (wrapped by `lib/uuid.ts`).
+`expo-haptics` provides tactile feedback on scoring actions.
+`expo-linear-gradient` renders the photo-header duotone + protection-gradient treatment.
+`react-native-svg` renders the CircularStat ring and the SVG brand marks.
+`@expo-google-fonts/fraunces`, `@expo-google-fonts/inter`, and `@expo-google-fonts/jetbrains-mono` supply the three design-system typefaces loaded via `expo-font`.
+`jest` with `ts-jest` runs the unit test suite.
 
 ## Project Structure
-- `app/`: Expo Router screens, including the `(tabs)` group, `auth/` screens, and the `round/[id]/` and `clubs/[id]/` workflows.
-- `app/_layout.tsx`: root layout that mounts the provider chain and enforces auth-based redirects.
-- `app/(tabs)/`: bottom-tab screens for home, clubs, history, new-round, and profile.
-- `app/round/[id]/`: per-round screens for setup, waiting, score, conflicts, and summary.
-- `app/auth/`: login, signup, and profile-setup screens.
-- `providers/`: React context providers for database initialization, authentication, and sync status.
-- `db/schema.ts`: the PowerSync client schema defining all local tables and indexes.
-- `db/openDatabase.native.ts`, `db/openDatabase.web.ts`, `db/openDatabase.d.ts`: platform-split PowerSync database entry points.
-- `db/queries/`: typed query modules per domain area (`smc-clubs`, `smc-invites`, `smc-rounds`, `smc-scoring`, `smc-squads`, `smc-stands`, `smc-users`).
-- `db/seed-clubs.ts`: seeds reference club layouts into the local database.
-- `lib/types.ts`: domain enums and entity interfaces.
-- `lib/constants.ts`: app limits and the design-system color, spacing, typography tokens, and label maps.
-- `lib/powersync-connector.ts`: the `SupabaseConnector` that uploads local changes to Supabase.
-- `lib/supabase.ts`: the Supabase client configured with platform-specific session storage.
-- `lib/round-guards.ts`: pure functions deciding screen-access redirects by round status and ownership.
-- `lib/formatting.ts`: display formatting helpers.
-- `lib/uuid.ts`: deterministic SHA-256-based UUID generation.
-- `components/`: reusable UI (`LoadingPlaceholder`, `PositionPicker`, `ShooterPicker`, `StandSelector`, `UserSearch`).
-- `supabase/migrations/`: PostgreSQL schema and row-level-security migrations applied on the Supabase backend.
-- `supabase/powersync-sync-rules.yaml`: the PowerSync bucket definitions pasted into the PowerSync dashboard.
-- `docs/`: domain, architecture, routing, scoring, offline-first, testing, and query-API reference documentation.
-- `reports/codebase-review.md`: a checked-in codebase review report.
-- `__tests__/`: Jest tests mirroring `db/queries/` and `lib/`, plus shared test helpers.
-- `assets/`: app icons and images.
+
+`app/` contains Expo Router route screens; `_layout.tsx` defines providers and the root stack.
+`app/(tabs)/` holds the bottom-tab screens: `index` (home), `new-round`, `history`, `clubs`, `profile`.
+`app/auth/` holds `login`, `signup`, and `profile-setup` screens.
+`app/round/[id]/` holds per-round screens: `setup`, `waiting`, `score`, `conflicts`, `summary`.
+`app/clubs/[id]/index.tsx` is the club detail screen; `app/invites/index.tsx` lists received invites; `app/profile/edit.tsx` edits the user profile.
+`providers/` contains `DatabaseProvider`, `AuthProvider`, and `SyncProvider`.
+`db/schema.ts` declares PowerSync tables: `users`, `rounds`, `squads`, `shooter_entries`, `stands`, `target_results`, `clubs`, `club_positions`, `club_stands`, `invites`.
+`db/queries/` contains per-domain query modules: `smc-users`, `smc-rounds`, `smc-squads`, `smc-stands`, `smc-scoring`, `smc-clubs`, `smc-invites`.
+`db/openDatabase.{native,web,d}.ts` supply the platform-specific PowerSync database instance.
+`db/seed-clubs.ts` seeds reference club data into the local DB.
+`lib/types.ts` defines domain enums and TypeScript entity interfaces.
+`lib/constants.ts` holds app limits and presentation/target-config display labels.
+`lib/design-system/` is the single source of truth for brand tokens (color, type, spacing, radii, shadows, motion) and exposes a `useDesignSystemFonts` hook.
+`lib/formatting.ts`, `lib/uuid.ts`, `lib/round-guards.ts`, `lib/supabase.ts`, `lib/powersync-connector.ts` are shared utilities.
+`components/ui/` holds the shared design-system primitives consumed by every screen: `Button`, `Card`, `TextInput`, `Badge`, `Chip`, `Segmented`, `TopBar`, `StatTile`, `CircularStat`, `PhotoHeader`, `TabBar`, `BrandMark`, `Screen`, and the `Typography` family.
+`components/` holds reusable domain composites: `LoadingPlaceholder`, `PositionPicker`, `ShooterPicker`, `StandSelector`, `UserSearch`.
+`supabase/migrations/` holds numbered SQL migrations applied to the Supabase Postgres backend.
+`supabase/powersync-sync-rules.yaml` defines bucket rules that the PowerSync Cloud dashboard enforces.
+`__tests__/` mirrors source layout for Jest tests, with `__tests__/helpers/mockDb.ts` shared fixtures.
+`docs/` contains human reference material: `overview`, `architecture`, `screens-and-routing`, `scoring-flow`, `offline-first`, `testing`, `getting-started`, `query-api-reference`.
+`scoremyclays-design-system/` holds the v0.1.0 design-system reference bundle (tokens CSS, HTML previews, UI kit, brand SVGs); its runtime equivalents live in `lib/design-system/` and `components/ui/`.
+`assets/` holds images and splash/icon resources, including `assets/brand/` with the logo / icon-mark / clay-pigeon SVGs; `public/` holds web assets including the copied PowerSync WASM.
+`ios/` contains the native iOS project; `.vercel/` and `dist/` are build outputs.
+`.ai-policy/` contains the deterministic policy hooks, scripts, and the validation state file.
+`.githooks/` contains the `pre-commit` and `pre-push` entry scripts installed via `install-hooks.sh`.
 
 ## Testing Overview
-- Tests run with Jest using the `ts-jest` preset in a node environment via `npm test`.
-- `jest.config.ts` matches `__tests__/**/*.test.ts` and maps the `@/` path alias to the repo root.
-- Coverage centers on the query layer (`db/queries/`) and the pure `lib/` helpers (formatting, round-guards, uuid, powersync-connector).
-- `__tests__/helpers/mockDb.ts` provides an in-memory database stub used by the query tests.
-- React components, screens, and the live PowerSync and Supabase sync paths have no automated tests.
-- TypeScript runs in strict mode, but `package.json` defines no separate type-check or lint script.
+
+Test framework is Jest via `ts-jest`, configured in `jest.config.ts` with `testEnvironment: 'node'`.
+The canonical test command is `npm test`; no CI workflow files are currently present under `.github/workflows/`.
+Unit tests live under `__tests__/` and cover query modules (`db/queries/users`, `rounds`, `stands`, `scoring`, `invites`, `clubs`) and selected `lib/` utilities (`uuid`, `formatting`, `round-guards`, `powersync-connector`).
+Test mocks of the PowerSync database live in `__tests__/helpers/mockDb.ts`.
+There are no automated smoke tests that launch the app, no component/UI tests, no end-to-end tests, and no coverage of screens under `app/`.
+Sync rules, Supabase migrations, and cross-device conflict behaviour are not covered by automated tests.
 
 ## Maintenance Checklist
-- Update this file when tables in `db/schema.ts`, the sync rules, or domain enums in `lib/types.ts` change.
-- Update this file when routes under `app/` or the provider chain change.
-- Update this file when dependencies in `package.json` are added or removed.
-- Update this file when the test setup or coverage materially changes.
-- Keep every line a single sentence and the file under 300 lines.
+
+Update this file when tables are added, removed, or renamed in `db/schema.ts` or in `supabase/migrations/`.
+Update when `supabase/powersync-sync-rules.yaml` bucket definitions change what data each user sees.
+Update when a new top-level directory is added or a significant module moves.
+Update when a new route file is added under `app/` or an existing route is removed.
+Update when a direct dependency is added or removed in `package.json`.
+Update when enum values in `lib/types.ts` change or when `lib/constants.ts` limits change.
+Update when design-system tokens, primitives, or font loading in `lib/design-system/` or `components/ui/` change in shape.
+Update when the provider chain in `app/_layout.tsx` changes.
+Update when the test runner, canonical test command, or coverage footprint changes.

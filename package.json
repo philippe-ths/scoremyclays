@@ -14,6 +14,9 @@
     "postinstall": "npx powersync-web copy-assets --output public && cp node_modules/@journeyapps/wa-sqlite/dist/wa-sqlite.wasm node_modules/@journeyapps/wa-sqlite/dist/wa-sqlite-async.wasm node_modules/@journeyapps/wa-sqlite/dist/mc-wa-sqlite.wasm node_modules/@journeyapps/wa-sqlite/dist/mc-wa-sqlite-async.wasm public/"
   },
   "dependencies": {
+    "@expo-google-fonts/fraunces": "^0.4.1",
+    "@expo-google-fonts/inter": "^0.4.2",
+    "@expo-google-fonts/jetbrains-mono": "^0.4.1",
     "@journeyapps/react-native-quick-sqlite": "^2.5.1",
     "@journeyapps/wa-sqlite": "^1.5.0",
     "@powersync/react-native": "^1.30.2",
@@ -26,6 +29,7 @@
     "expo-crypto": "~55.0.4",
     "expo-font": "~55.0.4",
     "expo-haptics": "~55.0.6",
+    "expo-linear-gradient": "~55.0.13",
     "expo-linking": "~55.0.7",
     "expo-router": "~55.0.3",
     "expo-splash-screen": "~55.0.10",
@@ -39,6 +43,7 @@
     "react-native-reanimated": "4.2.1",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.23.0",
+    "react-native-svg": "15.15.3",
     "react-native-web": "~0.21.0",
     "react-native-worklets": "0.7.2"
   },

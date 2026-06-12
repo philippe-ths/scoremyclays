@@ -1,18 +1,22 @@
 import { useCallback, useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  FlatList,
-  TouchableOpacity,
-} from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcListRounds } from '@/db/queries/smc-rounds';
-import { Colors, Spacing, FontSize, BorderRadius } from '@/lib/constants';
+import { space } from '@/lib/design-system';
 import { formatRoundStatusLabel } from '@/lib/formatting';
 import { RoundStatus, type RoundListItem } from '@/lib/types';
+import {
+  Badge,
+  BodySm,
+  Card,
+  H1,
+  H2,
+  Meta,
+  Screen,
+  Typography,
+} from '@/components/ui';
 
 export default function HistoryScreen() {
   const db = usePowerSync();
@@ -31,7 +35,6 @@ export default function HistoryScreen() {
     if (round.status === RoundStatus.IN_PROGRESS) {
       router.push(`/round/${round.id}/score`);
     } else if (round.status === RoundStatus.SETUP) {
-      // Owner goes to setup, invitees go to waiting
       const isOwner = round.created_by === user?.id;
       router.push(isOwner ? `/round/${round.id}/setup` : `/round/${round.id}/waiting`);
     } else {
@@ -39,110 +42,80 @@ export default function HistoryScreen() {
     }
   }
 
+  function tone(item: RoundListItem): 'success' | 'info' | 'danger' | 'neutral' {
+    if (item.has_unresolved_conflicts === 1) return 'danger';
+    if (item.status === RoundStatus.COMPLETED) return 'success';
+    if (item.status === RoundStatus.IN_PROGRESS) return 'info';
+    return 'neutral';
+  }
+
   return (
-    <View style={styles.root}>
+    <Screen>
+      <View style={styles.header}>
+        <H1>History</H1>
+        <Meta>Your Past Rounds</Meta>
+      </View>
       <FlatList
         data={rounds}
         keyExtractor={(item) => item.id}
         contentContainerStyle={rounds.length === 0 ? styles.emptyContainer : styles.list}
+        ItemSeparatorComponent={() => <View style={{ height: space[2] }} />}
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No rounds yet</Text>
-            <Text style={styles.emptySubtitle}>Create a new round to get started</Text>
+            <H2 align="center">No Rounds Yet</H2>
+            <BodySm tone="muted" align="center" style={{ marginTop: space[2] }}>
+              Create a new round to get started.
+            </BodySm>
           </View>
         }
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} onPress={() => handlePress(item)}>
+          <Card onPress={() => handlePress(item)}>
             <View style={styles.cardRow}>
-              <Text style={styles.groundName}>{item.ground_name}</Text>
-              <Text
-                style={[
-                  styles.status,
-                  item.has_unresolved_conflicts === 1 && styles.statusConflicted,
-                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.COMPLETED && styles.statusCompleted,
-                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.IN_PROGRESS && styles.statusInProgress,
-                  item.has_unresolved_conflicts !== 1 && item.status === RoundStatus.SETUP && styles.statusSetup,
-                ]}
-              >
-                {item.has_unresolved_conflicts === 1 ? 'Conflicted' : formatRoundStatusLabel(item.status)}
-              </Text>
+              <Typography variant="body" weight="600" numberOfLines={1} style={{ flex: 1 }}>
+                {item.ground_name}
+              </Typography>
+              <Badge
+                label={
+                  item.has_unresolved_conflicts === 1
+                    ? 'Conflicted'
+                    : formatRoundStatusLabel(item.status)
+                }
+                tone={tone(item)}
+              />
             </View>
-            <Text style={styles.detail}>
+            <Meta style={{ marginTop: space[1] }}>
               {item.date} · {item.total_targets} targets
-            </Text>
-          </TouchableOpacity>
+            </Meta>
+          </Card>
         )}
       />
-    </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: Colors.bgPrimary,
+  header: {
+    paddingHorizontal: space[5],
+    paddingTop: space[3],
+    paddingBottom: space[4],
   },
   list: {
-    padding: Spacing.md,
+    paddingHorizontal: space[5],
+    paddingBottom: space[12],
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: space[6],
   },
   emptyState: {
     alignItems: 'center',
   },
-  emptyTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  emptySubtitle: {
-    fontSize: FontSize.base,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-  },
-  card: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: BorderRadius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.sm,
-    backgroundColor: Colors.bgSecondary,
-  },
   cardRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  groundName: {
-    fontSize: FontSize.base,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    flex: 1,
-  },
-  status: {
-    fontSize: FontSize.xs,
-    fontWeight: '600',
-    color: Colors.textMuted,
-    textTransform: 'uppercase',
-  },
-  statusConflicted: {
-    color: Colors.miss,
-  },
-  statusCompleted: {
-    color: Colors.hit,
-  },
-  statusInProgress: {
-    color: Colors.primary,
-  },
-  statusSetup: {
-    color: Colors.textMuted,
-  },
-  detail: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
+    justifyContent: 'space-between',
+    gap: space[3],
   },
 });
