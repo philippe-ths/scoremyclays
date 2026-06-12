@@ -129,7 +129,10 @@ expo-env.d.ts
 ios/
 android/
 
-# AI workflow 
+# Local visual reference screenshots
+.smc-visual/
+
+# AI workflow
 .agents/
 .ai-policy/
 .claude/
