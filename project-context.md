@@ -101,7 +101,7 @@ Sync is authenticated via `SupabaseConnector` in `lib/powersync-connector.ts`, w
 
 Test framework is Jest via `ts-jest`, configured in `jest.config.ts` with `testEnvironment: 'node'`.
 The canonical test command is `npm test`; no CI workflow files are currently present under `.github/workflows/`.
-Unit tests live under `__tests__/` and cover query modules (`db/queries/users`, `rounds`, `stands`, `scoring`, `invites`, `clubs`) and selected `lib/` utilities (`uuid`, `formatting`, `round-guards`, `powersync-connector`).
+Unit tests live under `__tests__/` and cover query modules (`db/queries/users`, `rounds`, `squads`, `stands`, `scoring`, `invites`, `clubs`) and selected `lib/` utilities (`uuid`, `formatting`, `round-guards`, `powersync-connector`).
 Test mocks of the PowerSync database live in `__tests__/helpers/mockDb.ts`.
 There are no automated smoke tests that launch the app, no component/UI tests, no end-to-end tests, and no coverage of screens under `app/`.
 Sync rules, Supabase migrations, and cross-device conflict behaviour are not covered by automated tests.
