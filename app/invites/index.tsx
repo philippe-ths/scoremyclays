@@ -20,8 +20,7 @@ import {
 } from '@/db/queries/smc-invites';
 import { smcGetUserById } from '@/db/queries/smc-users';
 import { smcGetRound } from '@/db/queries/smc-rounds';
-import * as Crypto from 'expo-crypto';
-import { smcAddShooterEntry, smcGetSquadByRound } from '@/db/queries/smc-squads';
+import { smcJoinSquad } from '@/db/queries/smc-squads';
 import {
   Body,
   BodySm,
@@ -91,32 +90,19 @@ export default function InvitesScreen() {
 
   const handleAcceptInvite = async (invite: Invite) => {
     try {
-      const squad = await smcGetSquadByRound(db, invite.round_id);
-      if (!squad) {
-        showToast('Could not find squad for this round.');
-        return;
-      }
-      const shooterCount = await db.getOptional<{ count: number }>(
-        'SELECT COUNT(*) as count FROM shooter_entries WHERE squad_id = ?',
-        [squad.id],
-      );
-      if (shooterCount && shooterCount.count >= 6) {
-        showToast('This squad is full (max 6 shooters).');
-        return;
-      }
-      const maxPosition = await db.getOptional<{ max_pos: number }>(
-        'SELECT MAX(position_in_squad) as max_pos FROM shooter_entries WHERE squad_id = ?',
-        [squad.id],
-      );
-      const nextPosition = (maxPosition?.max_pos || 0) + 1;
-      await smcAddShooterEntry(db, {
-        id: Crypto.randomUUID(),
-        squad_id: squad.id,
-        round_id: invite.round_id,
+      const result = await smcJoinSquad(db, {
+        roundId: invite.round_id,
         user_id: user!.id,
         shooter_name: user!.display_name || 'Unknown',
-        position_in_squad: nextPosition,
       });
+      if (!result.ok) {
+        showToast(
+          result.reason === 'no_squad'
+            ? 'Could not find squad for this round.'
+            : 'This squad is full (max 6 shooters).',
+        );
+        return;
+      }
       await smcUpdateInviteStatus(db, invite.id, InviteStatus.ACCEPTED);
 
       const round = await smcGetRound(db, invite.round_id);

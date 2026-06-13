@@ -1,22 +1,48 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
+import { randomUUID } from 'expo-crypto';
 import { RoundStatus, type Round, type RoundListItem } from '@/lib/types';
 
+export interface CreateRoundInput {
+  created_by: string;
+  creator_name: string;
+  ground_name: string;
+  date: string;
+  total_targets: number;
+  club_id?: string | null;
+}
+
+export interface CreatedRound {
+  roundId: string;
+  squadId: string;
+}
+
+/**
+ * Creates a round together with its squad and the creator's shooter entry in a
+ * single atomic transaction. Owns identity generation and timestamps so callers
+ * express the intent ("create a round") without assembling the multi-table write.
+ */
 export async function smcCreateRound(
   db: AbstractPowerSyncDatabase,
-  params: {
-    id: string;
-    created_by: string;
-    ground_name: string;
-    date: string;
-    total_targets: number;
-    club_id?: string | null;
-  },
-): Promise<void> {
+  input: CreateRoundInput,
+): Promise<CreatedRound> {
+  const roundId = randomUUID();
+  const squadId = randomUUID();
+  const shooterEntryId = randomUUID();
   const now = new Date().toISOString();
-  await db.execute(
-    'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [params.id, params.created_by, params.ground_name, params.date, params.total_targets, RoundStatus.SETUP, null, params.club_id ?? null, now, now],
-  );
+
+  await db.writeTransaction(async (tx) => {
+    await tx.execute(
+      'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [roundId, input.created_by, input.ground_name, input.date, input.total_targets, RoundStatus.SETUP, null, input.club_id ?? null, now, now],
+    );
+    await tx.execute('INSERT INTO squads (id, round_id) VALUES (?, ?)', [squadId, roundId]);
+    await tx.execute(
+      'INSERT INTO shooter_entries (id, squad_id, round_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?, ?)',
+      [shooterEntryId, squadId, roundId, input.created_by, input.creator_name, 1],
+    );
+  });
+
+  return { roundId, squadId };
 }
 
 export async function smcGetRound(db: AbstractPowerSyncDatabase, id: string): Promise<Round | null> {

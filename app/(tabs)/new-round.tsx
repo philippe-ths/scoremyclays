@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { usePowerSync } from '@powersync/react';
-import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcListClubs, smcGetClub } from '@/db/queries/smc-clubs';
+import { smcCreateRound } from '@/db/queries/smc-rounds';
 import { color, radius, shadow, space } from '@/lib/design-system';
-import { RoundStatus, type Club } from '@/lib/types';
+import { type Club } from '@/lib/types';
 import {
   Body,
   BodySm,
@@ -88,20 +88,13 @@ export default function NewRoundScreen() {
 
     setIsCreating(true);
     try {
-      const roundId = Crypto.randomUUID();
-      const squadId = Crypto.randomUUID();
-      const shooterEntryId = Crypto.randomUUID();
-
-      await db.writeTransaction(async (tx) => {
-        await tx.execute(
-          'INSERT INTO rounds (id, created_by, ground_name, date, total_targets, status, notes, club_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [roundId, user.id, selectedClub.name, today, 0, RoundStatus.SETUP, null, selectedClub.id, new Date().toISOString(), new Date().toISOString()],
-        );
-        await tx.execute('INSERT INTO squads (id, round_id) VALUES (?, ?)', [squadId, roundId]);
-        await tx.execute(
-          'INSERT INTO shooter_entries (id, squad_id, round_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?, ?)',
-          [shooterEntryId, squadId, roundId, user.id, user.display_name, 1],
-        );
+      const { roundId } = await smcCreateRound(db, {
+        created_by: user.id,
+        creator_name: user.display_name,
+        ground_name: selectedClub.name,
+        date: today,
+        total_targets: 0,
+        club_id: selectedClub.id,
       });
 
       setSelectedClub(null);
