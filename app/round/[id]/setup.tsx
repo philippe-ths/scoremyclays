@@ -5,7 +5,7 @@ import { usePowerSync, useQuery } from '@powersync/react';
 import * as Crypto from 'expo-crypto';
 import { useAuth } from '@/providers/AuthProvider';
 import { smcGetRound, smcUpdateRoundStatus } from '@/db/queries/smc-rounds';
-import { smcGetSquadByRound, smcAddShooterEntry, smcRemoveShooterEntry } from '@/db/queries/smc-squads';
+import { smcGetSquadByRound, smcJoinSquad, smcRemoveShooterEntry } from '@/db/queries/smc-squads';
 import { smcGetClubWithDetails } from '@/db/queries/smc-clubs';
 import { smcCreateInvite, smcCheckDuplicateInvite } from '@/db/queries/smc-invites';
 import { MAX_SQUAD_SIZE } from '@/lib/constants';
@@ -118,17 +118,17 @@ export default function RoundSetupScreen() {
     if (!squadId || !user) return;
     const name = newShooterName.trim();
     if (!name) return Alert.alert('Name required', "Enter the shooter's name.");
-    if (shooters.length >= MAX_SQUAD_SIZE) {
-      return Alert.alert('Squad Full', `Maximum ${MAX_SQUAD_SIZE} shooters per squad.`);
-    }
-    await smcAddShooterEntry(db, {
-      id: Crypto.randomUUID(),
-      squad_id: squadId,
-      round_id: roundId!,
+    const result = await smcJoinSquad(db, {
+      roundId: roundId!,
       user_id: null,
       shooter_name: name,
-      position_in_squad: shooters.length + 1,
     });
+    if (!result.ok) {
+      if (result.reason === 'squad_full') {
+        return Alert.alert('Squad Full', `Maximum ${MAX_SQUAD_SIZE} shooters per squad.`);
+      }
+      return Alert.alert('Error', 'Could not add shooter to this squad.');
+    }
     setNewShooterName('');
     await reload();
   }

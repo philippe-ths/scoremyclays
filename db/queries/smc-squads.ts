@@ -1,5 +1,11 @@
 import type { AbstractPowerSyncDatabase } from '@powersync/common';
+import { randomUUID } from 'expo-crypto';
+import { MAX_SQUAD_SIZE } from '@/lib/constants';
 import type { Squad, ShooterEntry, EnrichedShooterEntry } from '@/lib/types';
+
+export type JoinSquadResult =
+  | { ok: true; shooterEntryId: string; position: number }
+  | { ok: false; reason: 'no_squad' | 'squad_full' };
 
 export async function smcCreateSquad(
   db: AbstractPowerSyncDatabase,
@@ -30,6 +36,44 @@ export async function smcAddShooterEntry(
     'INSERT INTO shooter_entries (id, squad_id, round_id, user_id, shooter_name, position_in_squad) VALUES (?, ?, ?, ?, ?, ?)',
     [params.id, params.squad_id, params.round_id, params.user_id, params.shooter_name, params.position_in_squad],
   );
+}
+
+/**
+ * Adds a shooter to the round's squad behind a single interface that owns the
+ * squad-size rule (MAX_SQUAD_SIZE) and the next-position calculation. Used for
+ * both linked users (invite accept) and free-text shooters (round setup).
+ */
+export async function smcJoinSquad(
+  db: AbstractPowerSyncDatabase,
+  params: { roundId: string; user_id: string | null; shooter_name: string },
+): Promise<JoinSquadResult> {
+  const squad = await smcGetSquadByRound(db, params.roundId);
+  if (!squad) return { ok: false, reason: 'no_squad' };
+
+  const countRow = await db.getOptional<{ count: number }>(
+    'SELECT COUNT(*) as count FROM shooter_entries WHERE squad_id = ?',
+    [squad.id],
+  );
+  if (countRow && countRow.count >= MAX_SQUAD_SIZE) {
+    return { ok: false, reason: 'squad_full' };
+  }
+
+  const maxRow = await db.getOptional<{ max_pos: number }>(
+    'SELECT MAX(position_in_squad) as max_pos FROM shooter_entries WHERE squad_id = ?',
+    [squad.id],
+  );
+  const position = (maxRow?.max_pos || 0) + 1;
+
+  const shooterEntryId = randomUUID();
+  await smcAddShooterEntry(db, {
+    id: shooterEntryId,
+    squad_id: squad.id,
+    round_id: params.roundId,
+    user_id: params.user_id,
+    shooter_name: params.shooter_name,
+    position_in_squad: position,
+  });
+  return { ok: true, shooterEntryId, position };
 }
 
 export async function smcListShooterEntries(
